@@ -1,0 +1,25 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*~
+
+# Node (念のため、将来依存追加した場合に備えて)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Vercel
+.vercel
+
+# 環境変数（もし将来Functionsなどを追加したときに、APIキー等を含む.envを誤って公開しないため）
+.env
+.env.local
+.env.*.local
+
+# ログ
+*.log
