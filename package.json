@@ -1,0 +1,40 @@
+{
+  "name": "machining-fundamentals",
+  "version": "0.1.0",
+  "description": "切削加工入門 — 全17章 (材料科学 a1-a6 + 切削基礎 1-10 + 研究実例 c1) + 3D CFD シミュレーター",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev --listen 3000",
+    "dev:simple": "serve -l 8000 .",
+    "preview": "vercel",
+    "deploy": "vercel --prod"
+  },
+  "devDependencies": {
+    "serve": "^14.2.4",
+    "vercel": "^51.8.0"
+  },
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "license": "SEE LICENSE IN LICENSE",
+  "homepage": "https://machining-fundamentals.vercel.app/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BoxPistols/machining-fundamentals.git"
+  },
+  "bugs": {
+    "url": "https://github.com/BoxPistols/machining-fundamentals/issues"
+  },
+  "keywords": [
+    "machining",
+    "metal-cutting",
+    "education",
+    "japanese",
+    "cnc",
+    "cfd-simulator",
+    "vanilla-js"
+  ]
+}

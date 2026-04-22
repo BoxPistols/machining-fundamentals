@@ -83,12 +83,20 @@ vercel --prod     # 本番デプロイ
 ```bash
 git clone https://github.com/BoxPistols/machining-fundamentals.git
 cd machining-fundamentals
+pnpm install        # serve + vercel CLI を devDependency で
+```
 
-python3 -m http.server 8000
-# → http://localhost:8000/ を開く
+3 通りの起動方法：
+
+```bash
+pnpm dev            # vercel dev (推奨) — http://localhost:3000、vercel.json のキャッシュ・セキュリティヘッダがローカルでも有効、prod と1:1
+pnpm dev:simple     # serve            — http://localhost:8000、最速で立ち上がる軽量静的サーバ
+python3 -m http.server 8000             # Python だけで済ませたい時
 ```
 
 ファイル直開き（`file://`）だとシミュレーターの iframe 読み込みに制約があるため、HTTP サーバー経由を推奨。
+
+デプロイは `pnpm preview`（Preview）または `pnpm deploy`（Production）。
 
 ## ライセンス
 
