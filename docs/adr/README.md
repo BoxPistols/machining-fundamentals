@@ -16,9 +16,14 @@ ADR-013（Matlens 側）で定めた **prefix 分離方針** に従います：
 
 ## 現状一覧
 
-| ID | タイトル | ステータス |
-|---|---|---|
-| [ADR-COM-014](./ADR-COM-014-monorepo-integration-execution-plan.md) | monorepo 統合の実行計画 | Proposed |
+| ID | タイトル | ステータス | 関連 Matlens ADR |
+|---|---|---|---|
+| [ADR-COM-014](./ADR-COM-014-monorepo-integration-execution-plan.md) | monorepo 統合の実行計画 | **Accepted** (2026-04-23) | [ADR-014](https://github.com/BoxPistols/Matlens/blob/main/docs/adr/ADR-014-monorepo-integration-execution-plan.md) |
+
+参考に Matlens 側で Accepted 化された関連 ADR（本リポでは未複製、参照のみ）:
+
+- [ADR-012](https://github.com/BoxPistols/Matlens/blob/main/docs/adr/ADR-012-machining-fundamentals-integration.md) — 親密化戦略（ビジョン・レベル定義）— **Accepted**
+- [ADR-013](https://github.com/BoxPistols/Matlens/blob/main/docs/adr/ADR-013-url-contract-and-terminology-ownership.md) — 運用規約（URL Contract / 用語 master / 予告期間 / dead link）— **Accepted**
 
 ## 参照
 
