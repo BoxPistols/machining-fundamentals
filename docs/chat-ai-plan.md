@@ -404,14 +404,23 @@ owner 確認後、Phase 0 から着手します。
 
 ## 16. 参照
 
-- Matlens **Pack 3** — システムプロンプト設計
-- Matlens **Pack 11** — Chat AI 実装方針（元アーキテクチャ）
-- Matlens **Pack 12** — Vanilla JS + ESM Workers 最小実装の雛形
+- Matlens **Pack 3** — システムプロンプト設計（レベル別 / ソクラテス式 / 場面別テンプレート）
+- Matlens **Pack 11** — Chat AI 実装方針（元アーキテクチャ + Phase ロードマップ + 初期コスト試算）
+- Matlens **Pack 12** — Vanilla JS + ESM Workers 最小実装の雛形（ハンドラ ~200行、Widget ~120行、SSE 中継、落とし穴 5件）
+- Matlens **Pack 13** — UX / a11y / 運用細部チェックリスト
+  - ストリーミング UX (cursor / 中断ボタン / スクロール追従の罠)
+  - エラー分類表 (request_limit / token_limit / provider_error / invalid_key / network / context_too_long)
+  - a11y (ARIA live polite / focus management / focus trap / 1文単位 commit)
+  - コスト異常検知 (input_too_large / 10分内 burst limit)
+  - フィードバック (👍/👎 → KV 30日 TTL)
+  - 会話履歴の summarize 圧縮 (8k 接近時)
+  - オフライン対応 / onboarding 例文 / BYOK プライバシー通知
+  - 実装ミスパターン 5件 (重複送信 / 古いレスポンス上書き / KV bind 忘れ / CORS preflight / max_tokens 不足)
 - 本リポ [`worker-proxy.js`](../worker-proxy.js) — 既存 TTS プロキシ (Chat 拡張のベース)
 - 本リポ [`integration-points.md`](../integration-points.md) — Matlens 連携規約
-- v1 の履歴は本ファイルの commit 8ce0337 / 9a6670e を参照
+- 本ファイル履歴: v1=commit 8ce0337 → v2=e5cc93c → v2.1=11dc796
 
 ---
 
-_最終更新: 2026-04-23 (v2)_
-_次回見直し: peer モデル ID 回答受領時、または owner Phase 0 着手承認時_
+_最終更新: 2026-04-23 (v2.1)_
+_次回見直し: owner Phase 0 着手承認時、または Phase 1 実装開始時_
