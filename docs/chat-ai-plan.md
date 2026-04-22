@@ -1,9 +1,10 @@
-# Chat AI 機能 実装計画 (草案 v2.1)
+# Chat AI 機能 実装計画 (草案 v2.2 — Phase 0 着手 Ready)
 
-**ステータス**: Proposed (owner レビュー待ち、モデル ID は owner スクショで実 ID + 価格確定)
+**ステータス**: Approved (owner 5 判断確定、Invited 値のみ暫定 100)
 **最終更新**: 2026-04-23
 **v1 → v2 の変更**: provider を xAI Grok 単独から **OpenAI + Gemini** に変更、2 モードから **3 ティア** (Anonymous / Invited / BYOK) に拡張、招待コード機構を追加
 **v2 → v2.1 の変更**: モデル ID 確定 (`gpt-5.4-nano` / `gpt-5.4-mini` / `gpt-5.4`)、Gemini を 2.5 Flash から **Gemini 3 系列**へ更新、実価格に基づくコスト再試算
+**v2.1 → v2.2 の変更**: owner 5 判断確定 — Gemini default = `gemini-3-flash` / Anonymous 50 req/day / Invited 暫定 100 req/day / 発行は Phase 1 手動 & Phase 2 CLI / 1コード共有可 / BYOK で Gemini 3.1 Pro も提供
 **主要参照**: Matlens Pack 3 / Pack 11 / Pack 12
 **関連**: [`integration-points.md`](../integration-points.md) / [`docs/monorepo-decisions.md`](./monorepo-decisions.md)
 
@@ -51,15 +52,18 @@ function determineT(req) {
 }
 ```
 
-### レート制限値の env 管理
+### レート制限値の env 管理 (owner 判断で確定)
 
 ```
-CHAT_LIMIT_ANON_REQ = 20        # Anonymous 1日あたり
-CHAT_LIMIT_INVITED_REQ = 30     # Invited 1日あたり
-CHAT_LIMIT_TOKENS_PER_DAY = 20000   # Anonymous/Invited 共通、入出力合計
+CHAT_LIMIT_ANON_REQ = 50         # Anonymous 1日あたり (owner 指定)
+CHAT_LIMIT_INVITED_REQ = 100     # Invited 1日あたり (暫定、owner 要確認)
+CHAT_LIMIT_TOKENS_PER_DAY_ANON = 50000      # Anonymous トークン上限 (req 上限の 2.5x を proportional 設定)
+CHAT_LIMIT_TOKENS_PER_DAY_INVITED = 100000  # Invited トークン上限 (同 proportional)
 CHAT_LIMIT_TOKENS_PER_REQ = 4000    # 1リクエスト入力上限
 CHAT_MAX_OUTPUT_TOKENS = 800        # 1リクエスト出力上限
 ```
+
+**Invited 100 の根拠**: Anonymous 50 に対して 2 倍。招待者には明確に「もう少し使える」という差別化を与える。運用開始後に実利用を見て env 調整。
 
 Cloudflare ダッシュボードから即時変更可能。運用中に調整可能な設計。
 
@@ -283,24 +287,27 @@ v1 と同じ (requests/day + tokens/day)。値は §2 の env で tier 別に設
 
 価格は owner スクショで確定 (gpt-5.4-nano: 入力 $0.20/1M、出力 $1.25/1M)。
 
-### Anonymous 層 (gpt-5.4-nano default)
-- 1 リクエスト平均: 入力 2k tok + 出力 500 tok = 2 × $0.20/1k + 0.5 × $1.25/1k... = (2 × 0.20 + 0.5 × 1.25) / 1000 = **$0.00103 / req**
-- 20 req/day × 30日 × 10 ユーザー = 6,000 req → **$6.15/月**
-- 100 ユーザー想定 → $61.5/月
+### Anonymous 層 (gpt-5.4-nano default、50 req/day)
+- 1 リクエスト平均: 入力 2k tok + 出力 500 tok = (2 × 0.20 + 0.5 × 1.25) / 1000 = **$0.00103 / req**
+- 50 req/day × 30日 × 10 ユーザー = 15,000 req → **$15.4/月**
+- 50 ユーザー想定 → **$77/月**
+- 100 ユーザー想定 → **$154/月**
 
-### Invited 層 (同 default)
-- 30 req/day × 30日 × 10 ユーザー = 9,000 req → **$9.23/月**
-- 100 ユーザー想定 → $92.3/月
+### Invited 層 (同 default、暫定 100 req/day)
+- 100 req/day × 30日 × 10 ユーザー = 30,000 req → **$30.8/月**
+- 招待層は手動配布で 10-20 名規模想定 → 月 $30-60
 
 ### BYOK 上位 (gpt-5.4-mini、ユーザー自費)
 - 1 リクエスト: (2 × $0.75 + 0.5 × $4.50) / 1000 = **$0.00375 / req** (Nano の 3.7倍)
 - BYOK ユーザー自身が支払うため owner コストには影響なし
 
-### コスト感の総括
-- 100 ユーザーが日常的に Anonymous 利用 = 月 ~$60 程度
-- Invited 層は手動配布なので 10〜20 名規模想定 → 月 $10-20
-- 月額 100 ドル以下に収まる見込み
-- 実運用 1ヶ月で usage を見て Anonymous 上限を 15-25 で再調整可能 (env 一発)
+### コスト感の総括 (owner 値 50/day 反映)
+- 50 ユーザー日常利用 Anonymous = 月 ~$80
+- 100 ユーザー日常利用 Anonymous = 月 ~$150
+- Invited 10-20 名追加で + $30-60
+- 合計想定（100 人 Anon + 20 人 Invited）= **月 $200 前後**
+- 実運用 2 週で usage を見て Anonymous 50 → 30 等への下方調整 env 一発で可能
+- OSS デモ URL を HN 掲載等で burst 流入した場合は burst_limit (Pack 13 §4) で自動保護
 
 *※Gemini の preview 価格は GA 後に再試算、現状は OpenAI 同等想定で計画*
 
@@ -365,18 +372,22 @@ v1 と同じ。
 
 ---
 
-## 14. owner 判断待ち
+## 14. owner 判断 — 確定状況
 
-v2.1 時点：
+v2.2 時点（2026-04-23）:
 
-- ~~モデル ID 最終確認~~ → **解決** (owner スクショで OpenAI 確定、Gemini 3 系列に更新)
-1. **Gemini 何を採用するか**: `gemini-3-flash` (Flash 標準) / `gemini-3.1-flash-lite` (最廉価、preview) のどちらを Anonymous/Invited のセカンドモデルにするか
-2. **Anonymous レート制限 20/day 妥当性**: OSS デモ URL を公開した時の想定流入で上限 20 が現実的か (env 一発で変更可だが初期値の意思決定として)
-3. **招待コード発行運用**: Phase 1 は手動ダッシュボード編集で割切 / Phase 2 で CLI or 管理画面整備のどちらが良いか
-4. **招待コード: 1コード共有 vs 1ユーザー bind**: 草案は共有可 (家庭・研究室単位)、単一 bind 必要なら設計変更
-5. **BYOK で Gemini 3.1 Pro も提供するか**: 草案に含めたが、UI 複雑化避けたければ OpenAI 系のみに絞る選択も
+- ~~モデル ID 最終確認~~ → **確定** (owner スクショで OpenAI gpt-5.4 系列、Gemini 3 系列)
+- ~~Gemini 何を採用~~ → **`gemini-3-flash`** (owner: 「私も分からないが flash が良さそう」)
+- ~~Anonymous レート 20/day 妥当性~~ → **50 req/day に変更** (owner 指定)
+- ~~招待コード発行運用~~ → **Phase 1 手動ダッシュボード編集、Phase 2 で CLI** (推奨採用)
+- ~~1コード共有 vs 単一 bind~~ → **1コード共有可** (推奨採用、家庭・研究室単位想定)
+- ~~BYOK で Gemini 3.1 Pro~~ → **提供する** (owner 採用)
 
-owner 確認後、Phase 0 から着手します。
+### 残り要確認 1 点
+
+**Invited レート値**: owner 指示なし、草案で暫定 **100 req/day** に設定（Anonymous 50 の 2倍、招待の差別化として妥当と判断）。異なる値希望なら env 調整のみで変更可。
+
+Phase 0 着手 ready。次アクション: owner から「Phase 0 着手 OK」合図 → 実装開始。
 
 ---
 
@@ -399,6 +410,18 @@ owner 確認後、Phase 0 から着手します。
 | Gemini モデル | Gemini 2.5 Flash | **Gemini 3 系列** (3 Flash / 3.1 Flash-Lite / 3.1 Pro) |
 | BYOK 上位 | mini のみ | **mini + full GPT-5.4 + Gemini 3.1 Pro** |
 | コスト試算 | 想定 $1.80/月 (10人) | **実価 $6.15/月 (10人)** = 100 ユーザー $61/月 |
+
+### v2.1 → v2.2 (2026-04-23)
+| 観点 | v2.1 | v2.2 |
+|---|---|---|
+| Anonymous レート | 20 req/day | **50 req/day** (owner 指定) |
+| Invited レート | 30 req/day | **100 req/day** (暫定、Anonymous 2x) |
+| Gemini default | 未定 | **`gemini-3-flash`** |
+| BYOK Gemini 3.1 Pro | 草案提案 | **提供する** (owner 採用) |
+| 招待コード運用 | 未定 | **Phase 1 手動 / Phase 2 CLI** |
+| 招待コード 共有可否 | 未定 | **共有可** (1コード = 家庭・研究室単位) |
+| コスト試算 | 20/day 前提 $6.15/月 | 50/day 前提 **$15.4/月 (10人) / $154/月 (100人)** |
+| ステータス | Proposed | **Approved, Phase 0 Ready** |
 
 ---
 
