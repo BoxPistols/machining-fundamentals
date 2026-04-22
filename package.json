@@ -5,8 +5,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vercel dev --listen 3000",
-    "dev:simple": "serve -l 8000 .",
+    "dev": "serve -l 5555 .",
+    "dev:8000": "serve -l 8000 .",
+    "dev:8080": "serve -l 8080 .",
+    "dev:py": "python3 -m http.server 5556",
+    "dev:vercel": "vercel dev --listen 5557",
     "preview": "vercel",
     "deploy": "vercel --prod"
   },

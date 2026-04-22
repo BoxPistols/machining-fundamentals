@@ -86,15 +86,19 @@ cd machining-fundamentals
 pnpm install        # serve + vercel CLI を devDependency で
 ```
 
-3 通りの起動方法：
+起動方法（被りにくい 5555 を既定、代替ポートを複数用意）：
 
 ```bash
-pnpm dev            # vercel dev (推奨) — http://localhost:3000、vercel.json のキャッシュ・セキュリティヘッダがローカルでも有効、prod と1:1
-pnpm dev:simple     # serve            — http://localhost:8000、最速で立ち上がる軽量静的サーバ
-python3 -m http.server 8000             # Python だけで済ませたい時
+pnpm dev          # serve  - http://localhost:5555  (既定、被りにくい)
+pnpm dev:8000     # serve  - http://localhost:8000
+pnpm dev:8080     # serve  - http://localhost:8080
+pnpm dev:py       # python - http://localhost:5556  (依存ゼロ派)
+pnpm dev:vercel   # vercel dev - http://localhost:5557  (vercel.json のヘッダを実 prod と同じく検証したい時のみ。Vercel project linked 必須)
 ```
 
 ファイル直開き（`file://`）だとシミュレーターの iframe 読み込みに制約があるため、HTTP サーバー経由を推奨。
+
+> `pnpm dev:vercel` は Vercel project が link 済みのときに使ってください。link されていないと `vercel dev` が `package.json` の `dev` script を再帰呼びしようとして失敗するため、`pnpm dev`（serve 直接）を既定にしています。
 
 デプロイは `pnpm preview`（Preview）または `pnpm deploy`（Production）。
 
