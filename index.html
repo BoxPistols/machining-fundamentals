@@ -3897,11 +3897,157 @@ const CHAPTERS = [
           </div>
         `,
       },
+      {
+        heading: 'フライス加工の追加要素 — fz・ae・Vf',
+        html: `
+          <p>これまで <strong>送り f</strong> は「1回転あたりの進み量 [mm/rev]」として説明しました。これは旋削では工具が1本だから自然ですが、フライスでは工具に<strong>複数の刃</strong>（z 枚）が並んでいるため、1刃あたりの送りで考える方が便利です。</p>
+          <h4 style="margin-top:14px;">追加されるパラメータ</h4>
+          <ul>
+            <li><strong>fz（1刃あたり送り、mm/tooth）</strong>: 1枚の刃が通り抜ける間にワークが進む量。フライスの主役パラメータ</li>
+            <li><strong>z（刃数, teeth）</strong>: 工具に並んだ刃の本数（エンドミルで 2〜6 本、フェースミルで 6〜12 本など）</li>
+            <li><strong>n（主軸回転数, rpm）</strong>: 主軸が1分あたり何回転するか</li>
+            <li><strong>Vf（テーブル送り速度, mm/min）</strong>: テーブル（ワーク）が1分あたり進む距離</li>
+            <li><strong>ae（切削幅, mm）</strong>: 工具が半径方向に係っている幅。<strong>ae/D（エンゲージ比）</strong>で表現することが多い</li>
+          </ul>
+          <h4 style="margin-top:14px;">関係式</h4>
+          <ul style="font-family:'JetBrains Mono', monospace; font-size: 13px; line-height: 1.9;">
+            <li>Vc = π · D · n / 1000　　[m/min]　（D は工具径 mm）</li>
+            <li>Vf = fz · z · n　　　　　　[mm/min]</li>
+            <li>1回転あたり送り f = fz · z　[mm/rev]　（旋削の f に対応）</li>
+            <li>平均切屑厚 h_mean ≈ fz · √(ae/D)　[mm]　（Kienzle 式に代入する h）</li>
+          </ul>
+          <p>切屑厚 h_mean が登場するのが重要なポイントです。フライスでは刃が回転しながらワークに入って抜けるため、<strong>切屑の厚さは刃の位置によって変わる</strong>（最大 fz、最小 0）。平均値で扱うのが Kienzle 式（第6章）の流儀。</p>
+          <h4 style="margin-top:14px;">エンゲージ比による加工分類</h4>
+          <table style="width:100%;border-collapse:collapse;font-size:13px;margin:10px 0;">
+            <thead>
+              <tr style="background:var(--bg-3);">
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">パターン</th>
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">ae/D</th>
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">特徴</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding:8px;border:1px solid var(--line);"><strong>溝加工 (full slotting)</strong></td><td style="padding:8px;border:1px solid var(--line);">1.0</td><td style="padding:8px;border:1px solid var(--line);">工具径 = 溝幅、最も負荷大、ap は工具径の 0.5 倍以下推奨</td></tr>
+              <tr><td style="padding:8px;border:1px solid var(--line);"><strong>側面加工 (peripheral)</strong></td><td style="padding:8px;border:1px solid var(--line);">~ 0.3</td><td style="padding:8px;border:1px solid var(--line);">高速・大切込み可、深ポケット可</td></tr>
+              <tr><td style="padding:8px;border:1px solid var(--line);"><strong>段差加工 (shoulder)</strong></td><td style="padding:8px;border:1px solid var(--line);">~ 0.5</td><td style="padding:8px;border:1px solid var(--line);">直角段差を作る基本パターン</td></tr>
+              <tr><td style="padding:8px;border:1px solid var(--line);"><strong>トロコイダル (trochoidal)</strong></td><td style="padding:8px;border:1px solid var(--line);">~ 0.1</td><td style="padding:8px;border:1px solid var(--line);">難削材で薄く広く高速で削る、ae/D を意図的に小さく保つ</td></tr>
+            </tbody>
+          </table>
+          <p>難削材（Ti, Inconel）の高能率加工で<strong>トロコイダルミーリング</strong>が標準になりつつあるのは、ae/D を小さく保つことで刃先温度を下げ、長い ap でも工具寿命が伸びるためです。</p>
+        `,
+      },
+      {
+        heading: 'ドリル加工の追加要素 — fn・L/D・ペック',
+        html: `
+          <p>ドリルは旋削の特殊系で、工具自身が回転しながら軸方向に進みます。3要素は次のように対応します。</p>
+          <ul>
+            <li><strong>Vc</strong>: ドリル外周の刃先速度。Vc = π · D · n / 1000（旋削と同じ式、D は穴径）。実用上は<strong>旋削の 0.6〜0.8 倍</strong>に設定するのが目安</li>
+            <li><strong>fn（送り, mm/rev）</strong>: 1回転あたりの軸方向進み。経験則として<strong>工具径の 1〜3%</strong>（φ10 なら 0.1〜0.3 mm/rev）</li>
+            <li><strong>切込みに相当するもの</strong>: ドリルでは「穴が貫通するまで進む」だけなので ap という独立パラメータが無い。代わりに<strong>L/D 比（穴深さ ÷ 工具径）</strong>が支配的な制約になる</li>
+          </ul>
+          <h4 style="margin-top:14px;">L/D 比による戦略の変化</h4>
+          <ul>
+            <li><strong>L/D ≤ 3</strong>: 標準ドリル、一気貫通可</li>
+            <li><strong>L/D 3〜5</strong>: 切屑詰まり注意、内部給油（through-coolant）推奨</li>
+            <li><strong>L/D 5〜10</strong>: <strong>ペックドリリング（step drilling）</strong>必須 — 一定深さ毎に引き抜いて切屑を排出</li>
+            <li><strong>L/D &gt; 10</strong>: <strong>ガンドリル</strong>または BTA 工法に切替。専用機が必要</li>
+          </ul>
+          <p>ドリル加工で頻発するトラブルの大半は「切屑が詰まる」「穴がやや曲がる」「入口/出口でバリが出る」の3つで、いずれも L/D と冷却液の設計で対処します。</p>
+        `,
+      },
+      {
+        heading: '材料 × 工具 — 推奨切削条件の代表例',
+        html: `
+          <p>本章のまとめとして、加工方式 × 材料 × 工具材種の代表的な切削条件を表で示します（出典: 主要工具メーカーのカタログレンジ集約値、機械剛性・冷却条件で 30〜50% 振れます）。</p>
+
+          <h4 style="margin-top:14px;">旋削（Turning）</h4>
+          <table style="width:100%;border-collapse:collapse;font-size:12px;margin:8px 0;">
+            <thead>
+              <tr style="background:var(--bg-3);">
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">材料</th>
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">工具</th>
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">Vc [m/min]</th>
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">f [mm/rev]</th>
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">ap [mm]</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding:6px;border:1px solid var(--line);">S45C</td><td style="padding:6px;border:1px solid var(--line);">コーティング超硬</td><td style="padding:6px;border:1px solid var(--line);">200〜350</td><td style="padding:6px;border:1px solid var(--line);">0.15〜0.5</td><td style="padding:6px;border:1px solid var(--line);">1.0〜6.0</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);">SUS304</td><td style="padding:6px;border:1px solid var(--line);">コーティング超硬 M25</td><td style="padding:6px;border:1px solid var(--line);">120〜250</td><td style="padding:6px;border:1px solid var(--line);">0.15〜0.35</td><td style="padding:6px;border:1px solid var(--line);">1.0〜4.0</td></tr>
+              <tr style="color:var(--ylw);"><td style="padding:6px;border:1px solid var(--line);">Ti-6Al-4V</td><td style="padding:6px;border:1px solid var(--line);">コーティング超硬 K20</td><td style="padding:6px;border:1px solid var(--line);">40〜80</td><td style="padding:6px;border:1px solid var(--line);">0.1〜0.25</td><td style="padding:6px;border:1px solid var(--line);">0.5〜3.0</td></tr>
+              <tr style="color:var(--ylw);"><td style="padding:6px;border:1px solid var(--line);">Inconel 718</td><td style="padding:6px;border:1px solid var(--line);">セラミクス SiAlON</td><td style="padding:6px;border:1px solid var(--line);">200〜400</td><td style="padding:6px;border:1px solid var(--line);">0.15〜0.3</td><td style="padding:6px;border:1px solid var(--line);">1.0〜3.0</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);">AL7075-T6</td><td style="padding:6px;border:1px solid var(--line);">PCD</td><td style="padding:6px;border:1px solid var(--line);">1000〜3000</td><td style="padding:6px;border:1px solid var(--line);">0.1〜0.5</td><td style="padding:6px;border:1px solid var(--line);">0.5〜5.0</td></tr>
+            </tbody>
+          </table>
+
+          <h4 style="margin-top:14px;">フライス（Milling）</h4>
+          <table style="width:100%;border-collapse:collapse;font-size:12px;margin:8px 0;">
+            <thead>
+              <tr style="background:var(--bg-3);">
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">材料</th>
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">工具</th>
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">Vc [m/min]</th>
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">fz [mm/tooth]</th>
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">ap [mm]</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding:6px;border:1px solid var(--line);">S45C</td><td style="padding:6px;border:1px solid var(--line);">コーティング超硬 5枚刃 φ16</td><td style="padding:6px;border:1px solid var(--line);">180〜300</td><td style="padding:6px;border:1px solid var(--line);">0.06〜0.15</td><td style="padding:6px;border:1px solid var(--line);">1.0〜8.0</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);">SUS304</td><td style="padding:6px;border:1px solid var(--line);">コーティング超硬 4枚刃 φ12</td><td style="padding:6px;border:1px solid var(--line);">80〜160</td><td style="padding:6px;border:1px solid var(--line);">0.05〜0.12</td><td style="padding:6px;border:1px solid var(--line);">0.8〜4.0</td></tr>
+              <tr style="color:var(--ylw);"><td style="padding:6px;border:1px solid var(--line);">Ti-6Al-4V</td><td style="padding:6px;border:1px solid var(--line);">コーティング超硬 4枚刃 φ10 + トロコイダル</td><td style="padding:6px;border:1px solid var(--line);">40〜80</td><td style="padding:6px;border:1px solid var(--line);">0.04〜0.10</td><td style="padding:6px;border:1px solid var(--line);">0.3〜2.0</td></tr>
+              <tr style="color:var(--ylw);"><td style="padding:6px;border:1px solid var(--line);">Inconel 718</td><td style="padding:6px;border:1px solid var(--line);">セラミクス SiAlON 6枚刃</td><td style="padding:6px;border:1px solid var(--line);">400〜800</td><td style="padding:6px;border:1px solid var(--line);">0.08〜0.15</td><td style="padding:6px;border:1px solid var(--line);">0.5〜2.0</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);">AL7075-T6</td><td style="padding:6px;border:1px solid var(--line);">PCD 3枚刃 φ16</td><td style="padding:6px;border:1px solid var(--line);">1500〜4000</td><td style="padding:6px;border:1px solid var(--line);">0.10〜0.30</td><td style="padding:6px;border:1px solid var(--line);">1.0〜10.0</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);">CFRP</td><td style="padding:6px;border:1px solid var(--line);">ダイヤモンドコート 2枚刃 φ8</td><td style="padding:6px;border:1px solid var(--line);">200〜400</td><td style="padding:6px;border:1px solid var(--line);">0.03〜0.08</td><td style="padding:6px;border:1px solid var(--line);">0.2〜2.0</td></tr>
+            </tbody>
+          </table>
+
+          <h4 style="margin-top:14px;">ドリル（Drilling）</h4>
+          <table style="width:100%;border-collapse:collapse;font-size:12px;margin:8px 0;">
+            <thead>
+              <tr style="background:var(--bg-3);">
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">材料</th>
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">工具（径）</th>
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">Vc [m/min]</th>
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">fn [mm/rev]</th>
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">備考</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding:6px;border:1px solid var(--line);">S45C</td><td style="padding:6px;border:1px solid var(--line);">超硬 φ10</td><td style="padding:6px;border:1px solid var(--line);">80〜150</td><td style="padding:6px;border:1px solid var(--line);">0.15〜0.30</td><td style="padding:6px;border:1px solid var(--line);">L/D&gt;5 でステップ推奨</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);">SUS304</td><td style="padding:6px;border:1px solid var(--line);">コーティング超硬 φ10</td><td style="padding:6px;border:1px solid var(--line);">50〜100</td><td style="padding:6px;border:1px solid var(--line);">0.12〜0.22</td><td style="padding:6px;border:1px solid var(--line);">クーラント大流量</td></tr>
+              <tr style="color:var(--ylw);"><td style="padding:6px;border:1px solid var(--line);">Ti-6Al-4V</td><td style="padding:6px;border:1px solid var(--line);">コーティング超硬 φ8</td><td style="padding:6px;border:1px solid var(--line);">25〜50</td><td style="padding:6px;border:1px solid var(--line);">0.08〜0.18</td><td style="padding:6px;border:1px solid var(--line);">内部給油必須、L/D&gt;3 でペック</td></tr>
+              <tr style="color:var(--ylw);"><td style="padding:6px;border:1px solid var(--line);">Inconel 718</td><td style="padding:6px;border:1px solid var(--line);">コーティング超硬 φ6</td><td style="padding:6px;border:1px solid var(--line);">15〜30</td><td style="padding:6px;border:1px solid var(--line);">0.05〜0.12</td><td style="padding:6px;border:1px solid var(--line);">超低速、1穴あたり摩耗追跡</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);">深穴 (S45C, L/D=62)</td><td style="padding:6px;border:1px solid var(--line);">ガンドリル φ8 L=500</td><td style="padding:6px;border:1px solid var(--line);">60〜100</td><td style="padding:6px;border:1px solid var(--line);">0.02〜0.06</td><td style="padding:6px;border:1px solid var(--line);">航空機 燃料ノズル等で使用</td></tr>
+            </tbody>
+          </table>
+
+          <p style="font-size:12px;color:var(--text-2);margin-top:8px;">※ 数値は代表的なレンジで、実機械での最適値は剛性・冷却・要求精度で大きく変わります。実加工に入る前は必ず工具メーカー（Sandvik / Kennametal / 三菱 / OSG / 京セラ等）のカタログで該当工具品番の推奨値を確認してください。</p>
+        `,
+      },
+      {
+        heading: 'なぜこの値になるか — Part A への接続',
+        html: `
+          <p>表を見ると、同じ材料でも工具材種で Vc が桁違いに変わり、材料間でも Ti / Inconel だけ極端に低い、という規則性が見えてきます。これらの数字には Part A で見た物理的根拠があります。</p>
+          <ul>
+            <li><strong>Ti / Inconel が低 Vc</strong>: 第A2章で見た<strong>熱伝導率の低さ</strong>（Ti 22 / Inconel 11 W/(m·K)）→ 切削熱が刃先に集中 → 高速だと工具温度暴走 → 寿命激減</li>
+            <li><strong>Ti が「Vc を下げても fz は維持」</strong>: 第A4章のすべり系の少なさ（HCP=3）→ 加工硬化が早く起こる → fz を下げると硬化層を切り抜けない</li>
+            <li><strong>SUS304 が「薄切込み禁忌」</strong>: 第A4章の加工硬化（Hollomon n ≈ 0.45）→ 表層が硬くなるので、その上を浅く削るより硬化層を貫通させる方が良い</li>
+            <li><strong>Inconel をセラミクスで高速切削できる</strong>: 第A2章の「熱伝導率が低くて熱が逃げない」性質を逆手にとり、<strong>あえて高速で熱を切屑側に集中</strong>させる戦略。セラミクス工具は耐熱性高く、断続切削さえ避ければ可能</li>
+          </ul>
+          <p>切削条件表は「経験則の集積」に見えますが、その背後には材料科学の必然があります。新しい材料に遭遇したときも、Part A の物理から「だいたいこのレンジ」を当てる感覚を養うのが、実務でのアドバンテージになります。</p>
+        `,
+      },
     ],
     terms: [
       { name: '切削速度', anchor: 'Vc', en: 'Cutting Speed (Vc)', def: '刃先とワークの相対速度 [m/min]。加工時間と工具寿命に直結する最重要パラメータ。' },
       { name: '送り', anchor: 'f', en: 'Feed (f)', def: '1回転または1刃あたりに工具が進む距離 [mm/rev または mm/tooth]。' },
       { name: '切込み', anchor: 'ap', en: 'Depth of Cut (ap)', def: '1回の切削で削る深さ [mm]。' },
+      { name: '1刃あたり送り', anchor: 'fz', en: 'Feed per Tooth (fz)', def: 'フライス工具の1枚の刃が1回通り抜ける間にワークが進む量 [mm/tooth]。フライスの主役パラメータ。Vf = fz · z · n。' },
+      { name: '切削幅', anchor: 'ae', en: 'Width of Cut (ae)', def: 'フライスの半径方向の係り幅 [mm]。ae/D（エンゲージ比）で表現することが多い。1.0=溝、0.3=側面、0.1=トロコイダル。' },
+      { name: 'テーブル送り速度', anchor: 'Vf', en: 'Table Feed Rate (Vf)', def: 'フライス加工でテーブル（ワーク）が1分あたり進む距離 [mm/min]。Vf = fz · z · n。' },
+      { name: 'ドリル送り', anchor: 'fn', en: 'Drill Feed (fn)', def: 'ドリルの1回転あたりの軸方向進み [mm/rev]。経験則は工具径の 1〜3%。' },
+      { name: 'L/D 比', en: 'L/D Ratio', def: 'ドリルの穴深さと工具径の比。3 まで標準、3-5 で内部給油、5-10 でペック、10超でガンドリル。' },
+      { name: 'トロコイダル加工', en: 'Trochoidal Milling', def: '工具を円弧軌道で進ませる加工法。ae/D を意図的に小さく保ち、Ti / Inconel の高能率切削で標準。' },
       { name: '推奨切削条件', en: 'Recommended Cutting Conditions', def: '工具メーカーが材料×工具の組み合わせごとに提示している、安全で効率の良い条件の目安。' },
     ],
     further: [
