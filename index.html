@@ -1042,6 +1042,12 @@ body.voice-enabled.voice-mode-summary .voice-summary-note {
   gap: 16px;
 }
 .term-item:last-child { border-bottom: none; }
+.term-item[id] { scroll-margin-top: 96px; }
+.term-item-highlight {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  border-radius: 4px;
+  transition: background-color 1.2s ease-out;
+}
 .term-name {
   font-weight: 700;
   color: var(--text-0);
@@ -3078,11 +3084,11 @@ const CHAPTERS = [
       },
     ],
     terms: [
-      { name: '原子', en: 'Atom', def: '物質の最小単位。中央の原子核（陽子+中性子）と、その周りの電子からなる。直径約 0.1 nm。' },
+      { name: '原子', anchor: 'atom', en: 'Atom', def: '物質の最小単位。中央の原子核（陽子+中性子）と、その周りの電子からなる。直径約 0.1 nm。' },
       { name: '陽子', en: 'Proton', def: '正電荷を持つ核子。陽子数=原子番号 Z で元素が決まる。' },
       { name: '中性子', en: 'Neutron', def: '電荷なしの核子。同じ元素でも中性子数が異なれば同位体になる。' },
       { name: '電子', en: 'Electron', def: '負電荷を持つ素粒子。質量は陽子の 1/1836。エネルギー準位に従って殻・軌道に分布する。' },
-      { name: '価電子', en: 'Valence Electron', def: '最外殻の電子。化学結合・電気伝導・磁性すべての主役。' },
+      { name: '価電子', anchor: 'valence', en: 'Valence Electron', def: '最外殻の電子。化学結合・電気伝導・磁性すべての主役。' },
       { name: '同位体', en: 'Isotope', def: '原子番号 Z は同じだが中性子数が異なる原子。化学的性質はほぼ同じ。' },
       { name: '結合エネルギー', en: 'Bond Energy', def: '原子間結合を切るのに必要なエネルギー（kJ/mol）。融点・硬度・切削抵抗と相関する。' },
       { name: '金属結合', en: 'Metallic Bond', def: '価電子を全原子で共有する結合様式。金属の延性・電気伝導・切削加工性の根源。詳細は第A2章。' },
@@ -3181,11 +3187,11 @@ const CHAPTERS = [
       },
     ],
     terms: [
-      { name: '金属結合', en: 'Metallic Bond', def: '価電子を全原子で共有する結合。正の金属イオン格子と負の電子雲が静電引力で結ばれる。' },
+      { name: '金属結合', anchor: 'metallic-bond', en: 'Metallic Bond', def: '価電子を全原子で共有する結合。正の金属イオン格子と負の電子雲が静電引力で結ばれる。' },
       { name: '自由電子', en: 'Free Electron / Conduction Electron', def: '特定の原子に属さず格子全体を動き回る価電子。電気・熱伝導の主役。' },
       { name: '電子の海', en: 'Electron Sea', def: 'Drude が提唱した金属結合の古典モデル。価電子を「海」、金属イオンを「島」に喩える。' },
       { name: 'バンド理論', en: 'Band Theory', def: '電子の海の量子力学的精密化。金属/半導体/絶縁体の差をエネルギーバンドの占有で説明する。' },
-      { name: '熱伝導率', en: 'Thermal Conductivity', def: '単位時間・単位面積・単位温度勾配あたりの熱流量 (W/(m·K))。金属では自由電子が主担。' },
+      { name: '熱伝導率', anchor: 'thermal-conductivity', en: 'Thermal Conductivity', def: '単位時間・単位面積・単位温度勾配あたりの熱流量 (W/(m·K))。金属では自由電子が主担。' },
       { name: '延性', en: 'Ductility', def: '引っ張ったときに大きく変形できる性質。金属結合の方向性のなさが起源。' },
       { name: '展性', en: 'Malleability', def: '叩いたとき広く伸びる性質。延性と同様、金属結合の特性。' },
     ],
@@ -3294,9 +3300,9 @@ const CHAPTERS = [
       { name: '結晶', en: 'Crystal', def: '原子が規則正しく3次元周期的に並んだ固体。' },
       { name: '単位格子', en: 'Unit Cell', def: '結晶を構成する最小の繰り返し単位。3次元方向に積み重ねれば全体が再現できる。' },
       { name: '格子定数', en: 'Lattice Constant', def: '単位格子の辺の長さ。記号 a。鉄なら 0.287 nm 程度。' },
-      { name: 'BCC', en: 'Body-Centered Cubic', def: '体心立方格子。立方体の8頂点+中心に原子。配位数8、充填率68%。α-Fe, Cr, W等。' },
-      { name: 'FCC', en: 'Face-Centered Cubic', def: '面心立方格子。立方体の8頂点+6面の中心に原子。配位数12、充填率74%（最密）。γ-Fe, Al, Cu等。' },
-      { name: 'HCP', en: 'Hexagonal Close-Packed', def: '六方最密充填格子。六角柱状の配置で配位数12、充填率74%。Ti, Mg, Zn等。すべり系が少なく延性に乏しい。' },
+      { name: 'BCC', anchor: 'bcc', en: 'Body-Centered Cubic', def: '体心立方格子。立方体の8頂点+中心に原子。配位数8、充填率68%。α-Fe, Cr, W等。' },
+      { name: 'FCC', anchor: 'fcc', en: 'Face-Centered Cubic', def: '面心立方格子。立方体の8頂点+6面の中心に原子。配位数12、充填率74%（最密）。γ-Fe, Al, Cu等。' },
+      { name: 'HCP', anchor: 'hcp', en: 'Hexagonal Close-Packed', def: '六方最密充填格子。六角柱状の配置で配位数12、充填率74%。Ti, Mg, Zn等。すべり系が少なく延性に乏しい。' },
       { name: '同素変態', en: 'Allotropic Transformation', def: '同じ元素が温度によって結晶構造を変える現象。鉄のα↔γ↔δが代表例。熱処理の物理的根拠。' },
       { name: '結晶粒', en: 'Grain', def: '多結晶を構成する微小単結晶領域。典型サイズ 10〜100 μm。' },
       { name: '粒界', en: 'Grain Boundary', def: '結晶粒同士の境界面。転位移動を阻害して強度を上げる（Hall-Petch則）。' },
@@ -3386,6 +3392,25 @@ const CHAPTERS = [
             <li>対策: <strong>薄い切込みは避ける</strong>。硬化層の中だけで切削するのではなく、硬化層を貫いて新しい母材まで削り込む</li>
           </ul>
           <p>切削条件設計の鉄則「ステンレスやインコネルでは切込みを浅くしすぎない」の物理的根拠が、この加工硬化現象です。</p>
+          <p>加工硬化の<strong>強さ</strong>は <strong>Hollomon の式</strong> σ = K·ε<sup>n</sup> の指数 <strong>n 値（加工硬化指数）</strong>で定量化されます。n が大きいほど、変形すればするほど硬くなりやすい材料です。Part B 第6章で出てくる<strong>Kienzle 式</strong>（Fc = Kc·h<sup>1−mc</sup>·b）の指数 <strong>mc</strong> はこの n と直接対応します（mc ≈ n、定義の違いで多少差はある）。</p>
+          <table style="width:100%;border-collapse:collapse;font-size:13px;margin:12px 0;">
+            <thead>
+              <tr style="background:var(--bg-3);">
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">材料</th>
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">Hollomon n（参考）</th>
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">Kienzle mc（典型値）</th>
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">解釈</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding:8px;border:1px solid var(--line);">AL7075-T6</td><td style="padding:8px;border:1px solid var(--line);">~ 0.10</td><td style="padding:8px;border:1px solid var(--line);">~ 0.18</td><td style="padding:8px;border:1px solid var(--line);">析出強化済、加工硬化余地少</td></tr>
+              <tr><td style="padding:8px;border:1px solid var(--line);">S45C（中炭素鋼）</td><td style="padding:8px;border:1px solid var(--line);">~ 0.18</td><td style="padding:8px;border:1px solid var(--line);">~ 0.17</td><td style="padding:8px;border:1px solid var(--line);">標準</td></tr>
+              <tr><td style="padding:8px;border:1px solid var(--line);">SUS316L</td><td style="padding:8px;border:1px solid var(--line);">~ 0.40</td><td style="padding:8px;border:1px solid var(--line);">~ 0.21</td><td style="padding:8px;border:1px solid var(--line);">FCC + Cr/Ni/Mo 固溶 → 強い加工硬化</td></tr>
+              <tr style="background:var(--bg-2);"><td style="padding:8px;border:1px solid var(--line);"><strong>SUS304</strong></td><td style="padding:8px;border:1px solid var(--line);"><strong>~ 0.45</strong></td><td style="padding:8px;border:1px solid var(--line);">~ 0.21</td><td style="padding:8px;border:1px solid var(--line);">最強クラスの加工硬化（薄切込み禁忌の根拠）</td></tr>
+              <tr><td style="padding:8px;border:1px solid var(--line);">Inconel 718</td><td style="padding:8px;border:1px solid var(--line);">~ 0.30</td><td style="padding:8px;border:1px solid var(--line);">~ 0.25</td><td style="padding:8px;border:1px solid var(--line);">析出物 + 加工硬化のダブルパンチ</td></tr>
+            </tbody>
+          </table>
+          <p style="font-size:12px;color:var(--text-2);">注: n 値は引張試験条件、mc 値は切削条件で得られるため、材料が同じでも数値が一致しないのが普通です。重要なのは<strong>桁感と材料間の順序関係</strong>。</p>
         `,
       },
       {
@@ -3408,12 +3433,12 @@ const CHAPTERS = [
       },
     ],
     terms: [
-      { name: '転位', en: 'Dislocation', def: '結晶中の線欠陥。塑性変形の主役。1934年に Orowan, Polanyi, Taylor が独立に提唱。' },
+      { name: '転位', anchor: 'dislocation', en: 'Dislocation', def: '結晶中の線欠陥。塑性変形の主役。1934年に Orowan, Polanyi, Taylor が独立に提唱。' },
       { name: '刃状転位', en: 'Edge Dislocation', def: '結晶半面が余分に挿入された形の転位。記号 ⊥。' },
       { name: 'らせん転位', en: 'Screw Dislocation', def: '結晶を螺旋状にずらした形の転位。' },
       { name: 'すべり面', en: 'Slip Plane', def: '転位が動ける面。原子が最も密に詰まった面が選ばれる。FCC は {111}。' },
-      { name: 'すべり系', en: 'Slip System', def: 'すべり面とすべり方向の組み合わせ。FCC=12, BCC=48, HCP=3 が代表的。' },
-      { name: '加工硬化', en: 'Work Hardening / Strain Hardening', def: '変形によって転位密度が増え、互いに絡まって動けなくなる現象。降伏応力が上昇する。' },
+      { name: 'すべり系', anchor: 'slip-system', en: 'Slip System', def: 'すべり面とすべり方向の組み合わせ。FCC=12, BCC=48, HCP=3 が代表的。' },
+      { name: '加工硬化', anchor: 'work-hardening', en: 'Work Hardening / Strain Hardening', def: '変形によって転位密度が増え、互いに絡まって動けなくなる現象。降伏応力が上昇する。' },
       { name: '双晶変形', en: 'Twinning', def: 'すべり以外の塑性変形機構。HCP 金属で重要。' },
       { name: '転位密度', en: 'Dislocation Density', def: '単位体積あたりの転位線の総長 (m/m³ = m⁻²)。焼鈍材 10⁸-10¹⁰、強加工材 10¹⁵-10¹⁶。' },
     ],
@@ -3487,6 +3512,7 @@ const CHAPTERS = [
             <li>これがマルテンサイト。極めて硬く（HV 700〜900）、脆い</li>
           </ol>
           <p>焼入れままのマルテンサイトは脆すぎるため、150〜650°C で<strong>焼戻し（tempering）</strong>して靭性を回復させます。</p>
+          <p>「どれくらい速く冷やせばマルテンサイトになるか」を示すのが<strong>CCT 曲線（Continuous Cooling Transformation）</strong>です。横軸に時間（対数）、縦軸に温度を取り、各冷却速度で得られる相（マルテンサイト / ベイナイト / フェライト+パーライト）の境界を描きます。CCT は鋼種ごとに異なり、合金元素を入れると曲線が右にシフトします（=ゆっくり冷やしてもマルテンサイトになる、これを「焼入れ性が良い」と呼ぶ）。SCM 鋼や工具鋼の高い焼入れ性はこのメカニズムです。</p>
           <p>切削加工との接点: マルテンサイト材は工具寿命を激減させる代表格です。SCM 鋼や工具鋼の切削、特にプリハードン材（焼入れ済み）の加工では、CBN や セラミクス工具を使って<strong>削るというより擦り取る</strong>領域に入ります。</p>
         `,
       },
@@ -3527,13 +3553,13 @@ const CHAPTERS = [
       { name: '合金', en: 'Alloy', def: '純金属に他の元素を加えて作る金属。' },
       { name: '固溶体', en: 'Solid Solution', def: '母相結晶中に別元素が混ざり込んだ状態。置換型と侵入型がある。' },
       { name: '固溶強化', en: 'Solid Solution Strengthening', def: '固溶した原子が格子歪みを作り、転位の動きを邪魔して強度を上げる現象。' },
-      { name: '状態図', en: 'Phase Diagram', def: '温度・組成の関数として、合金が安定にとる相を示した図。' },
+      { name: '状態図', anchor: 'phase-diagram', en: 'Phase Diagram', def: '温度・組成の関数として、合金が安定にとる相を示した図。' },
       { name: 'フェライト', en: 'Ferrite (α-Fe)', def: 'BCC 構造の鉄相。常温安定、C をほとんど溶かさない（最大 0.02%）。柔らかく削りやすい。' },
       { name: 'オーステナイト', en: 'Austenite (γ-Fe)', def: 'FCC 構造の鉄相。727〜1394°C で安定、C を最大 2.0% 溶かす。SUS304 は常温でこの構造。' },
       { name: 'パーライト', en: 'Pearlite', def: 'フェライトとセメンタイトが層状に並んだ組織。共析鋼の典型。' },
       { name: 'セメンタイト', en: 'Cementite (Fe₃C)', def: '鉄炭化物。HV ~ 800 と非常に硬く、工具を激しく摩耗させる。' },
-      { name: 'マルテンサイト', en: 'Martensite', def: '急冷で生じる BCT 構造の準安定相。HV 700〜900 と超硬。焼入れの主役。' },
-      { name: '析出強化', en: 'Precipitation Hardening', def: '微細な硬い析出物が母相中に分散して転位を止める強化機構。Al合金、Ni基超合金の主強化機構。' },
+      { name: 'マルテンサイト', anchor: 'martensite', en: 'Martensite', def: '急冷で生じる BCT 構造の準安定相。HV 700〜900 と超硬。焼入れの主役。' },
+      { name: '析出強化', anchor: 'precipitation-hardening', en: 'Precipitation Hardening', def: '微細な硬い析出物が母相中に分散して転位を止める強化機構。Al合金、Ni基超合金の主強化機構。' },
       { name: '時効処理', en: 'Aging Treatment', def: '固溶状態から低温で長時間保持し、微細析出を制御する熱処理。' },
     ],
     further: [
@@ -3679,8 +3705,8 @@ const CHAPTERS = [
       { name: '二次せん断帯', en: 'Secondary Shear Zone (SSZ)', def: '工具すくい面と切屑界面の摩擦による変形領域。工具刃先温度を直接決める。' },
       { name: '歪み速度感受性', en: 'Strain Rate Sensitivity', def: '歪み速度が高いほど降伏応力が上がる性質。Johnson-Cook 第2項で表現。' },
       { name: '熱軟化', en: 'Thermal Softening', def: '温度上昇で降伏応力が下がる現象。Johnson-Cook 第3項。' },
-      { name: 'Johnson-Cook 構成式', en: 'Johnson-Cook Constitutive Equation', def: '加工硬化・歪み速度・熱軟化を含む応力-歪み関係式。1983年に提唱。FEM 切削解析の標準。' },
-      { name: '断熱せん断帯', en: 'Adiabatic Shear Band (ASB)', def: '熱が逃げる前に局所軟化が起きて変形が集中する領域。チタン・インコネルの鋸歯状切屑の原因。' },
+      { name: 'Johnson-Cook 構成式', anchor: 'johnson-cook', en: 'Johnson-Cook Constitutive Equation', def: '加工硬化・歪み速度・熱軟化を含む応力-歪み関係式。1983年に提唱。FEM 切削解析の標準。' },
+      { name: '断熱せん断帯', anchor: 'shear-band', en: 'Adiabatic Shear Band (ASB)', def: '熱が逃げる前に局所軟化が起きて変形が集中する領域。チタン・インコネルの鋸歯状切屑の原因。' },
       { name: '鋸歯状切屑', en: 'Segmented / Sawtooth Chip', def: '断熱せん断によって周期的に分断される切屑。Ti-6Al-4V の高速切削で典型。' },
       { name: 'SHPB 試験', en: 'Split Hopkinson Pressure Bar', def: 'Johnson-Cook パラメータ同定の標準手法。歪み速度 10²〜10⁴ /s で材料を試験する。' },
     ],
@@ -3873,9 +3899,9 @@ const CHAPTERS = [
       },
     ],
     terms: [
-      { name: '切削速度', en: 'Cutting Speed (Vc)', def: '刃先とワークの相対速度 [m/min]。加工時間と工具寿命に直結する最重要パラメータ。' },
-      { name: '送り', en: 'Feed (f)', def: '1回転または1刃あたりに工具が進む距離 [mm/rev または mm/tooth]。' },
-      { name: '切込み', en: 'Depth of Cut (ap)', def: '1回の切削で削る深さ [mm]。' },
+      { name: '切削速度', anchor: 'Vc', en: 'Cutting Speed (Vc)', def: '刃先とワークの相対速度 [m/min]。加工時間と工具寿命に直結する最重要パラメータ。' },
+      { name: '送り', anchor: 'f', en: 'Feed (f)', def: '1回転または1刃あたりに工具が進む距離 [mm/rev または mm/tooth]。' },
+      { name: '切込み', anchor: 'ap', en: 'Depth of Cut (ap)', def: '1回の切削で削る深さ [mm]。' },
       { name: '推奨切削条件', en: 'Recommended Cutting Conditions', def: '工具メーカーが材料×工具の組み合わせごとに提示している、安全で効率の良い条件の目安。' },
     ],
     further: [
@@ -4060,6 +4086,7 @@ const CHAPTERS = [
     ],
     terms: [
       { name: '切削抵抗', en: 'Cutting Force', def: '切削中に工具にかかる力。3方向の分力に分解して扱う。' },
+      { name: '比切削抵抗', anchor: 'Kc', en: 'Specific Cutting Force (Kc)', def: '単位切屑断面積あたりの主分力 [N/mm²]。Kienzle 式 Fc = Kc·h^(1−mc)·b の係数。材料ごとの代表値: S45C 2100, SUS304 2600, Inconel 718 2900。' },
       { name: 'せん断面', en: 'Shear Plane', def: '切削中、金属がせん断変形を起こして切りくずに変わる面。' },
       { name: '連続型切りくず', en: 'Continuous Chip', def: '帯状に長く伸びる切りくず。延性の高い金属（鋼、アルミ）で発生。' },
       { name: '工具摩耗', en: 'Tool Wear', def: '切削により工具が消耗する現象。複数のメカニズムが同時に進行する。' },
@@ -4187,8 +4214,8 @@ const CHAPTERS = [
     ],
     terms: [
       { name: '工具寿命', en: 'Tool Life', def: '工具が切削に使えなくなるまでの時間。摩耗量や加工品質で判定。' },
-      { name: '逃げ面摩耗', en: 'Flank Wear', def: '工具の逃げ面に生じる摩耗。工具寿命の主要な指標。' },
-      { name: 'テイラーの工具寿命式', en: 'Taylor\'s Tool Life Equation', def: '切削速度と工具寿命の関係を表す経験式 VT^n = C。' },
+      { name: '逃げ面摩耗', anchor: 'VB', en: 'Flank Wear (VB)', def: '工具の逃げ面に生じる摩耗。工具寿命の主要な指標。ISO 3685 の標準限界は仕上げ 0.3 mm、荒加工 0.6 mm。' },
+      { name: 'テイラーの工具寿命式', anchor: 'Taylor', en: "Taylor's Tool Life Equation", def: '切削速度 Vc と工具寿命 T の関係を表す経験式 Vc·T^n = C。n は工具材種依存（HSS 0.1, 超硬 0.22, セラミクス 0.45, CBN 0.5, PCD 0.6）。' },
       { name: 'チッピング', en: 'Chipping', def: '刃先が微小に欠ける現象。切削負荷の急変で発生。' },
     ],
     further: [
@@ -4258,7 +4285,7 @@ const CHAPTERS = [
     ],
     terms: [
       { name: '公差', en: 'Tolerance', def: '寸法や形状に許される誤差の範囲。図面で指定される。' },
-      { name: '表面粗さ', en: 'Surface Roughness', def: '表面の微小な凹凸の大きさ。Ra や Rz といった指標で数値化する。' },
+      { name: '表面粗さ', anchor: 'Ra', en: 'Surface Roughness (Ra / Rz)', def: '表面の微小な凹凸の大きさ。ISO 4287 に基づき Ra（算術平均粗さ）や Rz（最大高さ）で数値化。旋削の理論式: Ra ≈ f² / (32·r_ε)。' },
       { name: '算術平均粗さ (Ra)', en: 'Arithmetic Mean Roughness', def: '表面の凹凸を平均化した指標。もっとも一般的に使われる。単位は μm。' },
       { name: '仕上げ加工', en: 'Finishing', def: '精度と表面を出すための最終切削工程。荒加工の後に行う。' },
     ],
@@ -4341,13 +4368,232 @@ const CHAPTERS = [
       { name: '5軸加工', en: '5-axis Machining', def: 'X/Y/Z 3軸 + 回転2軸を同時制御する加工。複雑曲面に不可欠。' },
       { name: 'NADCAP', en: 'National Aerospace and Defense Contractors Accreditation Program', def: '航空宇宙産業の特殊工程に関する国際認証制度。' },
       { name: 'AS9100', en: 'AS9100 Standard', def: '航空宇宙業界の品質マネジメントシステム国際規格。' },
-      { name: 'びびり振動', en: 'Chatter Vibration', def: '切削中に発生する自励振動。加工品質を著しく悪化させる。' },
+      { name: 'びびり振動', anchor: 'chatter', en: 'Chatter Vibration', def: '切削中に発生する自励振動。加工品質を著しく悪化させる。再生型と強制型があり、対策は SLD 参照。' },
+      { name: 'Stability Lobe Diagram', anchor: 'SLD', en: 'Stability Lobe Diagram', def: '主軸回転数と許容切込み幅 blim の関係図。Altintas 2012 の単一 DOF モデル blim = −1 / (2·Kc·z·Re{Φ(ω_c)}) が基礎。安定域と不安定（びびり）域の境界を示す。' },
     ],
     further: [
       '日本機械学会「生産システム部門」、精密工学会などの学会資料',
       'CIRP Annals（国際生産工学アカデミー年報）が切削研究の最高峰',
       '「Machining Dynamics」（Altintas著）：切削動力学の定番教科書（英語）',
       '経済産業省・NEDO の航空機産業レポートに業界動向',
+    ],
+  },
+
+  // ===========================================================================
+  // Part C: 研究の最前線 — 実例と原典への導線
+  // Matlens docs/research/ および CIRP Annals 等の一次資料へのマップ。
+  // 個別論文名は挙げず、研究グループ・機関・ジャーナル単位で示す
+  // （論文タイトルの捏造リスクを避けるため）。
+  // ===========================================================================
+  {
+    id: 'c1',
+    num: 'C1',
+    title: '金属加工研究の実例集',
+    summary: '切削工学の研究地図。国際/国内の主要グループ、5大研究テーマ、産業応用、一次資料への導線。',
+    voiceSummary: '切削加工は職人技のイメージがありますが、実際には国際的な研究分野です。CIRP、UBCのAltintasグループ、サンドビックやケンナメタルのR&Dなどが主要プレイヤーです。主要研究テーマは、びびり振動制御、工具寿命予測AI、難削材高能率加工、切削シミュレーション、5軸制御の5つ。航空エンジン、自動車、医療用インプラントが代表的な応用先です。',
+    readTime: '9分',
+    hasSim: false,
+    lead: 'Part A では切削加工の物理的な土台を、Part B では実用の切削知識を扱いました。最後に Part C では、この分野の「研究の最前線」を俯瞰します。学術論文・一次資料への導線を示すことで、読者が「職人技」ではなく「科学」として切削を見続けられるよう、地図を提供するのが目的です。',
+    sections: [
+      {
+        heading: '切削研究の地形図',
+        html: `
+          <p>切削加工は、一見すると「古い職人技」の世界に見えますが、実際は <strong>国際的で活発な研究分野</strong>です。研究拠点は概ね次の3層に分かれます。</p>
+          <ul>
+            <li><strong>国際学会・ジャーナル</strong>: CIRP（国際生産工学アカデミー）、J Mater Process Technol、Int J Mach Tools Manuf</li>
+            <li><strong>大学研究グループ</strong>: 理論・実験・シミュレーションの源泉</li>
+            <li><strong>企業 R&D</strong>: 工具メーカー、工作機械メーカー、航空エンジンメーカー</li>
+          </ul>
+          <p>以下に代表的な拠点を挙げます（網羅ではなく、初学者が名前を知っておくと有益な範囲）。</p>
+          <h4 style="margin-top:16px;">海外の主要研究グループ（大学系）</h4>
+          <ul>
+            <li><strong>UBC, Yusuf Altintas 教授グループ</strong>（カナダ）— 切削動力学の世界的権威。Stability Lobe Diagram、仮想加工シミュレーション、モーダル同定。代表著書『Manufacturing Automation』（2012, 2ed）は本分野のバイブル</li>
+            <li><strong>University of Michigan, Jun Ni 教授グループ</strong>（米国）— 精密加工、機械学習×切削</li>
+            <li><strong>RWTH Aachen, WZL 研究所</strong>（ドイツ）— 欧州最大級の切削研究機関、製造業全般</li>
+            <li><strong>École Centrale de Nantes / LAMIH</strong>（仏）— 難削材切削、FEM</li>
+            <li><strong>University of Sheffield AMRC</strong>（英）— 航空宇宙加工、産学連携</li>
+          </ul>
+          <h4 style="margin-top:16px;">国内の主要研究グループ</h4>
+          <ul>
+            <li><strong>神戸大学 佐藤研</strong>、<strong>名古屋大学 鈴木研</strong>、<strong>東京農工大学 帯川研</strong> — 切削工学・工具摩耗・精密加工</li>
+            <li><strong>京都大学 松原研</strong>、<strong>大阪大学 榎本研</strong> — 難削材加工</li>
+            <li><strong>精密工学会</strong>、<strong>日本機械学会 生産システム部門</strong>、<strong>日本塑性加工学会</strong>が主な発表の場</li>
+          </ul>
+          <h4 style="margin-top:16px;">企業 R&D</h4>
+          <ul>
+            <li><strong>工具メーカー</strong>: Sandvik Coromant（瑞）、Kennametal（米）、Iscar（以）、三菱マテリアル、オーエスジー、住友電工、タンガロイ、京セラ</li>
+            <li><strong>工作機械メーカー</strong>: DMG Mori、Mazak、Okuma、牧野フライス</li>
+            <li><strong>航空エンジン</strong>: GE Aviation、Pratt & Whitney、Rolls-Royce、IHI、川崎重工</li>
+          </ul>
+          <p style="margin-top:12px;font-size:12px;color:var(--text-2);">※ 名前は 2024-2026 時点の情報。教授が異動したり研究室が改組されたりするので、最新情報は各機関の公式サイトで確認してください。</p>
+        `,
+      },
+      {
+        heading: '5 大研究テーマ',
+        html: `
+          <p>現代の切削研究は、大雑把に次の 5 テーマに集約できます。各テーマがどの章の物理と接続するかも併記します。</p>
+
+          <h4 style="margin-top:16px;">1. びびり振動制御（Chatter Suppression）</h4>
+          <p>自励振動は加工精度と工具寿命の宿敵。1958 年の Tlusty の再生型びびり理論を起点に、<strong>Stability Lobe Diagram（SLD）</strong>で安定領域を予測し、主軸回転数や切込みを選ぶ手法が発達しました。</p>
+          <ul>
+            <li>接続章: 第10章（航空機部品 — びびり振動）、第A6章（Johnson-Cook）</li>
+            <li>最近の研究: AI によるリアルタイム SLD 更新、可変ピッチ工具、Spindle Speed Variation</li>
+          </ul>
+
+          <h4 style="margin-top:16px;">2. 工具寿命予測と機械学習</h4>
+          <p>Taylor 式（1907 年）は 100 年以上使われ続けていますが、実加工では工具材種・被削材ロット・冷却条件の組み合わせが膨大で、単純な経験式では予測精度が頭打ち。<strong>振動・音響・主軸電流</strong>のセンサデータを<strong>機械学習</strong>で処理し、リアルタイム工具摩耗推定するアプローチが 2010 年代以降急成長。</p>
+          <ul>
+            <li>接続章: 第8章（工具摩耗と工具寿命）、第A5章（析出強化と摩耗機構）</li>
+            <li>公開データセット: NASA PCoE、NIST Smart Manufacturing Systems Test Bed</li>
+          </ul>
+
+          <h4 style="margin-top:16px;">3. 難削材の高能率加工</h4>
+          <p>チタン・インコネル・複合材を「速く・きれいに・長寿命で」削る研究。近年の主要アプローチ:</p>
+          <ul>
+            <li><strong>クライオ加工</strong>: LN₂ や CO₂ を刃先に吹き付け、Ti の熱問題を回避</li>
+            <li><strong>UAM（超音波援用加工）</strong>: 楕円振動切削。連続接触を避けて工具摩耗を 1/5 以下に</li>
+            <li><strong>レーザー支援切削（LAM）</strong>: レーザーで被削材を予熱、軟化して削る</li>
+            <li><strong>高圧クーラント（High-Pressure Cooling）</strong>: 70 bar 以上の高圧で切屑を破断</li>
+            <li>接続章: 第7章（冷却液）、第8章（工具摩耗）、第A2章（熱伝導）、第A6章（切屑形態）</li>
+          </ul>
+
+          <h4 style="margin-top:16px;">4. 切削シミュレーション（FEM / CFD）</h4>
+          <p>実験できない領域（せん断帯内部温度、切屑形成過程、工具内応力）を数値で可視化。主要ソフトウェア:</p>
+          <ul>
+            <li><strong>DEFORM, AdvantEdge</strong>（Third Wave Systems）— 切削特化 FEM</li>
+            <li><strong>Abaqus/Explicit</strong>, <strong>LS-DYNA</strong> — 汎用動解析</li>
+            <li>いずれも Johnson-Cook 構成式（第A6章）を中核に使う</li>
+            <li>CFD 側では冷却液の流れ・熱伝達が主課題（本アプリ第7章のシミュレーターはこの系統）</li>
+            <li>接続章: 第A6章（Johnson-Cook）、第6章（切削抵抗と熱）、第7章（冷却液）</li>
+          </ul>
+
+          <h4 style="margin-top:16px;">5. 5 軸加工とツールパス最適化</h4>
+          <p>航空機のブレードやインペラなどの複雑曲面加工では、<strong>5 軸同時制御</strong>と<strong>CAM の自動化</strong>が必須。研究テーマ:</p>
+          <ul>
+            <li>ツールパスの幾何学的最適化（最短・最小変動）</li>
+            <li>姿勢依存の切削動力学（同じ Vc でも工具姿勢で挙動が変わる）</li>
+            <li>干渉回避アルゴリズム、ポストプロセッサ検証</li>
+            <li>接続章: 第10章（航空機部品）、本章末尾の Matlens 連携セクション</li>
+          </ul>
+        `,
+      },
+      {
+        heading: '産業応用の実例',
+        html: `
+          <h4>航空エンジン部品</h4>
+          <p>切削加工の技術的最前線。代表的な加工対象:</p>
+          <ul>
+            <li><strong>タービンブレード</strong>（Inconel 718, René 41）: 5 軸同時加工、仕上げに EDM や研削を併用</li>
+            <li><strong>インペラ・ディスク</strong>（Ti-6Al-4V, Ti-6242）: 深いポケット、薄肉、びびり対策が必須</li>
+            <li><strong>燃焼器ライナー</strong>（Hastelloy X）: 薄肉円筒、変形制御が課題</li>
+          </ul>
+
+          <h4 style="margin-top:16px;">自動車エンジン部品</h4>
+          <ul>
+            <li><strong>シリンダーブロック</strong>（FC250, AL合金）: 大量生産、タクトタイム短縮が勝負</li>
+            <li><strong>クランクシャフト</strong>（S53C 相当鋼）: 高剛性旋削、びびり抑制</li>
+            <li><strong>カムシャフト</strong>（SCM 系焼入れ）: CBN 工具、硬旋削の代表格</li>
+          </ul>
+
+          <h4 style="margin-top:16px;">医療用インプラント</h4>
+          <ul>
+            <li><strong>人工股関節・膝関節</strong>（Ti-6Al-4V, Co-Cr 合金）: 表面粗さと生体適合性の両立</li>
+            <li><strong>歯科インプラント</strong>（純 Ti）: 微小径、精密旋削</li>
+            <li><strong>骨接合ネジ</strong>（Ti-6Al-4V ELI）: 量産と清浄度</li>
+          </ul>
+
+          <h4 style="margin-top:16px;">半導体製造装置部品</h4>
+          <ul>
+            <li><strong>チャンバー壁</strong>（Al6061, SUS316L 電解研磨）: 真空シール面の精度</li>
+            <li><strong>ESC（静電チャック）内部構造</strong>: AlN, SiC などのセラミクス加工（研削主体）</li>
+          </ul>
+        `,
+      },
+      {
+        heading: 'Matlens の研究メモへの接続',
+        html: `
+          <p>本アプリと対になる業務 / 研究アプリ<strong>Matlens</strong>（<a href="https://github.com/BoxPistols/Matlens" target="_blank" rel="noopener">github.com/BoxPistols/Matlens</a>）には、さらに踏み込んだ研究メモが 10 本公開されています。相互参照の規約は本リポの <a href="https://github.com/BoxPistols/machining-fundamentals/blob/main/integration-points.md" target="_blank" rel="noopener">integration-points.md</a> を参照。</p>
+          <table style="width:100%;border-collapse:collapse;font-size:12px;margin:12px 0;">
+            <thead>
+              <tr style="background:var(--bg-3);">
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">Matlens 研究メモ</th>
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">本アプリの接続章</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding:8px;border:1px solid var(--line);">0002 AMS（SAE）航空宇宙材料規格の概観</td><td style="padding:8px;border:1px solid var(--line);">Part B 第4-5章（工具・被削材の基礎）</td></tr>
+              <tr><td style="padding:8px;border:1px solid var(--line);">0003 ISO/IEC 17025 と試験報告書の法定要件</td><td style="padding:8px;border:1px solid var(--line);">Part B 第10章（品質保証）</td></tr>
+              <tr><td style="padding:8px;border:1px solid var(--line);">0004 FAR Part 25 / MMPDS と材料データの統計要件</td><td style="padding:8px;border:1px solid var(--line);">Part A 第A5章（合金と相変態）</td></tr>
+              <tr><td style="padding:8px;border:1px solid var(--line);">0005 NADCAP（航空系試験所認定）</td><td style="padding:8px;border:1px solid var(--line);">Part B 第10章</td></tr>
+              <tr><td style="padding:8px;border:1px solid var(--line);">0008 5 軸同時制御切削の運動学と CNC 制御</td><td style="padding:8px;border:1px solid var(--line);">本章「5 軸加工」テーマ</td></tr>
+              <tr><td style="padding:8px;border:1px solid var(--line);">0009 切削プロセス計測（温度 / 残留応力 / 加工変質層）</td><td style="padding:8px;border:1px solid var(--line);">Part A 第A6章、本章「シミュレーション」テーマ</td></tr>
+              <tr><td style="padding:8px;border:1px solid var(--line);">0010 特殊切削技術（MQL / クライオ / UAM / ハイブリッド）</td><td style="padding:8px;border:1px solid var(--line);">本章「難削材の高能率加工」テーマ</td></tr>
+            </tbody>
+          </table>
+          <p>Matlens 側の各画面からも、本アプリの該当章へ <strong>deep link</strong> で飛べるよう整備中です（URL 規約は integration-points.md §2 参照）。</p>
+        `,
+      },
+      {
+        heading: '一次資料への導線',
+        html: `
+          <h4>主要ジャーナル（定期購読 or 大学図書館経由）</h4>
+          <ul>
+            <li><strong>CIRP Annals — Manufacturing Technology</strong>: 切削研究の最高峰。年1回の総会で発表されるキー論文集</li>
+            <li><strong>International Journal of Machine Tools and Manufacture</strong>（Elsevier）: 切削機械・プロセス全般</li>
+            <li><strong>Journal of Materials Processing Technology</strong>（Elsevier）: 材料加工全般、切削も多い</li>
+            <li><strong>Precision Engineering</strong>（Elsevier）: 精密加工、超精密領域</li>
+            <li><strong>精密工学会誌</strong>、<strong>日本機械学会論文集 C 編</strong>: 国内の主要和文誌</li>
+          </ul>
+
+          <h4 style="margin-top:16px;">教科書の定番（Part A-B-C を通じた推奨リスト）</h4>
+          <ul>
+            <li><strong>Altintas, Y.（2012）"Manufacturing Automation" (2nd ed., Cambridge)</strong> — 切削動力学の決定版</li>
+            <li><strong>Trent, E.M. & Wright, P.K.（2000）"Metal Cutting" (4th ed.)</strong> — 古典的な切削力学教科書</li>
+            <li><strong>Childs, T. et al.（2000）"Metal Machining: Theory and Applications"</strong> — 理論と産業応用の橋渡し</li>
+            <li><strong>Shaw, M.C.（2005）"Metal Cutting Principles" (2nd ed.)</strong> — 米国で標準</li>
+            <li><strong>帯川・松村・鈴木他『切削加工学』</strong>（和書）— 日本語で体系的に学ぶなら</li>
+            <li><strong>日本鉄鋼協会『鉄鋼便覧』</strong> — 被削材側の情報源</li>
+          </ul>
+
+          <h4 style="margin-top:16px;">規格類（JIS / ISO / ASTM / AMS）</h4>
+          <ul>
+            <li><strong>ISO 3685</strong>: Tool-life testing with single-point turning tools — VB 閾値の根拠</li>
+            <li><strong>ISO 4287</strong>: 表面性状 (Ra, Rz 他)</li>
+            <li><strong>ISO 8688</strong>: Tool life testing in milling</li>
+            <li><strong>JIS B 0170</strong>: 工作機械—切削及び研削用語</li>
+            <li><strong>AMS 4928</strong>: Ti-6Al-4V 棒材仕様（航空）</li>
+            <li><strong>AMS 5662</strong>: Inconel 718 棒材仕様（航空）</li>
+            <li><strong>AS9100</strong>: 航空宇宙品質マネジメント</li>
+          </ul>
+          <p style="font-size:12px;color:var(--text-2);margin-top:8px;">※ 規格全文は著作権保護対象。要旨は Matlens 側の docs/research/0002 等を参照。原典は ISO / SAE / 日本規格協会で購入してください。</p>
+
+          <h4 style="margin-top:16px;">公開データセット・シミュレーション素材</h4>
+          <ul>
+            <li><strong>NASA PCoE</strong>: Prognostics Center of Excellence、工具摩耗データ他</li>
+            <li><strong>NIST SMS Test Bed</strong>: Smart Manufacturing Systems のオープンデータ</li>
+            <li><strong>MTConnect</strong>: 工作機械データの標準プロトコル、サンプル実装あり</li>
+          </ul>
+          <p style="margin-top:12px;padding:12px;background:var(--bg-2);border-left:3px solid var(--accent);border-radius:2px;">
+            <strong>本章のキーアイデア</strong><br>
+            切削加工は活発な研究分野であり、CIRP を頂点に世界中の大学・企業が取り組んでいる。本アプリの章で学んだことは、すべて現役の研究テーマに接続する。興味があるテーマを見つけたら、このセクションの一次資料から掘り下げてほしい。Matlens とは integration-points.md の規約で相互接続しているため、両アプリを往復しながら学習を深められる。
+          </p>
+        `,
+      },
+    ],
+    terms: [
+      { name: 'CIRP', en: 'College International pour la Recherche en Productique', def: '国際生産工学アカデミー。1951 年設立、切削・生産工学の最高峰国際学会。年1回の総会で採択された論文は CIRP Annals に掲載。' },
+      { name: 'SLD 研究', en: 'Stability Lobe Research', def: 'びびり振動抑制の中核テーマ。Altintas 2012 が標準モデル、最近は機械学習連携・姿勢依存 SLD も。' },
+      { name: 'クライオ加工', en: 'Cryogenic Machining', def: 'LN₂ または CO₂ を刃先に吹き付けて冷却する加工法。Ti 加工で寿命 2〜3 倍の実績。' },
+      { name: 'UAM', en: 'Ultrasonic Assisted Machining', def: '工具に超音波振動（~ 20-40 kHz）を重畳する加工。連続接触を回避して工具摩耗を低減。楕円振動版は 50% 近い切削抵抗低減の報告。' },
+      { name: 'LAM', en: 'Laser Assisted Machining', def: 'レーザーで被削材を局所予熱する加工。硬材の切削性を向上。' },
+      { name: 'MTConnect', en: 'MTConnect', def: '工作機械のデータ通信標準プロトコル。センサ値・稼働状態を XML/REST で配信。切削 AI 研究の実験基盤。' },
+    ],
+    further: [
+      'CIRP Annals 公式: <code>https://www.sciencedirect.com/journal/cirp-annals</code>',
+      'Altintas Y. (2012) "Manufacturing Automation" 2nd ed., Cambridge University Press（ISBN 978-1107001480）',
+      'Sandvik Coromant Technical Guide（無料 PDF、工具選定の一次資料）',
+      'Matlens 研究メモ: <a href="https://github.com/BoxPistols/Matlens/tree/main/docs/research" target="_blank" rel="noopener">github.com/BoxPistols/Matlens/tree/main/docs/research</a>',
+      '本リポ: <a href="https://github.com/BoxPistols/machining-fundamentals/blob/main/integration-points.md" target="_blank" rel="noopener">integration-points.md</a>（相互参照規約）',
     ],
   },
 ];
@@ -4359,6 +4605,7 @@ const CHAPTERS = [
 const state = {
   view: 'home',      // 'home' | 'chapter' | 'about' | 'sim'
   chapterId: null,
+  chapterAnchor: null, // #/chapter/<id>/<anchor> の anchor 部。Matlens 等からの deep link 用
   doneChapters: loadDone(),
 };
 
@@ -4391,7 +4638,10 @@ function saveDone() {
 const mainEl = document.getElementById('app-main');
 
 function hashFromState() {
-  if (state.view === 'chapter' && state.chapterId != null) return `#/chapter/${state.chapterId}`;
+  if (state.view === 'chapter' && state.chapterId != null) {
+    const base = `#/chapter/${state.chapterId}`;
+    return state.chapterAnchor ? `${base}/${state.chapterAnchor}` : base;
+  }
   if (state.view === 'about') return '#/about';
   if (state.view === 'sim') return '#/sim';
   return '';
@@ -4399,19 +4649,20 @@ function hashFromState() {
 
 function stateFromHash() {
   const h = (location.hash || '').replace(/^#/, '');
-  if (!h || h === '/') return { view: 'home', chapterId: null };
-  const m = h.match(/^\/chapter\/([^/#?]+)/);
+  if (!h || h === '/') return { view: 'home', chapterId: null, chapterAnchor: null };
+  const m = h.match(/^\/chapter\/([^/#?]+)(?:\/([^/#?]+))?/);
   if (m) {
     const raw = decodeURIComponent(m[1]);
     const id = /^\d+$/.test(raw) ? parseInt(raw, 10) : raw;
+    const anchor = m[2] ? decodeURIComponent(m[2]) : null;
     if (CHAPTERS.some(c => String(c.id) === String(id))) {
-      return { view: 'chapter', chapterId: id };
+      return { view: 'chapter', chapterId: id, chapterAnchor: anchor };
     }
-    return { view: 'home', chapterId: null };
+    return { view: 'home', chapterId: null, chapterAnchor: null };
   }
-  if (h === '/about') return { view: 'about', chapterId: null };
-  if (h === '/sim') return { view: 'sim', chapterId: null };
-  return { view: 'home', chapterId: null };
+  if (h === '/about') return { view: 'about', chapterId: null, chapterAnchor: null };
+  if (h === '/sim') return { view: 'sim', chapterId: null, chapterAnchor: null };
+  return { view: 'home', chapterId: null, chapterAnchor: null };
 }
 
 function syncHashToState() {
@@ -4430,6 +4681,7 @@ window.addEventListener('hashchange', () => {
   const next = stateFromHash();
   state.view = next.view;
   state.chapterId = next.chapterId;
+  state.chapterAnchor = next.chapterAnchor;
   render();
 });
 
@@ -4453,6 +4705,17 @@ function render() {
   // replaceState は hashchange を発火しないので suppress 解除は同期的でOK
   _suppressHashChange = false;
 
+  // 章アンカー (#/chapter/<id>/<anchor>) があればその要素までスクロール。
+  // なければ先頭へ。
+  if (state.view === 'chapter' && state.chapterAnchor) {
+    const el = document.getElementById(`term-${state.chapterAnchor}`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'auto', block: 'start' });
+      el.classList.add('term-item-highlight');
+      setTimeout(() => el.classList.remove('term-item-highlight'), 2400);
+      return;
+    }
+  }
   window.scrollTo(0, 0);
 }
 
@@ -4555,8 +4818,10 @@ function renderChapter() {
   if (ch.terms && ch.terms.length > 0) {
     termsHtml = '<div class="terms"><h4>この章で出てきた用語</h4>';
     for (const t of ch.terms) {
+      // anchor フィールドがあれば DOM id を付与 → 外部から deep link 可能
+      const idAttr = t.anchor ? ` id="term-${t.anchor}"` : '';
       termsHtml += `
-        <div class="term-item">
+        <div class="term-item"${idAttr}>
           <div class="term-name">${t.name}<span class="en">${t.en}</span></div>
           <div class="term-def">${t.def}</div>
         </div>
@@ -6249,6 +6514,7 @@ document.addEventListener('click', (e) => {
   const init = stateFromHash();
   state.view = init.view;
   state.chapterId = init.chapterId;
+  state.chapterAnchor = init.chapterAnchor;
 }
 render();
 </script>
