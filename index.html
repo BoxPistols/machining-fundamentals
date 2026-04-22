@@ -1558,6 +1558,555 @@ const CHAPTER_SVGS = {
   },
 
   // =====================================================================
+  // 第A2章: 金属結合と自由電子（金属イオン格子 + 電子の海）
+  // =====================================================================
+  a2: {
+    caption: '<strong>金属結合</strong> — 価電子が特定の原子に属さず、金属イオン格子の間を「自由電子の海」として動き回る。これが電気伝導・熱伝導・延性の共通の根源。',
+    svg: `<svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .panel-ttl { fill: var(--text-0); font-family: 'Noto Sans JP', sans-serif; font-size: 13px; font-weight: 700; }
+    .panel-sub { fill: var(--text-2); font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+    .ion { fill: var(--accent); opacity: 0.85; }
+    .ion-label { fill: var(--bg-1); font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; }
+    .sea { fill: var(--accent); opacity: 0.10; }
+    .e { fill: var(--text-1); }
+    .flow { stroke: var(--text-1); stroke-width: 1; fill: none; opacity: 0.4; marker-end: url(#arrow); }
+    .c-atom { fill: var(--line-hi); opacity: 0.9; }
+    .c-label { fill: var(--bg-1); font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; }
+    .bond { stroke: var(--line-hi); stroke-width: 2.5; }
+    .annot { fill: var(--text-1); font-family: 'Noto Sans JP', sans-serif; font-size: 11px; }
+    .divider { stroke: var(--line); stroke-dasharray: 3 3; }
+  </style>
+
+  <defs>
+    <marker id="arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="var(--text-1)" opacity="0.4"/>
+    </marker>
+  </defs>
+
+  <!-- 左パネル: 金属結合 -->
+  <text class="panel-ttl" x="20" y="26">金属結合 — 電子の海</text>
+  <text class="panel-sub" x="20" y="42">例: 鉄 Fe, アルミ Al, 銅 Cu</text>
+
+  <!-- 電子の海 (背景) -->
+  <rect class="sea" x="20" y="60" width="300" height="240" rx="4"/>
+
+  <!-- 金属イオン 3x3 格子 -->
+  <g>
+    <circle class="ion" cx="80"  cy="110" r="14"/><text class="ion-label" x="80"  y="114" text-anchor="middle">Fe+</text>
+    <circle class="ion" cx="170" cy="110" r="14"/><text class="ion-label" x="170" y="114" text-anchor="middle">Fe+</text>
+    <circle class="ion" cx="260" cy="110" r="14"/><text class="ion-label" x="260" y="114" text-anchor="middle">Fe+</text>
+    <circle class="ion" cx="80"  cy="190" r="14"/><text class="ion-label" x="80"  y="194" text-anchor="middle">Fe+</text>
+    <circle class="ion" cx="170" cy="190" r="14"/><text class="ion-label" x="170" y="194" text-anchor="middle">Fe+</text>
+    <circle class="ion" cx="260" cy="190" r="14"/><text class="ion-label" x="260" y="194" text-anchor="middle">Fe+</text>
+    <circle class="ion" cx="80"  cy="270" r="14"/><text class="ion-label" x="80"  y="274" text-anchor="middle">Fe+</text>
+    <circle class="ion" cx="170" cy="270" r="14"/><text class="ion-label" x="170" y="274" text-anchor="middle">Fe+</text>
+    <circle class="ion" cx="260" cy="270" r="14"/><text class="ion-label" x="260" y="274" text-anchor="middle">Fe+</text>
+  </g>
+
+  <!-- 自由電子 (ランダム分布) -->
+  <g>
+    <circle class="e" cx="50"  cy="80"  r="3"/><circle class="e" cx="120" cy="85"  r="3"/>
+    <circle class="e" cx="215" cy="75"  r="3"/><circle class="e" cx="290" cy="90"  r="3"/>
+    <circle class="e" cx="125" cy="150" r="3"/><circle class="e" cx="215" cy="155" r="3"/>
+    <circle class="e" cx="45"  cy="155" r="3"/><circle class="e" cx="290" cy="145" r="3"/>
+    <circle class="e" cx="125" cy="230" r="3"/><circle class="e" cx="215" cy="225" r="3"/>
+    <circle class="e" cx="50"  cy="235" r="3"/><circle class="e" cx="290" cy="235" r="3"/>
+    <circle class="e" cx="120" cy="290" r="3"/><circle class="e" cx="215" cy="290" r="3"/>
+  </g>
+
+  <!-- 電子の動き (矢印で示す) -->
+  <g>
+    <path class="flow" d="M50,80 Q100,100 125,150"/>
+    <path class="flow" d="M215,75 Q240,130 215,155"/>
+    <path class="flow" d="M290,145 Q270,190 290,235"/>
+  </g>
+
+  <text class="annot" x="30" y="316" style="font-style:italic;">→ 電子が格子間を自由に移動 → 電流・熱が流れる</text>
+
+  <!-- 区切り線 -->
+  <line class="divider" x1="380" y1="60" x2="380" y2="300"/>
+
+  <!-- 右パネル: 共有結合 (対比) -->
+  <text class="panel-ttl" x="410" y="26">共有結合 — 局在化</text>
+  <text class="panel-sub" x="410" y="42">例: ダイヤモンド C-C, Si, SiC</text>
+
+  <!-- ダイヤモンド格子 (簡略) -->
+  <g transform="translate(530, 170)">
+    <!-- 中心原子 -->
+    <circle class="c-atom" cx="0"    cy="0"    r="14"/>
+    <text class="c-label" x="0" y="4" text-anchor="middle">C</text>
+    <!-- 4本の結合 (tetrahedral) -->
+    <line class="bond" x1="0" y1="0" x2="-50" y2="-60"/>
+    <line class="bond" x1="0" y1="0" x2="50"  y2="-60"/>
+    <line class="bond" x1="0" y1="0" x2="-50" y2="60"/>
+    <line class="bond" x1="0" y1="0" x2="50"  y2="60"/>
+    <!-- 4個の近隣原子 -->
+    <circle class="c-atom" cx="-50" cy="-60" r="12"/>
+    <text class="c-label" x="-50" y="-56" text-anchor="middle">C</text>
+    <circle class="c-atom" cx="50"  cy="-60" r="12"/>
+    <text class="c-label" x="50" y="-56" text-anchor="middle">C</text>
+    <circle class="c-atom" cx="-50" cy="60"  r="12"/>
+    <text class="c-label" x="-50" y="64" text-anchor="middle">C</text>
+    <circle class="c-atom" cx="50"  cy="60"  r="12"/>
+    <text class="c-label" x="50" y="64" text-anchor="middle">C</text>
+    <!-- 結合中の電子ペア -->
+    <circle class="e" cx="-25" cy="-30" r="3"/>
+    <circle class="e" cx="-30" cy="-36" r="3"/>
+    <circle class="e" cx="25"  cy="-30" r="3"/>
+    <circle class="e" cx="30"  cy="-36" r="3"/>
+    <circle class="e" cx="-25" cy="30"  r="3"/>
+    <circle class="e" cx="-30" cy="36"  r="3"/>
+    <circle class="e" cx="25"  cy="30"  r="3"/>
+    <circle class="e" cx="30"  cy="36"  r="3"/>
+  </g>
+
+  <text class="annot" x="400" y="316" style="font-style:italic;">→ 電子が特定ペアに固定 → 動かない = 硬いが脆い</text>
+</svg>`,
+  },
+
+  // =====================================================================
+  // 第A3章: 結晶構造（BCC / FCC / HCP の3大金属結晶）
+  // =====================================================================
+  a3: {
+    caption: '金属の主要3結晶構造 — <strong>BCC</strong>(体心立方)、<strong>FCC</strong>(面心立方)、<strong>HCP</strong>(六方最密)。原子配置の違いが、後の章で扱う「すべり系の数」=「変形のしやすさ」=「切削性」を決める。',
+    svg: `<svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .panel-bg { fill: var(--bg-2); stroke: var(--line); stroke-width: 1; rx: 4; }
+    .panel-bg.focus { stroke: var(--accent); stroke-width: 1.5; }
+    .ttl { fill: var(--text-0); font-family: 'Noto Sans JP', sans-serif; font-size: 13px; font-weight: 700; text-anchor: middle; }
+    .ttl.acc { fill: var(--accent); }
+    .sub { fill: var(--text-2); font-family: 'JetBrains Mono', monospace; font-size: 11px; text-anchor: middle; }
+    .lat-front { stroke: var(--line-hi); stroke-width: 1.5; fill: none; }
+    .lat-back  { stroke: var(--line-hi); stroke-width: 1; fill: none; stroke-dasharray: 3 2; opacity: 0.6; }
+    .atom-edge   { fill: var(--text-2); opacity: 0.7; }
+    .atom-center { fill: var(--accent); }
+    .atom-face   { fill: var(--text-1); opacity: 0.85; }
+    .data { fill: var(--text-1); font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+    .data-key { fill: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; }
+  </style>
+
+  <!-- ========== BCC (左) ========== -->
+  <rect class="panel-bg" x="20" y="50" width="220" height="270"/>
+  <text class="ttl" x="130" y="74">BCC</text>
+  <text class="sub" x="130" y="90">Body-Centered Cubic / 体心立方</text>
+
+  <!-- BCC 単位格子 (アイソメ) center=(130, 175) -->
+  <g transform="translate(80, 110)">
+    <!-- 後ろ側エッジ -->
+    <line class="lat-back" x1="20" y1="20" x2="80" y2="0"/>
+    <line class="lat-back" x1="20" y1="20" x2="20" y2="80"/>
+    <line class="lat-back" x1="80" y1="0"  x2="80" y2="60"/>
+    <!-- 前面エッジ -->
+    <line class="lat-front" x1="0" y1="40" x2="60" y2="20"/>
+    <line class="lat-front" x1="0" y1="40" x2="0"  y2="100"/>
+    <line class="lat-front" x1="60" y1="20" x2="60" y2="80"/>
+    <line class="lat-front" x1="0" y1="100" x2="60" y2="80"/>
+    <!-- 接続 -->
+    <line class="lat-front" x1="20" y1="20" x2="0"  y2="40"/>
+    <line class="lat-front" x1="80" y1="0"  x2="60" y2="20"/>
+    <line class="lat-back"  x1="20" y1="80" x2="0"  y2="100"/>
+    <line class="lat-back"  x1="80" y1="60" x2="60" y2="80"/>
+    <line class="lat-back"  x1="20" y1="80" x2="80" y2="60"/>
+    <!-- 角原子 (8個) -->
+    <circle class="atom-edge" cx="20"  cy="20"  r="6"/>
+    <circle class="atom-edge" cx="80"  cy="0"   r="6"/>
+    <circle class="atom-edge" cx="0"   cy="40"  r="6"/>
+    <circle class="atom-edge" cx="60"  cy="20"  r="6"/>
+    <circle class="atom-edge" cx="20"  cy="80"  r="6"/>
+    <circle class="atom-edge" cx="80"  cy="60"  r="6"/>
+    <circle class="atom-edge" cx="0"   cy="100" r="6"/>
+    <circle class="atom-edge" cx="60"  cy="80"  r="6"/>
+    <!-- 中心原子 (1個) -->
+    <circle class="atom-center" cx="30" cy="50" r="8"/>
+  </g>
+
+  <text class="data"     x="36" y="240">配位数:</text>
+  <text class="data-key" x="180" y="240" text-anchor="end">8</text>
+  <text class="data"     x="36" y="258">充填率:</text>
+  <text class="data-key" x="180" y="258" text-anchor="end">68%</text>
+  <text class="data"     x="36" y="276">代表:</text>
+  <text class="data"     x="36" y="294" style="font-size:10px;">α-Fe, Cr, Mo, W, V, Nb</text>
+
+  <!-- ========== FCC (中央, 強調) ========== -->
+  <rect class="panel-bg focus" x="250" y="50" width="220" height="270"/>
+  <text class="ttl acc" x="360" y="74">FCC ★</text>
+  <text class="sub" x="360" y="90">Face-Centered Cubic / 面心立方</text>
+
+  <g transform="translate(310, 110)">
+    <line class="lat-back" x1="20" y1="20" x2="80" y2="0"/>
+    <line class="lat-back" x1="20" y1="20" x2="20" y2="80"/>
+    <line class="lat-back" x1="80" y1="0"  x2="80" y2="60"/>
+    <line class="lat-front" x1="0" y1="40" x2="60" y2="20"/>
+    <line class="lat-front" x1="0" y1="40" x2="0"  y2="100"/>
+    <line class="lat-front" x1="60" y1="20" x2="60" y2="80"/>
+    <line class="lat-front" x1="0" y1="100" x2="60" y2="80"/>
+    <line class="lat-front" x1="20" y1="20" x2="0"  y2="40"/>
+    <line class="lat-front" x1="80" y1="0"  x2="60" y2="20"/>
+    <line class="lat-back"  x1="20" y1="80" x2="0"  y2="100"/>
+    <line class="lat-back"  x1="80" y1="60" x2="60" y2="80"/>
+    <line class="lat-back"  x1="20" y1="80" x2="80" y2="60"/>
+    <!-- 8角原子 -->
+    <circle class="atom-edge" cx="20"  cy="20"  r="6"/>
+    <circle class="atom-edge" cx="80"  cy="0"   r="6"/>
+    <circle class="atom-edge" cx="0"   cy="40"  r="6"/>
+    <circle class="atom-edge" cx="60"  cy="20"  r="6"/>
+    <circle class="atom-edge" cx="20"  cy="80"  r="6"/>
+    <circle class="atom-edge" cx="80"  cy="60"  r="6"/>
+    <circle class="atom-edge" cx="0"   cy="100" r="6"/>
+    <circle class="atom-edge" cx="60"  cy="80"  r="6"/>
+    <!-- 6面心原子 (見える3面 + 後ろ側3面) -->
+    <circle class="atom-face" cx="40"  cy="20"  r="7"/>
+    <circle class="atom-face" cx="30"  cy="70"  r="7"/>
+    <circle class="atom-face" cx="70"  cy="40"  r="7"/>
+    <circle class="atom-face" cx="10"  cy="70"  r="7" opacity="0.5"/>
+    <circle class="atom-face" cx="50"  cy="50"  r="7" opacity="0.5"/>
+    <circle class="atom-face" cx="40"  cy="90"  r="7" opacity="0.5"/>
+  </g>
+
+  <text class="data"     x="266" y="240">配位数:</text>
+  <text class="data-key" x="410" y="240" text-anchor="end">12 (最密)</text>
+  <text class="data"     x="266" y="258">充填率:</text>
+  <text class="data-key" x="410" y="258" text-anchor="end">74% (最密)</text>
+  <text class="data"     x="266" y="276">代表:</text>
+  <text class="data"     x="266" y="294" style="font-size:10px;">γ-Fe, Al, Cu, Ni, Ag, Au, Pt, Pb</text>
+
+  <!-- ========== HCP (右) ========== -->
+  <rect class="panel-bg" x="480" y="50" width="220" height="270"/>
+  <text class="ttl" x="590" y="74">HCP</text>
+  <text class="sub" x="590" y="90">Hexagonal Close-Packed / 六方最密</text>
+
+  <!-- 六角柱 -->
+  <g transform="translate(540, 105)">
+    <!-- 上面 (六角形) -->
+    <polygon class="lat-front" points="50,0 90,15 90,55 50,70 10,55 10,15"/>
+    <!-- 下面 (六角形, 破線) -->
+    <polygon class="lat-back" points="50,40 90,55 90,95 50,110 10,95 10,55"/>
+    <!-- 縦エッジ -->
+    <line class="lat-front" x1="50" y1="0" x2="50" y2="40"/>
+    <line class="lat-front" x1="90" y1="15" x2="90" y2="55"/>
+    <line class="lat-back"  x1="90" y1="55" x2="90" y2="95"/>
+    <line class="lat-back"  x1="50" y1="40" x2="50" y2="110"/>
+    <line class="lat-front" x1="10" y1="15" x2="10" y2="55"/>
+    <line class="lat-back"  x1="10" y1="55" x2="10" y2="95"/>
+    <!-- 上面の頂点原子 6個 + 中心 1個 -->
+    <circle class="atom-edge"   cx="50" cy="0"  r="5"/>
+    <circle class="atom-edge"   cx="90" cy="15" r="5"/>
+    <circle class="atom-edge"   cx="90" cy="55" r="5"/>
+    <circle class="atom-edge"   cx="50" cy="70" r="5"/>
+    <circle class="atom-edge"   cx="10" cy="55" r="5"/>
+    <circle class="atom-edge"   cx="10" cy="15" r="5"/>
+    <circle class="atom-face"   cx="50" cy="35" r="6"/>
+    <!-- 中段の3個 -->
+    <circle class="atom-center" cx="35" cy="55" r="6"/>
+    <circle class="atom-center" cx="65" cy="55" r="6"/>
+    <circle class="atom-center" cx="50" cy="80" r="6"/>
+  </g>
+
+  <text class="data"     x="496" y="240">配位数:</text>
+  <text class="data-key" x="640" y="240" text-anchor="end">12 (最密)</text>
+  <text class="data"     x="496" y="258">充填率:</text>
+  <text class="data-key" x="640" y="258" text-anchor="end">74% (最密)</text>
+  <text class="data"     x="496" y="276">代表:</text>
+  <text class="data"     x="496" y="294" style="font-size:10px;color:var(--ylw);">Mg, Ti, Zn, Zr, Co</text>
+</svg>`,
+  },
+
+  // =====================================================================
+  // 第A4章: 転位と塑性変形（刃状転位の模式図 + すべり進行）
+  // =====================================================================
+  a4: {
+    caption: '<strong>刃状転位</strong>（edge dislocation）— 上半分にだけ余分な原子半面が「⊥」のように挿入された線欠陥。これが少しずつ動くことで結晶全体がすべる。1個の転位は格子1段分しか動かないが、これが連鎖的に通り抜けることで、見かけ上の<strong>大きな塑性変形</strong>が起きる。',
+    svg: `<svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .ttl { fill: var(--text-0); font-family: 'Noto Sans JP', sans-serif; font-size: 13px; font-weight: 700; }
+    .lbl { fill: var(--text-1); font-family: 'Noto Sans JP', sans-serif; font-size: 11px; }
+    .lbl-acc { fill: var(--accent); font-family: 'Noto Sans JP', sans-serif; font-size: 12px; font-weight: 700; }
+    .atom { fill: var(--text-2); opacity: 0.85; }
+    .atom-extra { fill: var(--accent); }
+    .bond { stroke: var(--line-hi); stroke-width: 1; opacity: 0.5; }
+    .bond-strain { stroke: var(--accent); stroke-width: 1.2; opacity: 0.8; }
+    .dis-symbol { fill: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700; }
+    .arrow { stroke: var(--accent); stroke-width: 1.5; fill: var(--accent); marker-end: url(#arr2); }
+    .step { stroke: var(--text-1); stroke-width: 1; fill: none; stroke-dasharray: 3 3; opacity: 0.5; }
+  </style>
+  <defs>
+    <marker id="arr2" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="var(--accent)"/>
+    </marker>
+  </defs>
+
+  <text class="ttl" x="20" y="26">刃状転位 (edge dislocation) と すべり</text>
+  <text class="lbl" x="20" y="44">— 上半分に余分な原子半面 (⊥) が挿入されている。応力で右に動く。</text>
+
+  <!-- 上半分: 6×6 格子 + 余分な原子半面 -->
+  <g transform="translate(60, 70)">
+    <!-- 格子点 (上半分は7列, 下半分は6列で 余分な原子を表現) -->
+    <!-- 行0 (一番上) -->
+    <circle class="atom" cx="0"   cy="0" r="6"/>
+    <circle class="atom" cx="40"  cy="0" r="6"/>
+    <circle class="atom" cx="80"  cy="0" r="6"/>
+    <circle class="atom" cx="120" cy="0" r="6"/>
+    <circle class="atom-extra" cx="160" cy="0" r="6"/>
+    <circle class="atom" cx="200" cy="0" r="6"/>
+    <circle class="atom" cx="240" cy="0" r="6"/>
+    <!-- 行1 -->
+    <circle class="atom" cx="0"   cy="40" r="6"/>
+    <circle class="atom" cx="40"  cy="40" r="6"/>
+    <circle class="atom" cx="80"  cy="40" r="6"/>
+    <circle class="atom" cx="120" cy="40" r="6"/>
+    <circle class="atom-extra" cx="160" cy="40" r="6"/>
+    <circle class="atom" cx="200" cy="40" r="6"/>
+    <circle class="atom" cx="240" cy="40" r="6"/>
+    <!-- 行2 -->
+    <circle class="atom" cx="0"   cy="80" r="6"/>
+    <circle class="atom" cx="40"  cy="80" r="6"/>
+    <circle class="atom" cx="80"  cy="80" r="6"/>
+    <circle class="atom" cx="120" cy="80" r="6"/>
+    <circle class="atom-extra" cx="160" cy="80" r="6"/>
+    <circle class="atom" cx="200" cy="80" r="6"/>
+    <circle class="atom" cx="240" cy="80" r="6"/>
+    <!-- すべり面 (赤線) -->
+    <line class="step" x1="-10" y1="100" x2="270" y2="100"/>
+    <!-- 下半分 行3 (転位の下では原子が左へ詰まる) -->
+    <circle class="atom" cx="0"   cy="120" r="6"/>
+    <circle class="atom" cx="40"  cy="120" r="6"/>
+    <circle class="atom" cx="80"  cy="120" r="6"/>
+    <circle class="atom" cx="135" cy="120" r="6"/>
+    <circle class="atom" cx="180" cy="120" r="6"/>
+    <circle class="atom" cx="220" cy="120" r="6"/>
+    <!-- 行4 -->
+    <circle class="atom" cx="0"   cy="160" r="6"/>
+    <circle class="atom" cx="40"  cy="160" r="6"/>
+    <circle class="atom" cx="80"  cy="160" r="6"/>
+    <circle class="atom" cx="135" cy="160" r="6"/>
+    <circle class="atom" cx="180" cy="160" r="6"/>
+    <circle class="atom" cx="220" cy="160" r="6"/>
+    <!-- 行5 -->
+    <circle class="atom" cx="0"   cy="200" r="6"/>
+    <circle class="atom" cx="40"  cy="200" r="6"/>
+    <circle class="atom" cx="80"  cy="200" r="6"/>
+    <circle class="atom" cx="135" cy="200" r="6"/>
+    <circle class="atom" cx="180" cy="200" r="6"/>
+    <circle class="atom" cx="220" cy="200" r="6"/>
+
+    <!-- 転位記号 ⊥ -->
+    <text class="dis-symbol" x="155" y="115" text-anchor="middle">⊥</text>
+
+    <!-- 矢印: 右への移動 -->
+    <line class="arrow" x1="180" y1="100" x2="240" y2="100"/>
+    <text class="lbl-acc" x="245" y="104">→ せん断応力</text>
+  </g>
+
+  <!-- 右下: 注釈 -->
+  <g transform="translate(360, 90)">
+    <text class="ttl" x="0" y="0">転位の動き = 塑性変形</text>
+
+    <text class="lbl" x="0" y="22">• 転位を1ステップ動かすのに必要な力は、</text>
+    <text class="lbl" x="0" y="38">　全結合を一度に切るのに比べて<strong>1/100〜1/1000</strong></text>
+
+    <text class="lbl" x="0" y="62">• だから実際の金属は理論強度の数十分の一で</text>
+    <text class="lbl" x="0" y="78">　塑性変形する</text>
+
+    <text class="lbl" x="0" y="102">• この「動きやすい線欠陥」が無ければ、金属は</text>
+    <text class="lbl" x="0" y="118">　ほぼ削れない</text>
+
+    <text class="lbl-acc" x="0" y="148">→ 切削はマクロな変形ではなく</text>
+    <text class="lbl-acc" x="0" y="164">　「転位の大量発生 + 移動 + 絡まり」現象</text>
+
+    <text class="lbl" x="0" y="194" style="font-size:10px;color:var(--text-2);">転位論: Orowan / Polanyi / Taylor (1934, 各々独立に提案)</text>
+  </g>
+</svg>`,
+  },
+
+  // =====================================================================
+  // 第A5章: 合金と相変態（Fe-C 系状態図、α↔γ↔マルテンサイト）
+  // =====================================================================
+  a5: {
+    caption: '<strong>Fe-C 系状態図</strong>（簡略版）— 鉄に炭素を加えた合金が、温度と組成でどんな相を取るか。鉄鋼の熱処理（焼入れ・焼戻し）はこの図の上を「動かす」操作。マルテンサイトは平衡相ではなく、γ → α 変態が間に合わずに飛び出す<strong>準安定相</strong>。',
+    svg: `<svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .axis { stroke: var(--line-hi); stroke-width: 1; }
+    .grid { stroke: var(--line); stroke-width: 0.5; stroke-dasharray: 2 3; opacity: 0.5; }
+    .ttl { fill: var(--text-0); font-family: 'Noto Sans JP', sans-serif; font-size: 13px; font-weight: 700; }
+    .lbl { fill: var(--text-1); font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+    .lbl-axis { fill: var(--text-2); font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+    .phase { fill: var(--text-1); font-family: 'Noto Sans JP', sans-serif; font-size: 12px; font-weight: 700; }
+    .phase-acc { fill: var(--accent); font-family: 'Noto Sans JP', sans-serif; font-size: 12px; font-weight: 700; }
+    .line-eq { stroke: var(--line-hi); stroke-width: 1.5; fill: none; }
+    .line-acc { stroke: var(--accent); stroke-width: 2; fill: none; }
+    .line-q { stroke: var(--ylw); stroke-width: 1.5; fill: none; stroke-dasharray: 5 3; }
+    .region-gamma { fill: var(--accent); opacity: 0.06; }
+    .region-alpha { fill: var(--text-2); opacity: 0.10; }
+    .region-mart { fill: var(--ylw); opacity: 0.10; }
+  </style>
+
+  <!-- タイトル -->
+  <text class="ttl" x="20" y="22">Fe-C 系状態図（簡略・実用域）</text>
+
+  <!-- 座標系: 横軸 C wt% (0-2.5), 縦軸 温度 (0-1600°C) -->
+  <!-- プロット領域 x: 80-680 (600px = 2.5 wt%), y: 50-280 (230px = 1600°C → 0°C) -->
+  <!-- スケール: x = 80 + (C/2.5)*600, y = 280 - (T/1600)*230 -->
+
+  <!-- 背景領域 -->
+  <!-- γ (オーステナイト): C 0-2.0%, 727-1147°C -->
+  <path class="region-gamma" d="M80,182 L560,182 L560,114 L80,114 Z"/>
+  <!-- α (フェライト): C 0-0.02%, T<727°C -->
+  <path class="region-alpha" d="M80,182 L92,182 L92,280 L80,280 Z"/>
+  <!-- パーライト + フェライト域 (C 0.02-0.77%, T<727°C) -->
+  <path class="region-alpha" d="M92,182 L264,182 L264,280 L92,280 Z" opacity="0.05"/>
+
+  <!-- 軸 -->
+  <line class="axis" x1="80" y1="280" x2="680" y2="280"/>
+  <line class="axis" x1="80" y1="50" x2="80" y2="280"/>
+
+  <!-- グリッド (温度) -->
+  <line class="grid" x1="80" y1="194" x2="680" y2="194"/><text class="lbl-axis" x="74" y="198" text-anchor="end">600</text>
+  <line class="grid" x1="80" y1="165" x2="680" y2="165"/><text class="lbl-axis" x="74" y="169" text-anchor="end">800</text>
+  <line class="grid" x1="80" y1="136" x2="680" y2="136"/><text class="lbl-axis" x="74" y="140" text-anchor="end">1000</text>
+  <line class="grid" x1="80" y1="108" x2="680" y2="108"/><text class="lbl-axis" x="74" y="112" text-anchor="end">1200</text>
+  <line class="grid" x1="80" y1="79" x2="680" y2="79"/><text class="lbl-axis" x="74" y="83" text-anchor="end">1400</text>
+  <text class="lbl-axis" x="74" y="284" text-anchor="end">400</text>
+
+  <!-- グリッド (C %) -->
+  <text class="lbl-axis" x="80"  y="296" text-anchor="middle">0.0</text>
+  <line class="grid" x1="200" y1="50" x2="200" y2="280"/><text class="lbl-axis" x="200" y="296" text-anchor="middle">0.5</text>
+  <line class="grid" x1="320" y1="50" x2="320" y2="280"/><text class="lbl-axis" x="320" y="296" text-anchor="middle">1.0</text>
+  <line class="grid" x1="440" y1="50" x2="440" y2="280"/><text class="lbl-axis" x="440" y="296" text-anchor="middle">1.5</text>
+  <line class="grid" x1="560" y1="50" x2="560" y2="280"/><text class="lbl-axis" x="560" y="296" text-anchor="middle">2.0</text>
+
+  <!-- 軸ラベル -->
+  <text class="lbl-axis" x="380" y="318" text-anchor="middle">炭素濃度 [wt%]</text>
+  <text class="lbl-axis" x="40"  y="170" text-anchor="middle" transform="rotate(-90 40 170)">温度 [°C]</text>
+
+  <!-- A1 線 (727°C 共析温度) -->
+  <line class="line-eq" x1="92" y1="182" x2="560" y2="182"/>
+  <text class="lbl" x="565" y="186">A₁ = 727°C</text>
+
+  <!-- A3 線 (γ↔α 境界) γから降りる曲線 -->
+  <path class="line-eq" d="M80,114 Q150,150 264,182"/>
+  <text class="lbl" x="180" y="138">A₃ 線</text>
+
+  <!-- ACM 線 (γ↔Cementite 境界) -->
+  <path class="line-eq" d="M264,182 Q400,160 560,114"/>
+  <text class="lbl" x="450" y="148">Acm 線</text>
+
+  <!-- 共析点マーク -->
+  <circle cx="264" cy="182" r="4" fill="var(--accent)"/>
+  <text class="lbl" x="270" y="178">共析点 (0.77%C, 727°C)</text>
+
+  <!-- 相のラベル -->
+  <text class="phase-acc" x="280" y="148" text-anchor="middle">γ (オーステナイト, FCC)</text>
+  <text class="phase" x="170" y="240" text-anchor="middle">α + パーライト</text>
+  <text class="phase" x="380" y="240" text-anchor="middle">パーライト + Fe₃C (セメンタイト)</text>
+
+  <!-- 急冷ライン (例: 0.4%C を 1000°C → 室温まで急冷) -->
+  <line class="line-q" x1="176" y1="136" x2="176" y2="270"/>
+  <text class="lbl" x="178" y="80" style="fill:var(--ylw);">急冷</text>
+  <text class="lbl" x="178" y="94" style="fill:var(--ylw);">(焼入れ)</text>
+
+  <!-- マルテンサイト (準安定、図の外側を矢印で示唆) -->
+  <text class="phase" x="180" y="306" text-anchor="middle" style="fill:var(--ylw);font-size:11px;">→ マルテンサイト (準安定)</text>
+</svg>`,
+  },
+
+  // =====================================================================
+  // 第A6章: 切削における材料応答（一次せん断帯 + Johnson-Cook）
+  // =====================================================================
+  a6: {
+    caption: '<strong>切削の材料応答</strong> — 工具刃先の前方に<strong>一次せん断帯</strong>（primary shear zone）が形成され、ここで激しい塑性変形と発熱が同時に起きる。応力 σ は<strong>Johnson-Cook 構成式</strong> σ=(A+B·ε^n)(1+C·ln(ε̇/ε̇₀))(1−T*^m) で歪み・歪み速度・温度の関数として表現される。FEM 切削シミュレーションの心臓部。',
+    svg: `<svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .ttl { fill: var(--text-0); font-family: 'Noto Sans JP', sans-serif; font-size: 13px; font-weight: 700; }
+    .lbl { fill: var(--text-1); font-family: 'Noto Sans JP', sans-serif; font-size: 11px; }
+    .lbl-acc { fill: var(--accent); font-family: 'Noto Sans JP', sans-serif; font-size: 11px; font-weight: 700; }
+    .formula { fill: var(--text-0); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+    .work { fill: var(--text-2); opacity: 0.6; stroke: var(--line-hi); stroke-width: 1; }
+    .chip { fill: var(--text-2); opacity: 0.4; stroke: var(--line-hi); stroke-width: 1; }
+    .tool { fill: var(--accent); opacity: 0.85; stroke: var(--accent); stroke-width: 1; }
+    .shear-zone { fill: var(--ylw); opacity: 0.25; stroke: var(--ylw); stroke-width: 1.5; }
+    .shear-secondary { fill: var(--ylw); opacity: 0.15; }
+    .arrow { stroke: var(--accent); stroke-width: 1.5; fill: var(--accent); marker-end: url(#arr3); }
+    .arrow-vc { stroke: var(--text-1); stroke-width: 1.2; fill: var(--text-1); marker-end: url(#arr3); }
+  </style>
+  <defs>
+    <marker id="arr3" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="var(--accent)"/>
+    </marker>
+  </defs>
+
+  <!-- 左パネル: 切削モデル -->
+  <text class="ttl" x="20" y="22">切削の幾何モデル（オルソゴナル切削）</text>
+
+  <!-- ワーク (被削材) -->
+  <rect class="work" x="40" y="200" width="270" height="100"/>
+  <text class="lbl" x="46" y="290">被削材 (workpiece)</text>
+
+  <!-- 工具 (シャンク) -->
+  <polygon class="tool" points="290,140 360,140 360,210 320,210"/>
+  <text class="lbl-acc" x="298" y="158">工具</text>
+
+  <!-- 切屑 -->
+  <polygon class="chip" points="40,200 290,200 320,140 60,140"/>
+  <text class="lbl" x="80" y="170">切屑 (chip)</text>
+
+  <!-- 一次せん断帯 -->
+  <polygon class="shear-zone" points="290,200 320,200 290,140 270,160"/>
+  <text class="lbl-acc" x="222" y="180">一次せん断帯</text>
+  <text class="lbl" x="232" y="194" style="font-size:10px;">(primary shear zone)</text>
+
+  <!-- 二次せん断帯 (工具すくい面と切屑の間) -->
+  <polygon class="shear-secondary" points="290,140 320,140 320,162 290,200"/>
+
+  <!-- せん断角 φ ラベル -->
+  <path d="M290,200 A22,22 0 0 1 270,180" fill="none" stroke="var(--ylw)" stroke-width="1"/>
+  <text class="lbl-acc" x="262" y="208" style="font-size:10px;">φ</text>
+
+  <!-- 切削速度ベクトル -->
+  <line class="arrow-vc" x1="160" y1="320" x2="100" y2="320"/>
+  <text class="lbl" x="105" y="334" style="font-size:10px;">Vc (切削速度)</text>
+
+  <!-- 切屑流出方向 -->
+  <line class="arrow" x1="180" y1="170" x2="120" y2="150"/>
+
+  <!-- ============== 右パネル: Johnson-Cook 構成式 ============== -->
+  <text class="ttl" x="380" y="22">Johnson-Cook 構成式 (1983)</text>
+  <text class="lbl" x="380" y="40">— 切削で起きる激しい塑性変形を記述する代表的な式</text>
+
+  <g transform="translate(380, 75)">
+    <!-- 全体式 -->
+    <text class="formula" x="0" y="0">σ = (A + B·ε</text>
+    <text class="formula" x="91" y="-5" style="font-size:9px;">n</text>
+    <text class="formula" x="98" y="0">) · (1 + C·ln</text>
+    <text class="formula" x="178" y="0" style="font-size:14px;">·</text>
+    <text class="formula" x="186" y="0">) · (1 − T*</text>
+    <text class="formula" x="252" y="-5" style="font-size:9px;">m</text>
+    <text class="formula" x="259" y="0">)</text>
+    <!-- ε̇/ε̇0 -->
+    <text class="formula" x="155" y="-4" style="font-size:9px;">ε̇/ε̇₀</text>
+  </g>
+
+  <!-- 各項の説明 -->
+  <g transform="translate(380, 110)">
+    <text class="lbl-acc" x="0" y="0">第1項: 加工硬化項</text>
+    <text class="lbl" x="0" y="16">  A = 降伏応力, B = 硬化係数, n = 硬化指数</text>
+    <text class="lbl" x="0" y="30">  → 歪み ε に対する硬化（A4章の加工硬化）</text>
+
+    <text class="lbl-acc" x="0" y="56">第2項: 歪み速度感受性項</text>
+    <text class="lbl" x="0" y="72">  C = 歪み速度係数, ε̇₀ = 基準歪み速度</text>
+    <text class="lbl" x="0" y="86">  → 切削は ε̇ ~ 10⁴〜10⁶ /s と非常に高速</text>
+
+    <text class="lbl-acc" x="0" y="112">第3項: 熱軟化項</text>
+    <text class="lbl" x="0" y="128">  T* = (T − T_room) / (T_melt − T_room)</text>
+    <text class="lbl" x="0" y="142">  m = 熱軟化指数</text>
+    <text class="lbl" x="0" y="156">  → 高温で軟化（断熱せん断帯の形成原因）</text>
+
+    <text class="lbl" x="0" y="184" style="font-style:italic;color:var(--text-2);">パラメータ A,B,C,n,m は材料ごと、SHPB 試験で同定</text>
+  </g>
+</svg>`,
+  },
+
+  // =====================================================================
   // 第1章: 加工方法の4分類ツリー図
   // =====================================================================
   1: {
@@ -2543,6 +3092,604 @@ const CHAPTERS = [
       '大学初年度：<strong>Atkins「物理化学」</strong>第1章（または<strong>マッカーリ・サイモン「物理化学」</strong>）',
       '日本鉄鋼協会：<strong>鉄鋼便覧</strong>第I編「材料の基礎」— 金属の物性データの一次資料',
       'NIST Atomic Spectra Database — 元素の電子配置・エネルギー準位の公式データ <code>https://www.nist.gov/pml/atomic-spectra-database</code>',
+    ],
+  },
+  {
+    id: 'a2',
+    num: 'A2',
+    title: '金属結合と自由電子',
+    summary: '金属だけが持つ特殊な結合様式。「電子の海」が電気伝導・熱伝導・延性すべての根源。',
+    voiceSummary: '金属結合では、価電子が特定の原子に属さず、自由電子の海として金属イオン格子の間を自由に動き回ります。これが電気伝導性、熱伝導性、金属光沢、そして塑性変形のしやすさの共通の起源です。共有結合の物質が硬くて脆いのに対し、金属が柔らかく粘い理由がここにあります。',
+    readTime: '8分',
+    hasSim: false,
+    lead: '前章で「金属の性質を決めるのは価電子だ」と述べました。では具体的に、価電子は金属の中でどう振る舞っているのでしょうか。答えは<strong>「自由電子の海（electron sea）」</strong>という比喩で語られる、金属だけが持つ特殊な結合様式です。これを理解すれば、金属の電気が流れる理由・熱が伝わる理由・そして<strong>削れる理由</strong>がすべて1つの物理像で説明できます。',
+    sections: [
+      {
+        heading: '電子の海モデル',
+        html: `
+          <p>金属の原子（鉄、アルミ、銅など）は、それぞれ少数の<strong>価電子</strong>を持っています（前章のナトリウム例なら 1 個、鉄なら 2 個）。これらの原子が集まって金属になるとき、価電子は元の原子から<strong>解放</strong>されます。</p>
+          <ul>
+            <li>価電子を失った原子は<strong>正電荷の金属イオン</strong>になる</li>
+            <li>解放された電子は<strong>金属全体に広がる</strong>「電子の海」になる</li>
+            <li>正電荷の格子と負電荷の電子雲が<strong>静電的に引き合って</strong>結晶が安定する</li>
+          </ul>
+          <p>この描像は 1900 年に Paul Drude が提唱した古典モデルが原型で、現在は量子力学的に<strong>バンド理論</strong>で精密化されていますが、初学者にはこの「電子の海」イメージで十分です。</p>
+          <p>図に示したように、共有結合のダイヤモンド（C-C）では電子が特定の原子ペアに<strong>局在</strong>しているのと対照的に、金属では電子は格子全体を<strong>自由に動き回ります</strong>。この差が、金属とセラミクスの性質の差を生みます。</p>
+        `,
+      },
+      {
+        heading: '自由電子が説明する金属の5大性質',
+        html: `
+          <p>金属に共通する以下の5つの性質は、すべて自由電子の存在で説明できます。</p>
+          <table style="width:100%;border-collapse:collapse;font-size:13px;margin:12px 0;">
+            <thead>
+              <tr style="background:var(--bg-3);">
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">性質</th>
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">自由電子で説明すると</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding:8px;border:1px solid var(--line);"><strong>電気伝導性</strong></td><td style="padding:8px;border:1px solid var(--line);">電場をかけると自由電子がドリフト → 電流</td></tr>
+              <tr><td style="padding:8px;border:1px solid var(--line);"><strong>熱伝導性</strong></td><td style="padding:8px;border:1px solid var(--line);">高温部の電子が運動エネルギーを持って低温部へ拡散 → 熱伝達</td></tr>
+              <tr><td style="padding:8px;border:1px solid var(--line);"><strong>金属光沢</strong></td><td style="padding:8px;border:1px solid var(--line);">自由電子が可視光をほぼ全反射する</td></tr>
+              <tr><td style="padding:8px;border:1px solid var(--line);"><strong>不透明性</strong></td><td style="padding:8px;border:1px solid var(--line);">電子が光を吸収・再放出 → 内部に光が通らない</td></tr>
+              <tr style="background:var(--bg-2);"><td style="padding:8px;border:1px solid var(--line);"><strong>延性・展性 ★</strong></td><td style="padding:8px;border:1px solid var(--line);"><strong>原子位置を変えても結合が壊れない</strong>（電子が再分布するだけ）</td></tr>
+            </tbody>
+          </table>
+          <p>切削加工において最も重要なのが<strong>最後の「延性」</strong>です。共有結合の物質では原子を1つでも動かすと結合が切れて<strong>割れてしまいます</strong>（だからダイヤモンドは硬いのに脆い）。一方、金属では原子の位置がずれても、電子の海が<strong>自動的に再分布</strong>して結合を維持してくれます。これが「金属が削れる」ことの根本理由です。</p>
+        `,
+      },
+      {
+        heading: '金属の熱伝導と切削加工',
+        html: `
+          <p>切削加工では大量の熱が発生します（次の Part B で詳述）。発生した熱がどこへ逃げるかが、工具寿命と加工精度を決めます。</p>
+          <p>熱の伝わり方には2つのメカニズムがあります。</p>
+          <ul>
+            <li><strong>電子による熱伝導</strong>（金属の主役）: 自由電子が運動エネルギーを運ぶ。<strong>非常に速い</strong></li>
+            <li><strong>格子振動による熱伝導</strong>（フォノン、非金属の主役）: 原子の振動が隣に伝わる。<strong>遅い</strong></li>
+          </ul>
+          <p>金属の熱伝導率の差は、自由電子の<strong>多さ</strong>と<strong>動きやすさ</strong>で決まります。</p>
+          <ul style="font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.9;">
+            <li>銅（Cu）　　　　　401 W/(m·K)　— 自由電子豊富、よく流れる</li>
+            <li>アルミ（Al）　　　237 W/(m·K)</li>
+            <li>鉄（Fe）　　　　　 80 W/(m·K)</li>
+            <li>ステンレス（304）　 16 W/(m·K)</li>
+            <li><strong style="color:var(--ylw);">チタン（Ti）　　　 22 W/(m·K)</strong>　— 鉄の 1/4、これが難削の主因</li>
+            <li><strong style="color:var(--ylw);">インコネル718　　 11 W/(m·K)</strong>　— 鉄の 1/7</li>
+          </ul>
+          <p style="margin-top:12px;padding:12px;background:var(--bg-2);border-left:3px solid var(--accent);border-radius:2px;">
+            <strong>難削材の正体（その1）</strong><br>
+            チタンやインコネルが「難削材」と呼ばれる主因の1つは、<strong>熱伝導率が低い</strong>こと。切削で発生した熱がワーク側にも切りくず側にも逃げず、<strong>工具刃先に集中</strong>してしまう。結果として工具温度が急上昇し、寿命が一気に縮む。詳細は Part B 第7章「冷却液の役割」「工具摩耗と工具寿命」で扱う。
+          </p>
+        `,
+      },
+      {
+        heading: '結合の方向性と「変形のしやすさ」',
+        html: `
+          <p>もう一つ重要なのが結合の<strong>方向性</strong>です。</p>
+          <ul>
+            <li><strong>共有結合</strong>: 電子ペアが特定方向にあり、結合は<strong>角度が固定</strong>（ダイヤモンドの 109.5° の四面体角）</li>
+            <li><strong>金属結合</strong>: 電子の海は方向性なし、原子は<strong>どの方向にも滑れる</strong></li>
+          </ul>
+          <p>切削加工は本質的に「材料の一部を<strong>滑らせて</strong>分離する」作業です。具体的には次章以降で扱う<strong>転位の運動</strong>として実現されますが、その大前提が「金属結合は方向性を持たない」という事実にあります。</p>
+          <p>この「滑らせやすさ」は<strong>結晶構造</strong>でさらに細かく決まります。同じ金属結合でも、原子が立方体格子（FCC, BCC）に並んでいるか、六方格子（HCP）に並んでいるかで、滑りやすさが大きく変わります。</p>
+          <p style="margin-top:12px;padding:12px;background:var(--bg-2);border-left:3px solid var(--accent);border-radius:2px;">
+            <strong>本章のキーアイデア</strong><br>
+            金属が削れるのは、自由電子の海が「結合を壊さずに原子位置をずらせる」性質を与えているから。次章ではこの「原子の並び方（結晶構造）」が、金属によって違うこと、そしてそれが切削性に直接効くことを見る。
+          </p>
+        `,
+      },
+    ],
+    terms: [
+      { name: '金属結合', en: 'Metallic Bond', def: '価電子を全原子で共有する結合。正の金属イオン格子と負の電子雲が静電引力で結ばれる。' },
+      { name: '自由電子', en: 'Free Electron / Conduction Electron', def: '特定の原子に属さず格子全体を動き回る価電子。電気・熱伝導の主役。' },
+      { name: '電子の海', en: 'Electron Sea', def: 'Drude が提唱した金属結合の古典モデル。価電子を「海」、金属イオンを「島」に喩える。' },
+      { name: 'バンド理論', en: 'Band Theory', def: '電子の海の量子力学的精密化。金属/半導体/絶縁体の差をエネルギーバンドの占有で説明する。' },
+      { name: '熱伝導率', en: 'Thermal Conductivity', def: '単位時間・単位面積・単位温度勾配あたりの熱流量 (W/(m·K))。金属では自由電子が主担。' },
+      { name: '延性', en: 'Ductility', def: '引っ張ったときに大きく変形できる性質。金属結合の方向性のなさが起源。' },
+      { name: '展性', en: 'Malleability', def: '叩いたとき広く伸びる性質。延性と同様、金属結合の特性。' },
+    ],
+    further: [
+      'Drude モデル：<strong>Ashcroft & Mermin「Solid State Physics」</strong>第1章（金属電子論の標準テキスト）',
+      'バンド理論入門：<strong>キッテル「固体物理学入門」</strong>第7-8章',
+      '日本金属学会：<strong>金属物理学</strong>シリーズ — 結合論から物性まで体系的に',
+      'Wikipedia「Drude model」「Free electron model」（英語版が詳しい）',
+    ],
+  },
+  {
+    id: 'a3',
+    num: 'A3',
+    title: '結晶構造',
+    summary: '金属原子の3次元的な並び方。BCC・FCC・HCPの3大構造が、後の塑性変形のしやすさ=切削性を決める。',
+    voiceSummary: '金属原子は結晶として規則正しく並んでいます。主な3構造は、体心立方BCC、面心立方FCC、六方最密HCPです。FCCとHCPは充填率が74%で最密、BCCは68%。結晶構造はすべり系の数を決め、それが延性と切削性に直結します。FCCのアルミや銅が削りやすく、HCPのチタンが削りにくい根本理由がここにあります。',
+    readTime: '8分',
+    hasSim: false,
+    lead: '前章で「金属は原子位置を変えても結合が壊れない」と述べました。では、その原子は具体的にどう並んでいるのでしょうか。答えは<strong>結晶（crystal）</strong>—規則正しい3次元周期構造です。本章では金属に現れる3つの主要結晶構造（BCC・FCC・HCP）を確認し、これが後の<strong>切削性の差</strong>にどう効いてくるかを見通します。',
+    sections: [
+      {
+        heading: '結晶と単位格子',
+        html: `
+          <p>金属原子は液体状態ではバラバラに動いていますが、冷えて固体になると<strong>規則正しく並びます</strong>。これを<strong>結晶</strong>と呼びます。</p>
+          <p>結晶は最小の繰り返し単位<strong>単位格子（unit cell）</strong>からできています。単位格子を3次元方向に積み重ねれば、結晶全体が再現できます。</p>
+          <ul>
+            <li>単位格子の大きさは<strong>格子定数 a</strong>（単位 nm 程度）で表す</li>
+            <li>鉄の格子定数: <code>a ≈ 0.287 nm</code>（α-Fe, BCC）</li>
+            <li>アルミの格子定数: <code>a ≈ 0.405 nm</code>（FCC）</li>
+          </ul>
+          <p>金属の結晶構造は <strong>14 種のブラベー格子</strong>に分類されますが、実用的に重要なのは次の3つです。</p>
+        `,
+      },
+      {
+        heading: '3大金属結晶構造',
+        html: `
+          <table style="width:100%;border-collapse:collapse;font-size:13px;margin:12px 0;">
+            <thead>
+              <tr style="background:var(--bg-3);">
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">構造</th>
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">略称</th>
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">配位数</th>
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">充填率</th>
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">代表金属</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding:8px;border:1px solid var(--line);"><strong>体心立方</strong><br><span style="color:var(--text-2);font-size:11px;">Body-Centered Cubic</span></td><td style="padding:8px;border:1px solid var(--line);">BCC</td><td style="padding:8px;border:1px solid var(--line);">8</td><td style="padding:8px;border:1px solid var(--line);">68%</td><td style="padding:8px;border:1px solid var(--line);">α-Fe（常温の鉄）, Cr, Mo, W, V, Nb</td></tr>
+              <tr style="background:var(--bg-2);"><td style="padding:8px;border:1px solid var(--line);"><strong>面心立方 ★</strong><br><span style="color:var(--text-2);font-size:11px;">Face-Centered Cubic</span></td><td style="padding:8px;border:1px solid var(--line);">FCC</td><td style="padding:8px;border:1px solid var(--line);">12</td><td style="padding:8px;border:1px solid var(--line);">74%（最密）</td><td style="padding:8px;border:1px solid var(--line);">γ-Fe（高温の鉄、SUS304）, Al, Cu, Ni, Ag, Au, Pt, Pb</td></tr>
+              <tr><td style="padding:8px;border:1px solid var(--line);"><strong>六方最密</strong><br><span style="color:var(--text-2);font-size:11px;">Hexagonal Close-Packed</span></td><td style="padding:8px;border:1px solid var(--line);">HCP</td><td style="padding:8px;border:1px solid var(--line);">12</td><td style="padding:8px;border:1px solid var(--line);">74%（最密）</td><td style="padding:8px;border:1px solid var(--line); color: var(--ylw);">Ti, Mg, Zn, Zr, Co</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><strong>配位数（coordination number）</strong>: 1つの原子に隣接する原子の数。多いほど稠密に詰まっている</li>
+            <li><strong>充填率（packing fraction）</strong>: 単位格子内で原子が占める体積比率。74%が剛球を3次元に詰めた理論最大値</li>
+          </ul>
+          <p>FCC と HCP はどちらも充填率 74%（最密）ですが、<strong>原子の積層順序が異なります</strong>。FCC は ABCABC、HCP は ABABAB の順で原子層が積み重なります。この差が後で大きな違いを生みます。</p>
+        `,
+      },
+      {
+        heading: '同素変態 — 鉄は2つの顔を持つ',
+        html: `
+          <p>面白いのは、同じ元素でも温度によって結晶構造が変わることがある点です。これを<strong>同素変態（allotropic transformation）</strong>と呼びます。</p>
+          <p>鉄の例:</p>
+          <ul style="font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.9;">
+            <li>常温〜911°C　：<strong>α-Fe（フェライト）</strong>　— BCC</li>
+            <li>911〜1394°C　：<strong>γ-Fe（オーステナイト）</strong>　— FCC</li>
+            <li>1394〜1538°C：<strong>δ-Fe</strong>　— BCC（再びBCC）</li>
+            <li>1538°C〜　　 ：液体</li>
+          </ul>
+          <p>この同素変態こそが、鉄鋼の<strong>熱処理（焼入れ・焼戻し）</strong>を可能にする物理的根拠です。FCC（γ-Fe）に C（炭素）を多く溶け込ませた状態から急冷すると、BCC に戻る暇がなく<strong>マルテンサイト</strong>という超硬な準安定相が出現します。詳細は第A5章「合金と相変態」で扱います。</p>
+          <p>切削加工の文脈では、ステンレス（SUS304）が常温でも<strong>FCC</strong>を保つ（オーステナイト系）一方、炭素鋼（S45C）は常温では<strong>BCC</strong>であることを覚えておくと、切削挙動の差を理解しやすくなります。</p>
+        `,
+      },
+      {
+        heading: '結晶粒と粒界 — 多結晶という現実',
+        html: `
+          <p>ここまで「結晶」と単数形で書いてきましたが、実用金属はほぼすべて<strong>多結晶（polycrystal）</strong>です。つまり、無数の小さな単結晶（<strong>結晶粒、grain</strong>）が異なる向きで集まったものです。</p>
+          <ul>
+            <li>結晶粒のサイズは典型的に <code>10〜100 μm</code>（顕微鏡で見える）</li>
+            <li>結晶粒同士の境界を<strong>粒界（grain boundary）</strong>と呼ぶ</li>
+            <li>粒界では原子配列が乱れるため、転位の動きを止める=<strong>強度を上げる</strong>効果がある（Hall-Petch則: σy ∝ d^(-1/2)、d=結晶粒径）</li>
+            <li>結晶粒が小さいほど強い → 結晶粒微細化が金属強化の標準手法</li>
+          </ul>
+          <p>切削加工との関係: 削っているのは「規則正しく並んだ単結晶」ではなく「ランダムな向きの結晶粒の集まり」です。刃先は瞬間ごとに違う向きの結晶を削るため、<strong>切削力が時間的に変動</strong>します。これが切削振動・表面粗さ・工具摩耗の<strong>確率的なばらつき</strong>の根源です。</p>
+        `,
+      },
+      {
+        heading: '結晶構造が切削性を決める（予告）',
+        html: `
+          <p>本章で導入した結晶構造の話は、<strong>次章「転位と塑性変形」</strong>で切削性に直結します。簡単に予告すると:</p>
+          <ul>
+            <li><strong>FCC（Al, Cu, γ-Fe, SUS304）</strong>: 滑りやすい方向が <strong>12個</strong>ある → 大きく延性、切削しやすい</li>
+            <li><strong>BCC（α-Fe, S45C）</strong>: 滑り方向が <strong>48個</strong>あるが個々の動きやすさは劣る → 中程度の延性</li>
+            <li><strong>HCP（Ti, Mg）</strong>: 滑り方向が <strong>3〜6個</strong>しかない → 延性に乏しく、加工硬化が激しい</li>
+          </ul>
+          <p>チタン（HCP）が「難削材」と言われる本質的な理由の1つがここにあります。前章で見た「熱伝導率の低さ」と合わせて、Ti は<strong>結晶構造的にも、熱的にも、削りにくい</strong>のです。</p>
+          <p style="margin-top:12px;padding:12px;background:var(--bg-2);border-left:3px solid var(--accent);border-radius:2px;">
+            <strong>本章のキーアイデア</strong><br>
+            金属原子は単位格子（BCC / FCC / HCP）を3次元に積み重ねた結晶として並んでいる。実用金属は多結晶で、結晶粒の大きさ・粒界の量が強度を決める。次章ではこの結晶の中で「<strong>転位</strong>」という線状欠陥がどう動くか、それが「変形のしやすさ」=「切削性」をどう決めるかを見る。
+          </p>
+        `,
+      },
+    ],
+    terms: [
+      { name: '結晶', en: 'Crystal', def: '原子が規則正しく3次元周期的に並んだ固体。' },
+      { name: '単位格子', en: 'Unit Cell', def: '結晶を構成する最小の繰り返し単位。3次元方向に積み重ねれば全体が再現できる。' },
+      { name: '格子定数', en: 'Lattice Constant', def: '単位格子の辺の長さ。記号 a。鉄なら 0.287 nm 程度。' },
+      { name: 'BCC', en: 'Body-Centered Cubic', def: '体心立方格子。立方体の8頂点+中心に原子。配位数8、充填率68%。α-Fe, Cr, W等。' },
+      { name: 'FCC', en: 'Face-Centered Cubic', def: '面心立方格子。立方体の8頂点+6面の中心に原子。配位数12、充填率74%（最密）。γ-Fe, Al, Cu等。' },
+      { name: 'HCP', en: 'Hexagonal Close-Packed', def: '六方最密充填格子。六角柱状の配置で配位数12、充填率74%。Ti, Mg, Zn等。すべり系が少なく延性に乏しい。' },
+      { name: '同素変態', en: 'Allotropic Transformation', def: '同じ元素が温度によって結晶構造を変える現象。鉄のα↔γ↔δが代表例。熱処理の物理的根拠。' },
+      { name: '結晶粒', en: 'Grain', def: '多結晶を構成する微小単結晶領域。典型サイズ 10〜100 μm。' },
+      { name: '粒界', en: 'Grain Boundary', def: '結晶粒同士の境界面。転位移動を阻害して強度を上げる（Hall-Petch則）。' },
+    ],
+    further: [
+      '教科書の定番：<strong>キャリスター「材料の科学と工学」</strong>結晶構造章、<strong>Hull & Bacon「Introduction to Dislocations」</strong>',
+      '<strong>JIS G 0551 鋼-結晶粒度の顕微鏡試験方法</strong> — 結晶粒径の実用的な測定規格',
+      '<strong>日本金属学会「結晶塑性論」</strong> — 結晶塑性の標準テキスト（中〜上級）',
+      'Crystallography Open Database (COD): <code>http://www.crystallography.net/cod/</code> — 結晶構造データの公開DB',
+    ],
+  },
+  {
+    id: 'a4',
+    num: 'A4',
+    title: '転位と塑性変形',
+    summary: '理想結晶ではなく転位（線欠陥）こそが「変形のしやすさ」の主役。すべり系の数が結晶構造ごとの延性差=切削性差を生む。',
+    voiceSummary: '転位は結晶中の線欠陥で、これが少しずつ動くことで金属の塑性変形が起きます。理想結晶を一気に変形させるよりも遥かに小さな力で済むため、金属は理論強度の100分の1から1000分の1の力で削れます。すべり系の数は結晶構造で決まり、FCCは12個、BCCは48個、HCPは3個。HCPのチタンが難削材である根本理由はここにあります。加工硬化は転位密度上昇による現象で、ステンレスの切削が難しい原因の1つです。',
+    readTime: '9分',
+    hasSim: false,
+    lead: '前章で結晶構造（BCC・FCC・HCP）を見ました。本章は核心です。<strong>「金属はなぜ削れるのか、その本当の理由」</strong>を扱います。鍵を握るのは<strong>転位（dislocation）</strong>という線欠陥。これが少しずつ動くことで結晶全体が滑り、私たちが「塑性変形」と呼ぶ現象になります。転位の振る舞いを理解すれば、Ti が削りにくい本当の理由、ステンレスの加工硬化、そして切削加工のエネルギー収支まで、全部つながります。',
+    sections: [
+      {
+        heading: '理論強度と実強度のギャップ',
+        html: `
+          <p>原子間の結合エネルギーから理論的に計算すると、純鉄を引き裂くには <code>~ 10 GPa</code> 程度の応力が必要です。ところが実際の鉄は <code>~ 100〜500 MPa</code>（理論値の<strong>数十分の一</strong>）で塑性変形を始めます。</p>
+          <p>この大きなギャップは、20世紀初頭の冶金学最大の謎でした。「金属には何か<strong>欠陥</strong>があって、そこから変形が始まっているのではないか?」</p>
+          <p>1934年、Egon Orowan、Michael Polanyi、Geoffrey Taylor の3人が<strong>独立に</strong>同じ答えにたどり着きます。それが<strong>転位（dislocation）</strong>です。</p>
+        `,
+      },
+      {
+        heading: '転位 — 結晶中の線欠陥',
+        html: `
+          <p>転位の最も基本的な形が<strong>刃状転位（edge dislocation）</strong>です。図のように、結晶の上半分にだけ<strong>余分な原子半面</strong>が挿入された状態を想像してください。記号 <strong>⊥</strong> で表されます。</p>
+          <p>この余分な半面の<strong>下端</strong>（線状の領域）が「転位線」で、ここでは原子の配置が乱れています。</p>
+          <ul>
+            <li>転位の周りには<strong>歪み場</strong>がある（上は圧縮、下は引張）</li>
+            <li>外部からせん断応力をかけると、転位は<strong>横方向</strong>に動く</li>
+            <li>動くために必要な力は、結晶を<strong>一度に全部</strong>引き裂く力に比べて格段に小さい</li>
+            <li>例: 1原子分動かすには <strong>結合の組み換えが結合面1段分</strong>だけで済む</li>
+          </ul>
+          <p>もう1つの基本形は<strong>らせん転位（screw dislocation）</strong>。原子半面の挿入ではなく、結晶を一部「螺旋階段状にずらした」ような構造です。実際の転位はこの両者が混ざった<strong>混合転位</strong>で、結晶中を曲がりくねった線として存在します。</p>
+        `,
+      },
+      {
+        heading: 'すべり系 — 結晶構造で決まる「動きやすい方向」',
+        html: `
+          <p>転位はどの方向にも動けるわけではなく、<strong>原子が密に詰まった面（すべり面、slip plane）</strong>を、<strong>原子が並んだ方向（すべり方向、slip direction）</strong>に沿ってのみ動けます。すべり面とすべり方向の組み合わせを<strong>すべり系（slip system）</strong>と呼びます。</p>
+          <p>すべり系の数は結晶構造で決まり、これが<strong>延性（変形のしやすさ）</strong>を決定します。</p>
+          <table style="width:100%;border-collapse:collapse;font-size:13px;margin:12px 0;">
+            <thead>
+              <tr style="background:var(--bg-3);">
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">構造</th>
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">代表すべり系</th>
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">すべり系数</th>
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">延性</th>
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">代表金属の切削性</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="background:var(--bg-2);"><td style="padding:8px;border:1px solid var(--line);"><strong>FCC ★</strong></td><td style="padding:8px;border:1px solid var(--line);">{111}&lt;110&gt;</td><td style="padding:8px;border:1px solid var(--line);"><strong>12</strong></td><td style="padding:8px;border:1px solid var(--line);">高</td><td style="padding:8px;border:1px solid var(--line);">良好（Al, Cu, SUS304の連続切屑）</td></tr>
+              <tr><td style="padding:8px;border:1px solid var(--line);"><strong>BCC</strong></td><td style="padding:8px;border:1px solid var(--line);">{110}&lt;111&gt; 他</td><td style="padding:8px;border:1px solid var(--line);"><strong>48</strong>（実際には温度・速度依存）</td><td style="padding:8px;border:1px solid var(--line);">中</td><td style="padding:8px;border:1px solid var(--line);">標準（炭素鋼の旋削）</td></tr>
+              <tr><td style="padding:8px;border:1px solid var(--line);color:var(--ylw);"><strong>HCP</strong></td><td style="padding:8px;border:1px solid var(--line);">{0001}&lt;11-20&gt; のみ（基底面）</td><td style="padding:8px;border:1px solid var(--line);"><strong style="color:var(--ylw);">3</strong></td><td style="padding:8px;border:1px solid var(--line);color:var(--ylw);">低</td><td style="padding:8px;border:1px solid var(--line);color:var(--ylw);">難（Ti, Mg, Zn）</td></tr>
+            </tbody>
+          </table>
+          <p>HCP のすべり系がたった3個しかないというのが、決定的な弱点です。基底面以外の方向に変形させようとすると、すべり以外の機構（<strong>双晶変形 / twinning</strong>）に頼るしかなく、これは余計に大きな応力が必要です。</p>
+          <p>結果として:</p>
+          <ul>
+            <li><strong>Ti（HCP）</strong> — 変形に大きな力が要る → 切削抵抗が大きい → 工具寿命短い</li>
+            <li><strong>Mg（HCP）</strong> — 同様に脆く、加工面に欠けが出やすい</li>
+            <li><strong>Al（FCC）</strong> — 12個のすべり系がフル稼働、削りやすさ抜群</li>
+          </ul>
+        `,
+      },
+      {
+        heading: '加工硬化 — 転位の渋滞',
+        html: `
+          <p>金属を変形させると硬くなります。これを<strong>加工硬化（work hardening）</strong>と呼びます。原因は、変形によって新しい転位が大量に発生し、互いに<strong>絡まって動けなくなる</strong>ことです。</p>
+          <ul>
+            <li>変形前の転位密度: <code>10⁸〜10¹⁰ /m²</code>（焼鈍材）</li>
+            <li>強加工後の転位密度: <code>10¹⁵〜10¹⁶ /m²</code>（5〜7桁増加）</li>
+            <li>転位同士が交差・絡まって動けなくなり、降伏応力が上昇</li>
+          </ul>
+          <p>切削加工は<strong>非常に強い局所変形</strong>を生むため、加工硬化が顕著に起きます。特に問題になるのが:</p>
+          <ul>
+            <li><strong>SUS304（オーステナイト系ステンレス）</strong>: 加工硬化が激しい代表格。前の切削で硬化した層を次の刃が削ろうとすると、想定外の高負荷になる</li>
+            <li><strong>Inconel 718</strong>: 同様に激しい。さらに化学的に活性で工具に凝着もしやすい</li>
+            <li>対策: <strong>薄い切込みは避ける</strong>。硬化層の中だけで切削するのではなく、硬化層を貫いて新しい母材まで削り込む</li>
+          </ul>
+          <p>切削条件設計の鉄則「ステンレスやインコネルでは切込みを浅くしすぎない」の物理的根拠が、この加工硬化現象です。</p>
+        `,
+      },
+      {
+        heading: '切削加工 = 転位の局所大量発生',
+        html: `
+          <p>これまでの話を切削加工につなげましょう。切削の本質は、刃先のごく狭い領域での<strong>激しい塑性変形</strong>です。マクロには「金属を分離する」操作ですが、原子レベルでは:</p>
+          <ol>
+            <li>刃先がせん断応力を被削材に与える</li>
+            <li>すべり面に沿って既存の転位が動き、塑性変形が始まる</li>
+            <li>大量の新しい転位が発生（転位密度が一気に上昇）</li>
+            <li>転位同士が絡まる前に、変形領域がさらに進行 → 切屑として分離</li>
+            <li>転位の運動エネルギーは最終的に<strong>熱</strong>に変換される（変形仕事の 90% 以上が熱になる）</li>
+          </ol>
+          <p>「切削で熱が出る」という現象の正体が、この最終ステップです。Part B 第6章「切削抵抗と熱」で扱う数式やモデルは、この物理の上に乗っています。</p>
+          <p style="margin-top:12px;padding:12px;background:var(--bg-2);border-left:3px solid var(--accent);border-radius:2px;">
+            <strong>本章のキーアイデア</strong><br>
+            金属が「現実的な力で削れる」のは、結晶中の<strong>転位</strong>がすべり面上を動くから。すべり系の数は結晶構造で決まり、HCP（Ti）の少なさが難削材の根源。切削は局所的な転位の大量発生現象であり、変形仕事の大部分が熱に変わる。
+          </p>
+        `,
+      },
+    ],
+    terms: [
+      { name: '転位', en: 'Dislocation', def: '結晶中の線欠陥。塑性変形の主役。1934年に Orowan, Polanyi, Taylor が独立に提唱。' },
+      { name: '刃状転位', en: 'Edge Dislocation', def: '結晶半面が余分に挿入された形の転位。記号 ⊥。' },
+      { name: 'らせん転位', en: 'Screw Dislocation', def: '結晶を螺旋状にずらした形の転位。' },
+      { name: 'すべり面', en: 'Slip Plane', def: '転位が動ける面。原子が最も密に詰まった面が選ばれる。FCC は {111}。' },
+      { name: 'すべり系', en: 'Slip System', def: 'すべり面とすべり方向の組み合わせ。FCC=12, BCC=48, HCP=3 が代表的。' },
+      { name: '加工硬化', en: 'Work Hardening / Strain Hardening', def: '変形によって転位密度が増え、互いに絡まって動けなくなる現象。降伏応力が上昇する。' },
+      { name: '双晶変形', en: 'Twinning', def: 'すべり以外の塑性変形機構。HCP 金属で重要。' },
+      { name: '転位密度', en: 'Dislocation Density', def: '単位体積あたりの転位線の総長 (m/m³ = m⁻²)。焼鈍材 10⁸-10¹⁰、強加工材 10¹⁵-10¹⁶。' },
+    ],
+    further: [
+      '<strong>Hull & Bacon「Introduction to Dislocations」（4th ed., 2011）</strong> — 転位論の標準テキスト',
+      '<strong>木村・橋本「金属学概論」</strong> — 日本語の標準的な金属学教科書',
+      '<strong>日本金属学会「材料強度の原子論」</strong>シリーズ',
+      '電子顕微鏡像のギャラリー: <strong>Materials Science Online (MIT OCW)</strong> など、TEM で実際の転位を見られる',
+    ],
+  },
+  {
+    id: 'a5',
+    num: 'A5',
+    title: '合金と相変態',
+    summary: '純金属に他元素を加えると性質が劇的に変わる。状態図、固溶体、析出強化、Fe-C 系から見る切削抵抗の根源。',
+    voiceSummary: '実用金属のほとんどは合金です。状態図は、温度と組成で金属がどんな相を取るかを示します。鉄炭素系では、α鉄、γ鉄、フェライト、オーステナイト、パーライト、セメンタイト、マルテンサイトといった相が現れます。析出強化はAl-CuやNi基超合金の強度の根源で、硬い析出相が転位の動きを止めます。切削抵抗が材料ごとに違うのは、合金中のどの相を削っているかが違うためです。',
+    readTime: '10分',
+    hasSim: false,
+    lead: 'これまでの3章で、純金属の世界（原子・電子配置・結晶構造・転位）を駆け足で見てきました。しかし<strong>実用金属のほぼ100%は合金です</strong>。鉄に炭素を加えれば鋼、アルミに銅を加えれば 7000 系、ニッケルに各種元素を加えればインコネル。本章では、合金にすると何が起きるか、なぜ強度や切削抵抗が変わるのかを、<strong>状態図</strong>と<strong>相変態</strong>の言葉で見ていきます。',
+    sections: [
+      {
+        heading: '純金属 vs 合金 — なぜ混ぜるのか',
+        html: `
+          <p>純金属（純鉄、純アルミ）は実は<strong>非常に柔らかく、強度が低い</strong>です。例えば純鉄の引張強さは <code>~ 200 MPa</code> 程度しかありません。普通鋼（S45C）の <code>~ 700 MPa</code> と比べると 1/3 以下です。</p>
+          <p>そこに少量の他元素を加えると、強度が桁違いに上がります。理由は、加えた元素が:</p>
+          <ul>
+            <li><strong>固溶体</strong>として母相に溶け込み、転位の動きを邪魔する</li>
+            <li><strong>析出物</strong>として母相中に微細な硬い粒として現れ、転位を止める</li>
+            <li><strong>新しい相</strong>を作り、結晶構造を変える</li>
+          </ul>
+          <p>これらの効果を制御するのが、冶金学・材料工学の中心的な仕事です。切削加工の対象になる「鉄鋼」「ステンレス」「Al合金」「Ni基超合金」は、すべてこの考え方で設計されています。</p>
+        `,
+      },
+      {
+        heading: '固溶体 — 置換型と侵入型',
+        html: `
+          <p>合金の最も基本的な形が<strong>固溶体（solid solution）</strong>です。母相の結晶格子中に、別の元素の原子が混ざり込んでいる状態です。</p>
+          <ul>
+            <li><strong>置換型固溶体（substitutional）</strong>: 母相原子と同程度のサイズの原子が、母相の格子点を置き換える。例: Fe-Cr（ステンレスの基本）, Cu-Ni</li>
+            <li><strong>侵入型固溶体（interstitial）</strong>: 母相原子より小さい原子が、格子の<strong>隙間</strong>に入り込む。例: Fe-C（鉄の中の炭素）, Fe-N（窒素）</li>
+          </ul>
+          <p>どちらの場合も、原子サイズの違いが格子に<strong>歪み場</strong>を作り、これが転位の動きに「障害物」として効きます。これを<strong>固溶強化（solid solution strengthening）</strong>と呼びます。</p>
+          <p>ステンレス（SUS304: Fe + 18%Cr + 8%Ni）が炭素鋼より硬いのは、Cr と Ni の固溶強化が効いているためです。さらに FCC 構造（γ-Fe ベース）と組み合わさって、加工硬化が顕著になります。</p>
+        `,
+      },
+      {
+        heading: '状態図 — 合金の地図',
+        html: `
+          <p><strong>状態図（phase diagram）</strong>は、温度と組成を軸として、その条件で安定な「相」を示した地図です。冶金学の最重要ツールです。</p>
+          <p>右の図は<strong>Fe-C 系状態図</strong>の簡略版（実用域、C 0〜2.5 wt%）です。この図から読み取れる主要な相:</p>
+          <ul>
+            <li><strong>α-Fe（フェライト）</strong>: BCC、室温〜727°C、C をほとんど溶かさない（最大 0.02%）</li>
+            <li><strong>γ-Fe（オーステナイト）</strong>: FCC、727°C〜1394°C、C を最大 2.0% 溶かす</li>
+            <li><strong>パーライト</strong>: フェライトとセメンタイトが層状に並んだ組織、C 0.77% で共析変態</li>
+            <li><strong>セメンタイト（Fe₃C）</strong>: 鉄炭化物、非常に硬い、6.7% C</li>
+          </ul>
+          <p><strong>共析点</strong>（0.77%C, 727°C）が決定的に重要です。ここを境に組織が大きく変わります。</p>
+          <p>切削加工との接点: 切削抵抗は<strong>削っている相の硬さ</strong>で決まります。フェライトは柔らかく削りやすいですが、セメンタイトは超硬で工具を激しく摩耗させます。鋳鉄（FC250）の切削で工具寿命が読みにくいのは、削る場所によって組織比率が違うためです。</p>
+        `,
+      },
+      {
+        heading: 'マルテンサイト — 急冷で生まれる準安定相',
+        html: `
+          <p>状態図に書かれているのは「ゆっくり冷やしたとき」の<strong>平衡相</strong>です。実際の熱処理では「急冷（焼入れ、quenching）」を使うため、平衡相にならない相が出現します。それが<strong>マルテンサイト（martensite）</strong>です。</p>
+          <p>メカニズム:</p>
+          <ol>
+            <li>γ-Fe（FCC、C を 2% まで溶かせる）の状態で 800〜1000°C に加熱</li>
+            <li>水や油で<strong>急冷</strong>（数秒で室温へ）</li>
+            <li>FCC → BCC 変態が起きるが、C 原子が拡散する暇がない</li>
+            <li>結果: BCC を歪めた構造（<strong>体心正方晶 BCT</strong>）に C が無理矢理閉じ込められる</li>
+            <li>これがマルテンサイト。極めて硬く（HV 700〜900）、脆い</li>
+          </ol>
+          <p>焼入れままのマルテンサイトは脆すぎるため、150〜650°C で<strong>焼戻し（tempering）</strong>して靭性を回復させます。</p>
+          <p>切削加工との接点: マルテンサイト材は工具寿命を激減させる代表格です。SCM 鋼や工具鋼の切削、特にプリハードン材（焼入れ済み）の加工では、CBN や セラミクス工具を使って<strong>削るというより擦り取る</strong>領域に入ります。</p>
+        `,
+      },
+      {
+        heading: '析出強化 — 微細な硬い粒で転位を止める',
+        html: `
+          <p>もう1つ重要な強化機構が<strong>析出強化（precipitation hardening）</strong>です。固溶体から微細な硬い粒（析出物）を析出させて、転位の動きをブロックします。</p>
+          <p>代表例:</p>
+          <ul>
+            <li><strong>2000系/7000系アルミ合金</strong>（航空機の AL2024, AL7075 など）: Cu, Mg, Zn を含む。<strong>時効処理（aging）</strong>で微細析出物（GPゾーン → θ' → θ）が生まれて強化される</li>
+            <li><strong>Ni基超合金（Inconel 718, René 41 等）</strong>: <strong>γ' 相（Ni₃(Al,Ti)）</strong>や<strong>γ'' 相（Ni₃Nb）</strong>が母相の γ（FCC）中に微細分散して、高温強度を維持</li>
+            <li><strong>マルエージング鋼</strong>: Ni-Mo-Co-Ti 系。マルテンサイト化 + 時効で超高強度</li>
+          </ul>
+          <p>切削加工との接点: <strong>Inconel 718 が究極の難削材</strong>と呼ばれる理由の半分はここにあります。母相の γ-Ni（FCC）は本来削りやすい構造ですが、その中に分散した γ', γ'' という<strong>硬く小さな粒</strong>が常に転位を止め、加工硬化を加速します。さらに前章で見た熱伝導の低さが重なって、刃先で局所的に高温・高応力の地獄が生まれます。</p>
+        `,
+      },
+      {
+        heading: '相が違えば切削抵抗が違う',
+        html: `
+          <p>本章のまとめとして、被削材ごとの切削抵抗（比切削抵抗 Kc, Part B 第6章で詳述）を相と関連付けて見ておきます。</p>
+          <ul style="font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.9;">
+            <li>純アルミ（FCC, 純）　　　　　　 ~ 700 N/mm²</li>
+            <li>S45C（α + パーライト）　　　　　 ~ 2100 N/mm²</li>
+            <li>SUS304（FCC γ + Cr/Ni 固溶）　　 ~ 2600 N/mm²</li>
+            <li>SUS316L（FCC γ + Cr/Ni/Mo 固溶）~ 2700 N/mm²</li>
+            <li>Ti-6Al-4V（HCP α + BCC β）　　 ~ 2000 N/mm²（数字は中程度だが熱伝導率の低さで難削化）</li>
+            <li>Inconel 718（FCC γ + γ'/γ'' 析出）~ 2900 N/mm²</li>
+          </ul>
+          <p>これらの数字は、相構成と転位の動きやすさで物理的に説明できます。Part B の数式は、これらの値を使って力・熱・寿命を予測する道具です。</p>
+          <p style="margin-top:12px;padding:12px;background:var(--bg-2);border-left:3px solid var(--accent);border-radius:2px;">
+            <strong>本章のキーアイデア</strong><br>
+            実用金属は合金であり、固溶強化・相変態・析出強化を組み合わせて強度を出している。状態図を読めば、ある材料がどんな相からできているか、切削で何を削っているかがわかる。難削材は「硬い相」「動きにくい結晶構造」「低い熱伝導」の組み合わせで生まれる。
+          </p>
+        `,
+      },
+    ],
+    terms: [
+      { name: '合金', en: 'Alloy', def: '純金属に他の元素を加えて作る金属。' },
+      { name: '固溶体', en: 'Solid Solution', def: '母相結晶中に別元素が混ざり込んだ状態。置換型と侵入型がある。' },
+      { name: '固溶強化', en: 'Solid Solution Strengthening', def: '固溶した原子が格子歪みを作り、転位の動きを邪魔して強度を上げる現象。' },
+      { name: '状態図', en: 'Phase Diagram', def: '温度・組成の関数として、合金が安定にとる相を示した図。' },
+      { name: 'フェライト', en: 'Ferrite (α-Fe)', def: 'BCC 構造の鉄相。常温安定、C をほとんど溶かさない（最大 0.02%）。柔らかく削りやすい。' },
+      { name: 'オーステナイト', en: 'Austenite (γ-Fe)', def: 'FCC 構造の鉄相。727〜1394°C で安定、C を最大 2.0% 溶かす。SUS304 は常温でこの構造。' },
+      { name: 'パーライト', en: 'Pearlite', def: 'フェライトとセメンタイトが層状に並んだ組織。共析鋼の典型。' },
+      { name: 'セメンタイト', en: 'Cementite (Fe₃C)', def: '鉄炭化物。HV ~ 800 と非常に硬く、工具を激しく摩耗させる。' },
+      { name: 'マルテンサイト', en: 'Martensite', def: '急冷で生じる BCT 構造の準安定相。HV 700〜900 と超硬。焼入れの主役。' },
+      { name: '析出強化', en: 'Precipitation Hardening', def: '微細な硬い析出物が母相中に分散して転位を止める強化機構。Al合金、Ni基超合金の主強化機構。' },
+      { name: '時効処理', en: 'Aging Treatment', def: '固溶状態から低温で長時間保持し、微細析出を制御する熱処理。' },
+    ],
+    further: [
+      '<strong>キャリスター「材料の科学と工学」</strong> 状態図・相変態の章',
+      '<strong>須藤一「金属組織学」</strong> — 相変態論の和書定番',
+      '<strong>日本鉄鋼協会「鉄鋼便覧」</strong> 第II編 鉄鋼材料 — Fe-C 系の精密版',
+      'ASM International 出版「Phase Diagrams」シリーズ — 主要合金系の状態図全集',
+    ],
+  },
+  {
+    id: 'a6',
+    num: 'A6',
+    title: '切削における材料応答',
+    summary: 'これまでの材料科学を切削加工に接続する。一次せん断帯、断熱せん断、Johnson-Cook 構成式、切屑形態分類。Part B への橋渡し章。',
+    voiceSummary: '切削では工具刃先の前方に一次せん断帯が形成され、ここで激しい塑性変形と発熱が同時に起きます。歪み速度は10の4乗から10の6乗毎秒、温度上昇は数百度に達します。これを記述するのがJohnson-Cook構成式で、加工硬化項、歪み速度感受性項、熱軟化項の3項からなります。チタンやインコネルでは熱が逃げる前に局所軟化が起き、断熱せん断帯という不安定変形領域が形成されます。これが鋸歯状切屑の原因です。',
+    readTime: '11分',
+    hasSim: false,
+    lead: 'Part A の最終章です。これまで学んだ材料科学（原子・電子・結晶・転位・合金）を、ついに<strong>切削加工そのもの</strong>に接続します。鍵となるのは「切削中、材料はどう応答しているか」を物理的に記述する道具立て: <strong>一次せん断帯</strong>、<strong>歪み速度依存性</strong>、<strong>断熱せん断</strong>、そして産業で実際に使われている<strong>Johnson-Cook 構成式</strong>。これらを抑えれば、Part B 以降の経験式や工具選定、CFD/FEM 解析の意味が、底から見通せるようになります。',
+    sections: [
+      {
+        heading: '一次せん断帯 — 切削変形の心臓部',
+        html: `
+          <p>切削の幾何学的モデル（オルソゴナル切削、2次元の単純化）を考えます。図のように、工具がワーク表面を進むと、刃先の前方に細い<strong>せん断帯（shear band）</strong>が形成されます。これが<strong>一次せん断帯（primary shear zone, PSZ）</strong>です。</p>
+          <ul>
+            <li>幅は <code>10〜100 μm</code> 程度（条件依存）</li>
+            <li>ここを通過する材料は、わずか <code>~ 10⁻⁴ 秒</code>で大きな塑性変形を受ける</li>
+            <li>変形仕事の <strong>90% 以上が熱に変換</strong>される（前章で見た転位運動エネルギー → 熱）</li>
+            <li>結果として、せん断帯内の温度は<strong>数百度〜千度</strong>に達する</li>
+          </ul>
+          <p>もう1つの重要な領域が<strong>二次せん断帯（secondary shear zone, SSZ）</strong>で、工具のすくい面と切屑の界面に発生します。ここでの摩擦熱が工具刃先を直接加熱し、工具寿命を決定する主因になります。</p>
+          <p>切削における材料応答を理解するとは、この一次せん断帯と二次せん断帯で何が起きているかを定量的に記述することです。</p>
+        `,
+      },
+      {
+        heading: '切削特有の極限条件 — 歪み速度と歪み量',
+        html: `
+          <p>引張試験のような通常の塑性変形試験と比べて、切削における材料応答には<strong>3つの極限的特徴</strong>があります。</p>
+          <table style="width:100%;border-collapse:collapse;font-size:13px;margin:12px 0;">
+            <thead>
+              <tr style="background:var(--bg-3);">
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">物理量</th>
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">通常の引張試験</th>
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">切削（一次せん断帯）</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding:8px;border:1px solid var(--line);">歪み量 ε</td><td style="padding:8px;border:1px solid var(--line);">~ 0.2 (20%)</td><td style="padding:8px;border:1px solid var(--line);"><strong>~ 2〜5</strong> (200〜500%)</td></tr>
+              <tr><td style="padding:8px;border:1px solid var(--line);">歪み速度 ε̇</td><td style="padding:8px;border:1px solid var(--line);">~ 10⁻³ /s</td><td style="padding:8px;border:1px solid var(--line);"><strong>~ 10⁴〜10⁶ /s</strong></td></tr>
+              <tr><td style="padding:8px;border:1px solid var(--line);">温度上昇</td><td style="padding:8px;border:1px solid var(--line);">準静的、ほぼ無視</td><td style="padding:8px;border:1px solid var(--line);"><strong>+200〜800°C</strong></td></tr>
+            </tbody>
+          </table>
+          <p>この極限条件下では、通常の応力-歪み線図の話が通用しません。具体的には:</p>
+          <ul>
+            <li>歪み速度が高いほど降伏応力が上がる（<strong>歪み速度感受性</strong>）</li>
+            <li>温度が高いほど降伏応力が下がる（<strong>熱軟化</strong>）</li>
+            <li>これらが同時に起きるので、相互作用を含む式が必要</li>
+          </ul>
+          <p>この需要に応えて開発されたのが、次に述べる Johnson-Cook 構成式です。</p>
+        `,
+      },
+      {
+        heading: 'Johnson-Cook 構成式 — 切削FEMの定番',
+        html: `
+          <p>1983年に Gordon Johnson と William Cook が提唱した<strong>Johnson-Cook 構成式</strong>は、現在も切削の有限要素解析（FEM）で最も広く使われている材料モデルです。</p>
+          <p style="background:var(--bg-2);padding:12px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:13px;text-align:center;margin:12px 0;">
+            σ = (A + B·ε<sup>n</sup>) · (1 + C·ln(ε̇/ε̇₀)) · (1 − T*<sup>m</sup>)
+          </p>
+          <p>3つの項に分解できます。</p>
+          <ul>
+            <li><strong>第1項 (A + B·ε<sup>n</sup>)</strong>: <strong>加工硬化項</strong>。A は降伏応力、B と n が硬化のペース。前章で見た転位密度の上昇による硬化を表す</li>
+            <li><strong>第2項 (1 + C·ln(ε̇/ε̇₀))</strong>: <strong>歪み速度感受性項</strong>。C は係数、ε̇₀ は基準歪み速度。切削の高速変形に対応する</li>
+            <li><strong>第3項 (1 − T*<sup>m</sup>)</strong>: <strong>熱軟化項</strong>。T* = (T − T_room) / (T_melt − T_room) で正規化温度、m は指数</li>
+          </ul>
+          <p>パラメータ <code>A, B, C, n, m</code> は材料ごとに決まる定数で、<strong>SHPB（スプリットホプキンソン棒）試験</strong>などの高速変形試験で同定されます。代表値（参考、文献により幅あり）:</p>
+          <ul style="font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.8;">
+            <li>S45C 相当鋼:　A=553 MPa, B=600 MPa, n=0.234, C=0.013, m=1.0</li>
+            <li>Ti-6Al-4V:　　A=782 MPa, B=498 MPa, n=0.28,  C=0.028, m=1.0</li>
+            <li>Inconel 718:　 A=980 MPa, B=1370 MPa, n=0.164, C=0.02, m=1.03</li>
+            <li>AL7075-T6:　 A=520 MPa, B=477 MPa, n=0.52,  C=0.001, m=1.0</li>
+          </ul>
+          <p>この式が分かれば、切削力 / 切削温度 / 切屑形態の予測が、材料パラメータから理屈で計算できるようになります。商用 FEM ソフト（DEFORM, AdvantEdge, Abaqus）はすべてこの式をベースにしています。</p>
+        `,
+      },
+      {
+        heading: '断熱せん断帯 — 不安定変形が生まれるとき',
+        html: `
+          <p>Johnson-Cook 式の第3項（熱軟化）が、ある条件下で<strong>暴走</strong>することがあります。</p>
+          <p>シナリオ: せん断帯で発熱 → 局所温度上昇 → 熱軟化（応力低下） → 同じ応力でさらに変形 → さらに発熱 → さらに軟化 ... </p>
+          <p>この正のフィードバックが起きる条件は:</p>
+          <ul>
+            <li><strong>熱が逃げる時間がない</strong>（高い切削速度、短い接触時間）</li>
+            <li><strong>熱伝導率が低い材料</strong>（チタン、インコネル）</li>
+            <li><strong>歪み速度感受性が低い</strong>（C 値が小さい）</li>
+          </ul>
+          <p>この条件が揃うと、ごく狭い領域に変形が集中して、極端に高温・高歪みの<strong>断熱せん断帯（adiabatic shear band, ASB）</strong>が形成されます。マクロには、切屑が連続的にならず、ノコギリの歯のような<strong>鋸歯状切屑（segmented chip / sawtooth chip）</strong>として観察されます。</p>
+          <p>Ti-6Al-4V や Inconel 718 の高速切削で見られる鋸歯状切屑は、まさにこの断熱せん断の証拠です。これが工具刃先に周期的な衝撃応力を与え、工具欠けやチッピングの原因にもなります。航空機部品の加工で工具寿命が読めない理由の1つです。</p>
+        `,
+      },
+      {
+        heading: '切屑形態 — 材料応答の可視的な指紋',
+        html: `
+          <p>切屑の形は、材料応答の結果として現れる「指紋」です。形を見れば、何が起きているか推定できます。</p>
+          <table style="width:100%;border-collapse:collapse;font-size:13px;margin:12px 0;">
+            <thead>
+              <tr style="background:var(--bg-3);">
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">切屑形態</th>
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">条件</th>
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">代表材料</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding:8px;border:1px solid var(--line);"><strong>連続切屑</strong></td><td style="padding:8px;border:1px solid var(--line);">十分な延性、安定した変形</td><td style="padding:8px;border:1px solid var(--line);">SUS304, 純Cu, 軟鋼</td></tr>
+              <tr><td style="padding:8px;border:1px solid var(--line);"><strong>連続切屑 + 構成刃先</strong></td><td style="padding:8px;border:1px solid var(--line);">中速度・低Vc、刃先に被削材が凝着</td><td style="padding:8px;border:1px solid var(--line);">軟鋼の中速旋削</td></tr>
+              <tr><td style="padding:8px;border:1px solid var(--line);"><strong>鋸歯状切屑</strong></td><td style="padding:8px;border:1px solid var(--line);">断熱せん断、高Vc、低熱伝導</td><td style="padding:8px;border:1px solid var(--line);">Ti-6Al-4V, Inconel 718</td></tr>
+              <tr><td style="padding:8px;border:1px solid var(--line);"><strong>不連続切屑</strong></td><td style="padding:8px;border:1px solid var(--line);">脆性破壊、低延性</td><td style="padding:8px;border:1px solid var(--line);">鋳鉄 FC250, セラミクス</td></tr>
+            </tbody>
+          </table>
+          <p>切削条件設定の暗黙の目標の1つは「望ましい切屑形態を出す」ことです。連続切屑は表面粗さに有利ですが、長く伸びると工具に絡みつく問題があり、<strong>チップブレーカ</strong>形状で適切に分断します。鋸歯状切屑が出る領域では、振動と工具寿命が問題になります。</p>
+        `,
+      },
+      {
+        heading: 'Part A → Part B への橋渡し',
+        html: `
+          <p>これで Part A 「材料の基礎」を完了しました。原子レベルから始まって、ここまで来ました。</p>
+          <ul>
+            <li><strong>第A1章 原子と電子</strong>: 物質の最小単位、化学結合の3種</li>
+            <li><strong>第A2章 金属結合と自由電子</strong>: なぜ金属は削れるか（電子の海）</li>
+            <li><strong>第A3章 結晶構造</strong>: BCC / FCC / HCP の3大構造</li>
+            <li><strong>第A4章 転位と塑性変形</strong>: すべり系の数 = 切削性</li>
+            <li><strong>第A5章 合金と相変態</strong>: 状態図、固溶強化、析出強化、難削材の正体</li>
+            <li><strong>第A6章 切削における材料応答（本章）</strong>: 一次せん断帯、Johnson-Cook、断熱せん断、切屑形態</li>
+          </ul>
+          <p>これで切削加工を語るための<strong>物理的な土台</strong>が揃いました。Part B（既存の第1〜10章）では、いよいよ加工そのものに入ります。Part B の中で出てくる Vc, f, ap, Kc, VB, Taylor 式、Stability Lobe などは、すべて Part A で見た物理の上に乗っています。</p>
+          <p style="margin-top:12px;padding:12px;background:var(--bg-2);border-left:3px solid var(--accent);border-radius:2px;">
+            <strong>Part A 全体のキーアイデア</strong><br>
+            「金属が削れる」「ある材料が削りにくい」「条件で工具寿命が変わる」── すべての切削現象には、原子・電子・結晶・転位・相のレベルでの物理的な根拠がある。Part B 以降の経験式や運用ノウハウを「ただ覚える」のではなく、<strong>「なぜそうなるか」</strong>を Part A の言葉で説明できる状態を目指してほしい。それができれば、新しい材料・新しい条件にも自分の頭で対処できるようになる。
+          </p>
+        `,
+      },
+    ],
+    terms: [
+      { name: '一次せん断帯', en: 'Primary Shear Zone (PSZ)', def: '工具刃先前方の、切屑が分離する際の主な変形領域。幅 10〜100 μm、歪み速度 10⁴〜10⁶ /s。' },
+      { name: '二次せん断帯', en: 'Secondary Shear Zone (SSZ)', def: '工具すくい面と切屑界面の摩擦による変形領域。工具刃先温度を直接決める。' },
+      { name: '歪み速度感受性', en: 'Strain Rate Sensitivity', def: '歪み速度が高いほど降伏応力が上がる性質。Johnson-Cook 第2項で表現。' },
+      { name: '熱軟化', en: 'Thermal Softening', def: '温度上昇で降伏応力が下がる現象。Johnson-Cook 第3項。' },
+      { name: 'Johnson-Cook 構成式', en: 'Johnson-Cook Constitutive Equation', def: '加工硬化・歪み速度・熱軟化を含む応力-歪み関係式。1983年に提唱。FEM 切削解析の標準。' },
+      { name: '断熱せん断帯', en: 'Adiabatic Shear Band (ASB)', def: '熱が逃げる前に局所軟化が起きて変形が集中する領域。チタン・インコネルの鋸歯状切屑の原因。' },
+      { name: '鋸歯状切屑', en: 'Segmented / Sawtooth Chip', def: '断熱せん断によって周期的に分断される切屑。Ti-6Al-4V の高速切削で典型。' },
+      { name: 'SHPB 試験', en: 'Split Hopkinson Pressure Bar', def: 'Johnson-Cook パラメータ同定の標準手法。歪み速度 10²〜10⁴ /s で材料を試験する。' },
+    ],
+    further: [
+      'Johnson, G.R., Cook, W.H. (1983) "A constitutive model and data for metals subjected to large strains, high strain rates and high temperatures" — 原論文',
+      '<strong>Childs, T. et al.「Metal Machining: Theory and Applications」</strong> — 切削力学の標準教科書',
+      '<strong>Trent, E.M., Wright, P.K.「Metal Cutting」(4th ed.)</strong> — 同分野の古典',
+      'CIRP Annals: <code>https://www.sciencedirect.com/journal/cirp-annals</code> — 切削研究の最高峰ジャーナル、Johnson-Cook の改良版や ASB 研究が頻出',
+      '商用 FEM ソフト: DEFORM, AdvantEdge (Third Wave Systems), Abaqus/Explicit がいずれも Johnson-Cook をサポート',
     ],
   },
   {
