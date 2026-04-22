@@ -308,8 +308,13 @@ owner 確認が取れ次第、Phase 0 から着手します。
 
 ## 参照
 
-- Matlens [Pack 3](https://github.com/BoxPistols/Matlens/...) — システムプロンプト設計（レベル別 / ソクラテス式 / 場面別テンプレート）
-- Matlens [Pack 11](https://github.com/BoxPistols/Matlens/...) — Chat AI 実装方針 (本文書のアーキテクチャ章の原型)
+- Matlens **Pack 3** — システムプロンプト設計（レベル別 / ソクラテス式 / 場面別テンプレート）
+- Matlens **Pack 11** — Chat AI 実装方針 (本文書のアーキテクチャ章の原型)
+- Matlens **Pack 12** — Vanilla JS + ESM Workers 最小実装の雛形 (本リポ採用想定)
+  - Workers ESM ハンドラ (~200行、既存 worker-proxy.js に増設)
+  - Vanilla JS ChatWidget (~120行 + CSS ~100行 + HTML ~15行)
+  - xAI Grok SSE 中継の正確な実装 (`[DONE]` 終端・部分行バッファ・空 delta 対応)
+  - 既知の落とし穴 5件: CORS / Workers ダッシュボード 1MB 制限 / SessionStorage タブ独立 / Grok-3-mini 日本語品質 / hash routing とスクロール位置
 - 本リポ [`worker-proxy.js`](../worker-proxy.js) — 既存 TTS プロキシ (Chat 拡張のベース)
 - 本リポ [`integration-points.md`](../integration-points.md) — Matlens 連携規約
 
