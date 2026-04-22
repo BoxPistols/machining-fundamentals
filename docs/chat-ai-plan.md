@@ -32,23 +32,54 @@ Chat AI が埋めるのは **「読みながら質問できる、章コンテキ
 | **Invited** | 有効な招待コード | **30 req/day**（変数化） | GPT-5.4-nano / Gemini 2.5 Flash | owner が個別配布した招待者 |
 | **BYOK** | 自分の API キー入力 | **無制限** | 上記 + **GPT-5.4-mini** | 上級ユーザー・開発者 |
 
-### 判定ロジック (Workers 側)
+### 判定ロジック (Workers 側、peer コード採用)
 
 ```js
-function determineT(req) {
+async function determineTier(req, env) {
   const byokKey = req.headers.get('Authorization');
-  if (byokKey && byokKey.startsWith('Bearer sk-')) return { tier: 'byok', key: byokKey };
+  if (byokKey && byokKey.startsWith('Bearer sk-')) {
+    return { tier: 'byok', key: byokKey };
+  }
 
   const inviteCode = req.headers.get('X-Invite-Code');
   if (inviteCode) {
-    const entry = await env.INVITE_KV.get(`invite:${inviteCode}`);
-    if (entry) {
-      const parsed = JSON.parse(entry);
-      if (parsed.valid) return { tier: 'invited', code: inviteCode };
-    }
+    const sessionId = await buildSessionKey(req);
+    const redeemResult = await redeemInviteCode(inviteCode, sessionId, env);
+    if (redeemResult.valid) return { tier: 'invited', code: inviteCode };
   }
 
   return { tier: 'anonymous' };
+}
+
+async function redeemInviteCode(code, sessionId, env) {
+  const raw = await env.INVITE_KV.get(`invite:${code}`);
+  if (!raw) return { valid: false, reason: 'not_found' };
+  const invite = JSON.parse(raw);
+
+  if (!invite.valid) return { valid: false, reason: 'revoked' };
+  if (invite.expiresAt && Date.now() > invite.expiresAt) {
+    return { valid: false, reason: 'expired' };
+  }
+
+  // 既に bind 済セッションは即 OK (再利用)
+  if (invite.usedBy.includes(sessionId)) {
+    return { valid: true, tier: 'invited' };
+  }
+
+  // 新規使用、maxUsers チェック
+  if (invite.usedBy.length >= invite.maxUsers) {
+    return { valid: false, reason: 'max_users_reached' };
+  }
+
+  invite.usedBy.push(sessionId);
+  await env.INVITE_KV.put(`invite:${code}`, JSON.stringify(invite));
+  // usage 履歴も別キーに記録 (異常追跡用)
+  await env.INVITE_KV.put(
+    `invite-usage:${code}:${sessionId}`,
+    JSON.stringify({ firstUsedAt: Date.now(), lastUsedAt: Date.now() }),
+    { expirationTtl: 86400 * 60 }
+  );
+  return { valid: true, tier: 'invited' };
 }
 ```
 
@@ -93,39 +124,98 @@ UI でドロップダウン選択可能。owner の想定は `default = gpt-5.4-
 > **モデル ID と OpenAI 価格は owner スクショで確定**（2026-04-23 時点）。
 > Gemini 3 系列は preview ステータスのため価格は GA 時に env 値として更新。Phase 0 で API 接続テストし、preview API でも実利用できることを確認済とする。
 
-### Provider 切替
+### Provider 切替 (peer 推奨 adapter パターン採用)
 
-OpenAI と Gemini は API 形式が異なるため、Workers 内で provider 別アダプタを実装:
+OpenAI と Gemini の adapter マップを Workers 内で定義。Gemini は `v1beta/openai/` 互換 endpoint を試用予定（2.5 系は提供済、3.x preview での可否は Phase 0 で確認）。
 
 ```js
-// provider 抽象化 (~50行)
 const PROVIDERS = {
-  'gpt-5.4-nano':  openaiAdapter,
-  'gpt-5.4-mini':  openaiAdapter,
-  'gemini-2.5-flash': geminiAdapter,
+  openai: {
+    buildRequest: (apiKey, model, messages, system, opts) => ({
+      url: 'https://api.openai.com/v1/chat/completions',
+      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: 'system', content: system }, ...messages],
+        max_tokens: opts.maxTokens || 800,
+        temperature: opts.temperature || 0.3,
+        stream: true,
+      }),
+    }),
+    parseSSEChunk: (payload) => {
+      if (payload === '[DONE]') return { done: true };
+      const chunk = JSON.parse(payload);
+      return {
+        delta: chunk.choices?.[0]?.delta?.content ?? '',
+        finishReason: chunk.choices?.[0]?.finish_reason,
+      };
+    },
+  },
+  gemini: {
+    buildRequest: (apiKey, model, messages, system, opts) => ({
+      url: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: 'system', content: system }, ...messages],
+        max_tokens: opts.maxTokens || 800,
+        temperature: opts.temperature || 0.3,
+        stream: true,
+      }),
+    }),
+    parseSSEChunk: (payload) => {
+      // OpenAI 互換 endpoint は同形式
+      if (payload === '[DONE]') return { done: true };
+      const chunk = JSON.parse(payload);
+      return {
+        delta: chunk.choices?.[0]?.delta?.content ?? '',
+        finishReason: chunk.choices?.[0]?.finish_reason,
+      };
+    },
+  },
 };
 
-async function openaiAdapter(model, systemPrompt, messages, apiKey, streamCallback) { /* ... */ }
-async function geminiAdapter(model, systemPrompt, messages, apiKey, streamCallback) { /* ... */ }
+function pickProvider(model) {
+  if (model.startsWith('gpt-')) return PROVIDERS.openai;
+  if (model.startsWith('gemini-')) return PROVIDERS.gemini;
+  throw new Error(`Unknown model: ${model}`);
+}
 ```
 
-Vercel AI Gateway 統一は Phase 3 以降の選択肢として保留。Phase 1 は直接 fetch で十分シンプル。
+**利点**:
+- Provider 追加は `PROVIDERS` に 1 エントリ
+- OpenAI 互換 endpoint の普及で `parseSSEChunk` が共通化可能
+- Cloudflare → Vercel Gateway → Provider の 3 hop を避け、2 hop に抑制（レイテンシ最小）
+
+Vercel AI Gateway 統一は Phase 4 以降、複数プロバイダ A/B テストが必要になったら検討。
 
 ---
 
 ## 4. 招待コード機構
 
-### 設計: KV 動的管理
+### 設計: KV 動的管理 + `maxUsers` bind（peer 推奨）
 
 ```
 KV キー: invite:<code>
 値 (JSON): {
   "createdAt": "2026-04-23T00:00:00Z",
-  "valid": true,
-  "note": "自由記述 (誰に発行したか等のメタ情報)",
-  "usedAt": "2026-04-25T10:00:00Z"   // 初回使用時刻 (optional)
+  "expiresAt": 1761868800000,   // Unix epoch ms (optional, default: 30日後)
+  "maxUsers": 5,                  // 1 コードあたり bind 可能セッション上限
+  "usedBy": ["sessionId1", ...], // 使用済セッション ID 配列
+  "note": "自由記述 (誰に発行したか)",
+  "valid": true
 }
+
+補助キー: invite-usage:<code>:<sessionId>
+値: { firstUsedAt, lastUsedAt }
 ```
+
+**1 コードあたりのユーザー数**は `maxUsers` で個別制御:
+- 個人専用: `maxUsers: 1`
+- 家族共有: `maxUsers: 5`
+- 研究室/小グループ: `maxUsers: 10`
+
+超えたら新コード発行 or maxUsers を env で増加。
 
 - 有効なキーが存在 → `valid` 判定
 - `valid: false` で無効化 (取消)
@@ -317,7 +407,7 @@ v1 と同じ (requests/day + tokens/day)。値は §2 の env で tier 別に設
 
 | Phase | 期間 | 内容 |
 |---|---|---|
-| **Phase 0** 準備 | 1-2日 | OpenAI/Gemini API キー発行、Workers env 設定、モデル ID 確定 (peer 回答待ち)、招待コード KV namespace 作成 |
+| **Phase 0** 準備 | 1-2日 | OpenAI/Gemini API キー発行、Workers env 設定、**Gemini 3 接続テスト 5 項目**（実価格 / OpenAI 互換 endpoint 可否 / preview レート制限 / SSE 形式確認 / 日本語品質サンプル）、招待コード KV namespace 作成、ChatWidget HTML 雛形コミット |
 | **Phase 1** MVP | 4-5日 | `/api/chat` 3ティア実装、OpenAI + Gemini アダプタ、招待コード KV 検証、in-memory RAG、フローティング UI、モデル選択ドロップダウン、BYOK 入力欄、Pack 3 systemPrompt |
 | **Phase 2** 体験向上 | 3-4日 | ストリーミング応答、マルチターン会話、レベル切替 UI、章末 Q&A セクション、招待コード管理 CLI、エラー UX |
 | **Phase 3** 精度向上 | 5日 | Cloudflare Vectorize、章本文 embedding バッチ、出典表示、HMAC 署名トークン検討 |
