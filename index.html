@@ -1450,6 +1450,127 @@ figure.fig figcaption strong {
 @media (max-width: 720px) {
   .interactive-controls { grid-template-columns: 1fr; }
 }
+
+/* =============================================================================
+   Chat AI Widget (Phase 1 MVP, vanilla JS)
+   ============================================================================= */
+.chat-widget { position: fixed; right: 16px; bottom: 16px; z-index: 9999; font-family: inherit; }
+.chat-fab {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 18px; border-radius: 28px; border: 0; cursor: pointer;
+  background: var(--accent); color: var(--bg-1);
+  font-weight: 700; font-size: 13px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.30);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.chat-fab:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(0,0,0,0.35); }
+.chat-fab .icon { font-size: 16px; }
+.chat-widget.open .chat-fab { display: none; }
+
+.chat-panel {
+  width: min(420px, calc(100vw - 32px));
+  height: min(600px, calc(100vh - 100px));
+  background: var(--bg-1);
+  border: 1px solid var(--line-hi);
+  border-radius: 12px;
+  display: flex; flex-direction: column;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.40);
+  overflow: hidden;
+}
+.chat-panel[hidden] { display: none; }
+.chat-panel header {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--bg-2);
+}
+.chat-panel header .title { font-weight: 700; font-size: 13px; color: var(--text-0); }
+.chat-panel header .tier-pill {
+  font-size: 10px; padding: 2px 8px; border-radius: 10px;
+  background: var(--bg-3); color: var(--text-2); margin-left: 8px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.chat-panel header .tier-pill.invited { background: var(--accent); color: var(--bg-1); }
+.chat-panel header .tier-pill.byok { background: var(--cyn, var(--accent)); color: var(--bg-1); }
+.chat-panel header .actions { display: flex; gap: 4px; }
+.chat-panel header button {
+  background: transparent; border: 0; cursor: pointer; color: var(--text-1);
+  font-size: 14px; padding: 4px 8px; border-radius: 4px;
+}
+.chat-panel header button:hover { background: var(--bg-3); color: var(--text-0); }
+
+.chat-messages {
+  flex: 1; overflow-y: auto; padding: 14px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.chat-msg { padding: 10px 12px; border-radius: 8px; max-width: 92%; word-wrap: break-word; white-space: pre-wrap; line-height: 1.6; }
+.chat-msg .role { display: block; font-size: 10px; opacity: 0.6; margin-bottom: 4px; font-family: 'JetBrains Mono', monospace; text-transform: uppercase; }
+.chat-msg-user { align-self: flex-end; background: var(--accent); color: var(--bg-1); }
+.chat-msg-user .role { color: var(--bg-1); opacity: 0.7; }
+.chat-msg-assistant { align-self: flex-start; background: var(--bg-2); color: var(--text-0); border: 1px solid var(--line); }
+.chat-msg-assistant.streaming .content::after {
+  content: '▋'; animation: chat-blink 1s infinite; margin-left: 2px; opacity: 0.7;
+}
+@keyframes chat-blink { 0%, 100% { opacity: 0.7; } 50% { opacity: 0.1; } }
+.chat-msg-system { align-self: stretch; background: var(--bg-3); color: var(--text-2); font-size: 12px; text-align: center; border-radius: 4px; }
+
+.chat-empty {
+  padding: 16px 12px; color: var(--text-2); font-size: 12px; text-align: center;
+}
+.chat-empty .suggestion {
+  display: block; width: 100%; margin: 6px 0; padding: 8px 10px;
+  background: var(--bg-2); color: var(--text-1);
+  border: 1px solid var(--line); border-radius: 6px;
+  cursor: pointer; font-size: 12px; text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+}
+.chat-empty .suggestion:hover { border-color: var(--accent); background: var(--bg-3); color: var(--text-0); }
+
+.chat-form { padding: 10px; border-top: 1px solid var(--line); background: var(--bg-2); }
+.chat-form .row { display: flex; gap: 6px; align-items: flex-end; }
+.chat-form textarea {
+  flex: 1; min-height: 38px; max-height: 140px;
+  padding: 8px 10px; resize: none;
+  background: var(--bg-1); border: 1px solid var(--line); color: var(--text-0);
+  border-radius: 6px; font-family: inherit; font-size: 13px; line-height: 1.4;
+}
+.chat-form textarea:focus { outline: none; border-color: var(--accent); }
+.chat-form button {
+  padding: 8px 14px; background: var(--accent); color: var(--bg-1);
+  border: 0; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 13px;
+}
+.chat-form button:disabled { opacity: 0.4; cursor: not-allowed; }
+.chat-form .meta {
+  display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  margin-top: 6px; font-size: 10px; color: var(--text-2);
+  font-family: 'JetBrains Mono', monospace;
+}
+.chat-form .meta select {
+  background: var(--bg-1); border: 1px solid var(--line); color: var(--text-1);
+  font-size: 10px; padding: 2px 4px; border-radius: 3px; font-family: inherit;
+}
+.chat-form .meta select:disabled { opacity: 0.4; }
+
+.chat-settings {
+  padding: 14px; border-top: 1px solid var(--line); background: var(--bg-2);
+  display: flex; flex-direction: column; gap: 10px;
+}
+.chat-settings label { display: block; font-size: 11px; color: var(--text-1); margin-bottom: 4px; font-weight: 700; }
+.chat-settings input {
+  width: 100%; padding: 6px 8px; background: var(--bg-1);
+  border: 1px solid var(--line); color: var(--text-0); border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace; font-size: 12px;
+}
+.chat-settings .hint { font-size: 10px; color: var(--text-2); margin-top: 2px; }
+.chat-settings .actions { display: flex; gap: 6px; justify-content: flex-end; }
+
+.chat-error { padding: 10px 12px; background: color-mix(in srgb, var(--ylw, #f59e0b) 18%, transparent); border-left: 3px solid var(--ylw, #f59e0b); border-radius: 4px; font-size: 12px; color: var(--text-0); }
+.chat-error a, .chat-error button.link { color: var(--accent); text-decoration: underline; cursor: pointer; background: transparent; border: 0; padding: 0; font: inherit; }
+
+@media (max-width: 480px) {
+  .chat-widget { right: 8px; bottom: 8px; }
+  .chat-panel { width: calc(100vw - 16px); height: calc(100vh - 60px); }
+}
 </style>
 </head>
 <body>
@@ -9199,6 +9320,430 @@ document.querySelectorAll('.learn-step').forEach(el => {
     el.classList.toggle('done');
   });
 });
+<\/script>
+
+<!-- =============================================================================
+     Chat AI Widget (Phase 1 MVP)
+     ============================================================================= -->
+<div id="chat-widget" class="chat-widget closed" role="complementary" aria-label="AI 学習アシスタント">
+  <button id="chat-fab" class="chat-fab" type="button" aria-expanded="false" aria-controls="chat-panel">
+    <span class="icon">💬</span>
+    <span>AI に質問</span>
+  </button>
+  <div id="chat-panel" class="chat-panel" hidden>
+    <header>
+      <div>
+        <span class="title">学習アシスタント</span>
+        <span id="chat-tier-pill" class="tier-pill">…</span>
+      </div>
+      <div class="actions">
+        <button id="chat-settings-btn" type="button" aria-label="設定" title="設定">⚙</button>
+        <button id="chat-clear-btn" type="button" aria-label="会話をクリア" title="会話をクリア">🗑</button>
+        <button id="chat-close-btn" type="button" aria-label="閉じる" title="閉じる">✕</button>
+      </div>
+    </header>
+    <div id="chat-messages" class="chat-messages" role="log" aria-live="polite" aria-atomic="false"></div>
+    <div id="chat-settings-pane" class="chat-settings" hidden>
+      <div>
+        <label for="chat-proxy-url">Workers プロキシ URL（必須）</label>
+        <input type="text" id="chat-proxy-url" placeholder="https://xxx.workers.dev" autocomplete="off" spellcheck="false">
+        <div class="hint">既存 TTS 用と同じ URL を設定（同じ Worker 内 /api/chat に到達）。</div>
+      </div>
+      <div>
+        <label for="chat-invite-code">招待コード（任意）</label>
+        <input type="text" id="chat-invite-code" placeholder="mf-xxxx-xxxx" autocomplete="off" spellcheck="false">
+        <div class="hint">owner から発行された招待コードがあれば入力。1日上限が緩和されます。</div>
+      </div>
+      <div>
+        <label for="chat-byok-key">自分の API キー（BYOK、任意）</label>
+        <input type="password" id="chat-byok-key" placeholder="sk-... または AIza..." autocomplete="off" spellcheck="false">
+        <div class="hint">入力すると無制限利用 + GPT-5.4 / Gemini 3.1 Pro 等の上位モデルも有効化。localStorage に保存（共用 PC 注意）。</div>
+      </div>
+      <div class="actions">
+        <button id="chat-settings-save" type="button" class="chat-fab" style="padding: 6px 14px; font-size: 12px;">保存</button>
+      </div>
+    </div>
+    <form id="chat-form" class="chat-form">
+      <div class="row">
+        <textarea id="chat-input" rows="1" placeholder="質問を入力（Enter 送信、Shift+Enter 改行）" aria-label="質問入力"></textarea>
+        <button id="chat-send" type="submit">送信</button>
+      </div>
+      <div class="meta">
+        <label for="chat-model-sel">モデル:</label>
+        <select id="chat-model-sel">
+          <option value="gpt-5.4-nano">GPT-5.4 nano</option>
+          <option value="gemini-3-flash">Gemini 3 Flash</option>
+          <option value="gpt-5.4-mini" data-byok="true">GPT-5.4 mini (要BYOK)</option>
+          <option value="gpt-5.4" data-byok="true">GPT-5.4 (要BYOK)</option>
+          <option value="gemini-3.1-pro" data-byok="true">Gemini 3.1 Pro (要BYOK)</option>
+        </select>
+        <label for="chat-level-sel">レベル:</label>
+        <select id="chat-level-sel">
+          <option value="beginner">初学者</option>
+          <option value="intermediate" selected>中級</option>
+          <option value="advanced">上級</option>
+        </select>
+        <span id="chat-status" style="margin-left:auto;"></span>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script type="module">
+// =============================================================================
+// Chat AI Widget logic
+// 注: DOM 操作は textContent / createElement のみ。innerHTML は使わない (XSS 対策)。
+// =============================================================================
+const chatCfg = {
+  proxyUrl: localStorage.getItem('chat-proxy-url') || (window.apiConfig?.grokProxyUrl || ''),
+  inviteCode: localStorage.getItem('chat-invite-code') || '',
+  byokKey: localStorage.getItem('chat-byok-key') || '',
+  model: localStorage.getItem('chat-model') || 'gpt-5.4-nano',
+  level: localStorage.getItem('chat-level') || 'intermediate',
+};
+
+const chatState = {
+  history: (() => {
+    try { return JSON.parse(sessionStorage.getItem('chat-history') || '[]'); }
+    catch { return []; }
+  })(),
+  streaming: false,
+  abortController: null,
+};
+
+const $ = (id) => document.getElementById(id);
+const els = {
+  widget: $('chat-widget'),
+  fab: $('chat-fab'),
+  panel: $('chat-panel'),
+  closeBtn: $('chat-close-btn'),
+  settingsBtn: $('chat-settings-btn'),
+  clearBtn: $('chat-clear-btn'),
+  messages: $('chat-messages'),
+  settingsPane: $('chat-settings-pane'),
+  proxyUrlInput: $('chat-proxy-url'),
+  inviteCodeInput: $('chat-invite-code'),
+  byokKeyInput: $('chat-byok-key'),
+  settingsSave: $('chat-settings-save'),
+  form: $('chat-form'),
+  input: $('chat-input'),
+  send: $('chat-send'),
+  modelSel: $('chat-model-sel'),
+  levelSel: $('chat-level-sel'),
+  status: $('chat-status'),
+  tierPill: $('chat-tier-pill'),
+};
+
+els.proxyUrlInput.value = chatCfg.proxyUrl;
+els.inviteCodeInput.value = chatCfg.inviteCode;
+els.byokKeyInput.value = chatCfg.byokKey;
+els.modelSel.value = chatCfg.model;
+els.levelSel.value = chatCfg.level;
+updateModelDropdownState();
+updateTierPill();
+renderHistory();
+
+function updateTierPill() {
+  let tier = 'anonymous';
+  if (chatCfg.byokKey) tier = 'byok';
+  else if (chatCfg.inviteCode) tier = 'invited';
+  els.tierPill.textContent = tier;
+  els.tierPill.className = 'tier-pill ' + tier;
+}
+
+function updateModelDropdownState() {
+  const hasByok = !!chatCfg.byokKey;
+  for (const opt of els.modelSel.options) {
+    if (opt.dataset.byok === 'true') opt.disabled = !hasByok;
+  }
+  if (els.modelSel.selectedOptions[0]?.disabled) {
+    els.modelSel.value = 'gpt-5.4-nano';
+    chatCfg.model = 'gpt-5.4-nano';
+    localStorage.setItem('chat-model', 'gpt-5.4-nano');
+  }
+}
+
+function openPanel() {
+  els.widget.classList.replace('closed', 'open');
+  els.panel.hidden = false;
+  els.fab.setAttribute('aria-expanded', 'true');
+  setTimeout(() => els.input.focus(), 50);
+}
+function closePanel() {
+  els.widget.classList.replace('open', 'closed');
+  els.panel.hidden = true;
+  els.fab.setAttribute('aria-expanded', 'false');
+  els.fab.focus();
+}
+function toggleSettings() {
+  els.settingsPane.hidden = !els.settingsPane.hidden;
+}
+
+els.fab.addEventListener('click', openPanel);
+els.closeBtn.addEventListener('click', closePanel);
+els.settingsBtn.addEventListener('click', toggleSettings);
+els.panel.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePanel(); });
+
+els.clearBtn.addEventListener('click', () => {
+  if (chatState.streaming) return;
+  if (chatState.history.length === 0) return;
+  if (!confirm('会話履歴をクリアします。よろしいですか？')) return;
+  chatState.history = [];
+  sessionStorage.removeItem('chat-history');
+  renderHistory();
+});
+
+els.settingsSave.addEventListener('click', () => {
+  chatCfg.proxyUrl = els.proxyUrlInput.value.trim();
+  chatCfg.inviteCode = els.inviteCodeInput.value.trim();
+  chatCfg.byokKey = els.byokKeyInput.value.trim();
+  localStorage.setItem('chat-proxy-url', chatCfg.proxyUrl);
+  localStorage.setItem('chat-invite-code', chatCfg.inviteCode);
+  localStorage.setItem('chat-byok-key', chatCfg.byokKey);
+  updateModelDropdownState();
+  updateTierPill();
+  els.settingsPane.hidden = true;
+  showStatus('保存しました', 1200);
+});
+
+els.modelSel.addEventListener('change', () => {
+  chatCfg.model = els.modelSel.value;
+  localStorage.setItem('chat-model', chatCfg.model);
+});
+els.levelSel.addEventListener('change', () => {
+  chatCfg.level = els.levelSel.value;
+  localStorage.setItem('chat-level', chatCfg.level);
+});
+
+els.input.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); els.form.requestSubmit(); }
+});
+els.input.addEventListener('input', () => {
+  els.input.style.height = 'auto';
+  els.input.style.height = Math.min(140, els.input.scrollHeight) + 'px';
+});
+
+els.form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  if (chatState.streaming) {
+    if (chatState.abortController) chatState.abortController.abort();
+    return;
+  }
+  const text = els.input.value.trim();
+  if (!text) return;
+  sendMessage(text);
+});
+
+function showStatus(msg, autoHideMs) {
+  els.status.textContent = msg || '';
+  if (autoHideMs) setTimeout(() => { els.status.textContent = ''; }, autoHideMs);
+}
+function persistHistory() {
+  try { sessionStorage.setItem('chat-history', JSON.stringify(chatState.history)); } catch {}
+}
+
+function appendMessage(msg) {
+  const el = document.createElement('div');
+  el.className = `chat-msg chat-msg-${msg.role}`;
+  const roleSpan = document.createElement('span');
+  roleSpan.className = 'role';
+  roleSpan.textContent = msg.role === 'user' ? 'あなた' : msg.role === 'assistant' ? 'AI' : 'システム';
+  const contentSpan = document.createElement('span');
+  contentSpan.className = 'content';
+  contentSpan.textContent = msg.content || '';
+  el.appendChild(roleSpan);
+  el.appendChild(contentSpan);
+  els.messages.appendChild(el);
+  scrollIfAtBottom();
+  return el;
+}
+
+function scrollIfAtBottom() {
+  const distance = els.messages.scrollHeight - els.messages.scrollTop - els.messages.clientHeight;
+  if (distance < 80) els.messages.scrollTop = els.messages.scrollHeight;
+}
+
+function clearMessagesContainer() {
+  while (els.messages.firstChild) els.messages.removeChild(els.messages.firstChild);
+}
+
+function renderHistory() {
+  clearMessagesContainer();
+  if (chatState.history.length === 0) { renderEmpty(); return; }
+  for (const msg of chatState.history) appendMessage(msg);
+}
+
+function renderEmpty() {
+  const ctx = currentContext();
+  const sugg = suggestionsFor(ctx.chapterId);
+  const div = document.createElement('div');
+  div.className = 'chat-empty';
+  const p1 = document.createElement('p');
+  p1.textContent = '切削加工の質問にお答えします。';
+  const p2 = document.createElement('p');
+  p2.style.opacity = '0.6';
+  p2.style.fontSize = '11px';
+  p2.textContent = ctx.chapterId ? `現在の章: ${ctx.chapterId}` : '質問例:';
+  div.appendChild(p1);
+  div.appendChild(p2);
+  for (const s of sugg) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'suggestion';
+    btn.textContent = s;
+    btn.addEventListener('click', () => sendMessage(s));
+    div.appendChild(btn);
+  }
+  els.messages.appendChild(div);
+}
+
+function suggestionsFor(chapterId) {
+  const map = {
+    'a1': ['価電子とは何か簡単に教えて', 'なぜ金属には光沢があるの？'],
+    'a2': ['なぜ Ti は熱伝導率が低いの？', '電子の海モデルって何？'],
+    'a3': ['BCC と FCC の違いは？', 'なぜ Ti は HCP なの？'],
+    'a4': ['転位の動きを物理的に説明して', 'すべり系の数で何が決まる？'],
+    'a5': ['マルテンサイトはどう生まれる？', 'Inconel の γ\'\' とは？'],
+    'a6': ['Johnson-Cook 構成式の3項目を説明', '断熱せん断帯はなぜ起きる？'],
+    '3':  ['Vc と f はどう決める？', 'fz と f の違いは？'],
+    '6':  ['Kc 値の意味と Kienzle 式の使い方', 'Inconel の Kc が大きい理由'],
+    '7':  ['クライオ加工が Ti に効く理由', '内部給油はなぜ必要？'],
+    '8':  ['Taylor 式の n を変えるには？', 'VB の限界値はどう決まる？'],
+    '9':  ['理論 Ra の式を教えて', 'Ra と Rz の使い分け'],
+    '10': ['なぜタービンブレードはセラミクス？', 'びびり対策の優先順位は？'],
+  };
+  return map[chapterId] || [
+    '切削速度 Vc を上げると何が起きる？',
+    'Ti が難削材なのはなぜ？',
+    'Stability Lobe Diagram の見方を教えて',
+  ];
+}
+
+function currentContext() {
+  const h = (location.hash || '').replace(/^#/, '');
+  const m = h.match(/^\/chapter\/([^/#?]+)(?:\/([^/#?]+))?/);
+  return {
+    chapterId: m ? decodeURIComponent(m[1]) : null,
+    termId: m && m[2] ? decodeURIComponent(m[2]) : null,
+  };
+}
+
+async function sendMessage(text) {
+  if (!chatCfg.proxyUrl) {
+    showError('プロキシ URL が未設定です。⚙ ボタンから設定してください。');
+    return;
+  }
+
+  chatState.streaming = true;
+  els.send.textContent = '停止';
+  els.send.disabled = false;
+
+  if (els.messages.querySelector('.chat-empty')) clearMessagesContainer();
+
+  const userMsg = { role: 'user', content: text };
+  chatState.history.push(userMsg);
+  appendMessage(userMsg);
+  els.input.value = '';
+  els.input.style.height = 'auto';
+
+  const assistantMsg = { role: 'assistant', content: '' };
+  chatState.history.push(assistantMsg);
+  const assistantEl = appendMessage(assistantMsg);
+  assistantEl.classList.add('streaming');
+  const contentEl = assistantEl.querySelector('.content');
+
+  chatState.abortController = new AbortController();
+  showStatus(`送信中 (${chatCfg.model})...`);
+
+  try {
+    const ctx = currentContext();
+    const headers = { 'Content-Type': 'application/json' };
+    if (chatCfg.byokKey) headers['Authorization'] = `Bearer ${chatCfg.byokKey}`;
+    if (chatCfg.inviteCode) headers['X-Invite-Code'] = chatCfg.inviteCode;
+    const body = JSON.stringify({
+      messages: chatState.history.slice(0, -1).filter(m => m.role !== 'system')
+        .map(m => ({ role: m.role, content: m.content })),
+      model: chatCfg.model,
+      level: chatCfg.level,
+      chapterId: ctx.chapterId,
+      termId: ctx.termId,
+    });
+    const proxyUrl = chatCfg.proxyUrl.replace(/\/+$/, '');
+    const res = await fetch(`${proxyUrl}/api/chat`, {
+      method: 'POST', headers, body, signal: chatState.abortController.signal,
+    });
+
+    const tier = res.headers.get('X-Chat-Tier');
+    const remaining = res.headers.get('X-RateLimit-Remaining');
+    const limit = res.headers.get('X-RateLimit-Limit');
+    if (tier) {
+      els.tierPill.textContent = tier;
+      els.tierPill.className = 'tier-pill ' + tier;
+    }
+    if (remaining && limit) showStatus(`残り ${remaining}/${limit} (${tier || '?'})`);
+
+    if (!res.ok) {
+      let errMsg = `エラー ${res.status}`;
+      try {
+        const err = await res.json();
+        errMsg = err?.error?.message || JSON.stringify(err);
+      } catch {}
+      assistantMsg.content = errMsg;
+      contentEl.textContent = errMsg;
+      assistantEl.classList.add('chat-error');
+      assistantEl.classList.remove('streaming');
+      return;
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed.startsWith('data:')) continue;
+        const payload = trimmed.slice(5).trim();
+        if (!payload || payload === '[DONE]') continue;
+        try {
+          const obj = JSON.parse(payload);
+          if (obj.error) {
+            assistantMsg.content += `\n[stream error: ${obj.error}]`;
+          } else if (obj.delta) {
+            assistantMsg.content += obj.delta;
+          }
+          contentEl.textContent = assistantMsg.content;
+          scrollIfAtBottom();
+        } catch {}
+      }
+    }
+  } catch (e) {
+    if (e.name === 'AbortError') {
+      assistantMsg.content += '\n[中断されました]';
+      contentEl.textContent = assistantMsg.content;
+    } else {
+      const msg = `通信エラー: ${e.message}`;
+      assistantMsg.content = msg;
+      contentEl.textContent = msg;
+      assistantEl.classList.add('chat-error');
+    }
+  } finally {
+    assistantEl.classList.remove('streaming');
+    chatState.streaming = false;
+    chatState.abortController = null;
+    els.send.textContent = '送信';
+    persistHistory();
+  }
+}
+
+function showError(msg) {
+  const el = appendMessage({ role: 'system', content: msg });
+  el.classList.add('chat-error');
+}
 <\/script>
 
 </body>
