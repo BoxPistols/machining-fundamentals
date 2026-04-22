@@ -3228,10 +3228,63 @@ function saveDone() {
 }
 
 // =============================================================================
-// レンダリング
+// レンダリング + ハッシュルーティング
+// =============================================================================
+//
+// URL 規約 (Matlens などからの deep link 用に凍結):
+//   <base>/                    — ホーム (章一覧)
+//   <base>/#/chapter/<id>      — 章詳細 (id は 'a1', 'a2', ... または 1..10)
+//   <base>/#/chapter/<id>#<a>  — 章内 anchor (将来の term anchor 用、現状は未実装)
+//   <base>/#/about             — このアプリについて
+//   <base>/#/sim               — CFDシミュレーター
+//
+// 外部からの参照 URL が壊れないよう、章の id は原則変更しない。
 // =============================================================================
 
 const mainEl = document.getElementById('app-main');
+
+function hashFromState() {
+  if (state.view === 'chapter' && state.chapterId != null) return `#/chapter/${state.chapterId}`;
+  if (state.view === 'about') return '#/about';
+  if (state.view === 'sim') return '#/sim';
+  return '';
+}
+
+function stateFromHash() {
+  const h = (location.hash || '').replace(/^#/, '');
+  if (!h || h === '/') return { view: 'home', chapterId: null };
+  const m = h.match(/^\/chapter\/([^/#?]+)/);
+  if (m) {
+    const raw = decodeURIComponent(m[1]);
+    const id = /^\d+$/.test(raw) ? parseInt(raw, 10) : raw;
+    if (CHAPTERS.some(c => String(c.id) === String(id))) {
+      return { view: 'chapter', chapterId: id };
+    }
+    return { view: 'home', chapterId: null };
+  }
+  if (h === '/about') return { view: 'about', chapterId: null };
+  if (h === '/sim') return { view: 'sim', chapterId: null };
+  return { view: 'home', chapterId: null };
+}
+
+function syncHashToState() {
+  const target = hashFromState();
+  // 再帰 hashchange 回避のため pushState ではなく replaceState、差分ある時だけ
+  if (target && location.hash !== target) {
+    history.replaceState(null, '', target);
+  } else if (!target && location.hash) {
+    history.replaceState(null, '', location.pathname + location.search);
+  }
+}
+
+let _suppressHashChange = false;
+window.addEventListener('hashchange', () => {
+  if (_suppressHashChange) return;
+  const next = stateFromHash();
+  state.view = next.view;
+  state.chapterId = next.chapterId;
+  render();
+});
 
 function render() {
   // ページ切替時は音声を停止
@@ -3247,6 +3300,11 @@ function render() {
   else if (state.view === 'chapter') renderChapter();
   else if (state.view === 'about') renderAbout();
   else if (state.view === 'sim') renderSim();
+
+  _suppressHashChange = true;
+  syncHashToState();
+  // replaceState は hashchange を発火しないので suppress 解除は同期的でOK
+  _suppressHashChange = false;
 
   window.scrollTo(0, 0);
 }
@@ -5039,7 +5097,12 @@ document.addEventListener('click', (e) => {
   }
 });
 
-// 初期描画
+// 初期描画 (URL ハッシュから初期 state を復元 → 外部からの deep link 対応)
+{
+  const init = stateFromHash();
+  state.view = init.view;
+  state.chapterId = init.chapterId;
+}
 render();
 </script>
 
