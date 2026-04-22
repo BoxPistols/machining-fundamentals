@@ -1,8 +1,9 @@
-# Chat AI 機能 実装計画 (草案 v2)
+# Chat AI 機能 実装計画 (草案 v2.1)
 
-**ステータス**: Proposed (owner レビュー待ち、peer にモデル ID 正式確認依頼中)
+**ステータス**: Proposed (owner レビュー待ち、モデル ID は owner スクショで実 ID + 価格確定)
 **最終更新**: 2026-04-23
 **v1 → v2 の変更**: provider を xAI Grok 単独から **OpenAI + Gemini** に変更、2 モードから **3 ティア** (Anonymous / Invited / BYOK) に拡張、招待コード機構を追加
+**v2 → v2.1 の変更**: モデル ID 確定 (`gpt-5.4-nano` / `gpt-5.4-mini` / `gpt-5.4`)、Gemini を 2.5 Flash から **Gemini 3 系列**へ更新、実価格に基づくコスト再試算
 **主要参照**: Matlens Pack 3 / Pack 11 / Pack 12
 **関連**: [`integration-points.md`](../integration-points.md) / [`docs/monorepo-decisions.md`](./monorepo-decisions.md)
 
@@ -68,22 +69,25 @@ Cloudflare ダッシュボードから即時変更可能。運用中に調整可
 
 ### デフォルト (Anonymous / Invited)
 
-| モデル | 用途 | モデル ID (実装時確定) |
-|---|---|---|
-| **GPT-5.4-nano** ★default | 軽量・安価、一般的な質問応答 | `gpt-5.4-nano` (peer 確認中) |
-| **Gemini 2.5 Flash** | 日本語強化、長文コンテキスト | `gemini-2.5-flash` (peer 確認中) |
+| モデル | 用途 | モデル ID | 入力価格 | 出力価格 |
+|---|---|---|---|---|
+| **GPT-5.4 nano** ★default | 軽量・安価、一般的な質問応答 | `gpt-5.4-nano` | $0.20 / 1M tok | $1.25 / 1M tok |
+| **Gemini 3 Flash** | Google 系、日本語コンテキスト | `gemini-3-flash` (preview) | TBD（現状 preview） | TBD |
 
-UI でドロップダウン選択可能。owner の想定は `default = gpt-5.4-nano`。
+UI でドロップダウン選択可能。owner の想定は `default = gpt-5.4-nano`。Gemini 3 系列は 2026-04 時点で preview ステータスだが、Anonymous/Invited 層に提供する価値はある（OpenAI 単一依存からの冗長化）。
 
 ### BYOK 専用
 
-| モデル | 条件 | モデル ID |
-|---|---|---|
-| **GPT-5.4-mini** | BYOK モード有効時のみ UI で enable | `gpt-5.4-mini` (peer 確認中) |
+| モデル | 条件 | モデル ID | 入力価格 | 出力価格 |
+|---|---|---|---|---|
+| **GPT-5.4 mini** | BYOK モード有効時のみ UI で enable | `gpt-5.4-mini` | $0.75 / 1M tok | $4.50 / 1M tok |
+| **GPT-5.4** (full) | BYOK 上級ユーザー向け、大コーディング/推論 | `gpt-5.4` | $2.50 / 1M tok | $15 / 1M tok |
+| **Gemini 3.1 Pro** | BYOK 上級、長文・複雑問題 | `gemini-3.1-pro` (preview) | TBD | TBD |
 
 ユーザーが自分の API キーを設定するまでは UI で disabled 表示。
 
-> **⚠ モデル ID の最終確認**: owner 確認済のモデル名を採用。正式な API モデル ID 文字列は peer (Matlens) 側で実運用知見を持っているため、実装直前に最終確認して env 値として投入します。
+> **モデル ID と OpenAI 価格は owner スクショで確定**（2026-04-23 時点）。
+> Gemini 3 系列は preview ステータスのため価格は GA 時に env 値として更新。Phase 0 で API 接続テストし、preview API でも実利用できることを確認済とする。
 
 ### Provider 切替
 
@@ -277,20 +281,28 @@ v1 と同じ (requests/day + tokens/day)。値は §2 の env で tier 別に設
 
 ## 9. コスト試算
 
-### Anonymous 層 (GPT-5.4-nano default 想定)
-- 価格は peer 確認次第（想定: 入力 $0.05/1M、出力 $0.40/1M レンジ）
-- 1 リクエスト平均: 入力 2k / 出力 500 → **$0.00030**
-- 20 req/day × 30日 × 10 ユーザー = 6,000 req → **$1.80/月**
+価格は owner スクショで確定 (gpt-5.4-nano: 入力 $0.20/1M、出力 $1.25/1M)。
+
+### Anonymous 層 (gpt-5.4-nano default)
+- 1 リクエスト平均: 入力 2k tok + 出力 500 tok = 2 × $0.20/1k + 0.5 × $1.25/1k... = (2 × 0.20 + 0.5 × 1.25) / 1000 = **$0.00103 / req**
+- 20 req/day × 30日 × 10 ユーザー = 6,000 req → **$6.15/月**
+- 100 ユーザー想定 → $61.5/月
 
 ### Invited 層 (同 default)
-- 30 req/day × 30日 × 10 ユーザー = 9,000 req → **$2.70/月**
+- 30 req/day × 30日 × 10 ユーザー = 9,000 req → **$9.23/月**
+- 100 ユーザー想定 → $92.3/月
 
-### Gemini 2.5 Flash を default にした場合 (類似レンジ想定)
-- 同等〜やや安の範囲で推移
+### BYOK 上位 (gpt-5.4-mini、ユーザー自費)
+- 1 リクエスト: (2 × $0.75 + 0.5 × $4.50) / 1000 = **$0.00375 / req** (Nano の 3.7倍)
+- BYOK ユーザー自身が支払うため owner コストには影響なし
 
-→ **想定ユーザー数が 100 人規模でも月 $30 以下**、コスト暴走しない設計。
+### コスト感の総括
+- 100 ユーザーが日常的に Anonymous 利用 = 月 ~$60 程度
+- Invited 層は手動配布なので 10〜20 名規模想定 → 月 $10-20
+- 月額 100 ドル以下に収まる見込み
+- 実運用 1ヶ月で usage を見て Anonymous 上限を 15-25 で再調整可能 (env 一発)
 
-*※価格は peer 確認で実値に置換予定*
+*※Gemini の preview 価格は GA 後に再試算、現状は OpenAI 同等想定で計画*
 
 ---
 
@@ -355,20 +367,22 @@ v1 と同じ。
 
 ## 14. owner 判断待ち
 
-v1 から更新：
+v2.1 時点：
 
-1. **モデル ID 最終確認**: owner 確認済のモデル名 (`gpt-5.4-nano` / `gpt-5.4-mini` / `gemini-2.5-flash`) を peer (Matlens) で実運用 ID に確定
-2. **Anonymous レート制限 20/day 妥当性**: OSS デモ URL を公開した時の想定流入で上限 20 が現実的か
+- ~~モデル ID 最終確認~~ → **解決** (owner スクショで OpenAI 確定、Gemini 3 系列に更新)
+1. **Gemini 何を採用するか**: `gemini-3-flash` (Flash 標準) / `gemini-3.1-flash-lite` (最廉価、preview) のどちらを Anonymous/Invited のセカンドモデルにするか
+2. **Anonymous レート制限 20/day 妥当性**: OSS デモ URL を公開した時の想定流入で上限 20 が現実的か (env 一発で変更可だが初期値の意思決定として)
 3. **招待コード発行運用**: Phase 1 は手動ダッシュボード編集で割切 / Phase 2 で CLI or 管理画面整備のどちらが良いか
-4. **Gemini provider の採用**: OpenAI 1本でなく Gemini も提供する理由（日本語品質 + multi-provider で片方障害時の冗長化）に同意
-5. **招待コード: 1コード共有 vs 1ユーザー bind**: 草案は共有可 (家庭・研究室単位)、単一 bind 必要なら設計変更
+4. **招待コード: 1コード共有 vs 1ユーザー bind**: 草案は共有可 (家庭・研究室単位)、単一 bind 必要なら設計変更
+5. **BYOK で Gemini 3.1 Pro も提供するか**: 草案に含めたが、UI 複雑化避けたければ OpenAI 系のみに絞る選択も
 
 owner 確認後、Phase 0 から着手します。
 
 ---
 
-## 15. v1 からの主な差分
+## 15. バージョン差分
 
+### v1 → v2 (2026-04-23)
 | 観点 | v1 | v2 |
 |---|---|---|
 | provider | xAI Grok 単独 | **OpenAI + Gemini** |
@@ -376,7 +390,15 @@ owner 確認後、Phase 0 から着手します。
 | 招待コード | なし | **KV 動的管理** |
 | モデル選択 UI | なし | **ドロップダウン + BYOK 専用 enable** |
 | Phase 1 期間 | 3日 | 4-5日 |
-| コスト試算 | 月 $40/10人 (Grok) | 月 $2-5/10人 (Nano/Flash) |
+
+### v2 → v2.1 (2026-04-23)
+| 観点 | v2 | v2.1 |
+|---|---|---|
+| モデル ID | 仮置き (peer 確認待ち) | **owner スクショで確定** |
+| OpenAI 価格 | 想定値 | **実価格** (nano $0.20/$1.25, mini $0.75/$4.50, full $2.50/$15) |
+| Gemini モデル | Gemini 2.5 Flash | **Gemini 3 系列** (3 Flash / 3.1 Flash-Lite / 3.1 Pro) |
+| BYOK 上位 | mini のみ | **mini + full GPT-5.4 + Gemini 3.1 Pro** |
+| コスト試算 | 想定 $1.80/月 (10人) | **実価 $6.15/月 (10人)** = 100 ユーザー $61/月 |
 
 ---
 
