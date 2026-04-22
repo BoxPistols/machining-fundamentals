@@ -2,8 +2,7 @@
 
 航空機やエンジンなど、精密な金属部品を作る **切削加工** を、全10章で体系的に概観する学習教材です。初学者が全体像を掴むことを目的にしています。
 
-🌐 **公開URL**: https://YOUR-PROJECT.vercel.app  
-（Vercel デプロイ後、このURLを差し替えてください）
+🌐 **公開URL**: <https://machining-fundamentals.vercel.app/>
 
 ## このアプリについて
 
