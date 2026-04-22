@@ -4566,6 +4566,41 @@ const CHAPTERS = [
         `,
       },
       {
+        heading: '代表的な部品と加工条件',
+        html: `
+          <p>航空機の主要部品ごとに、被削材・工具・加工方式・特殊条件をまとめます。第3章「切削の3要素」の条件マトリクスや第7章「冷却液」の早見表と照らして読むと立体的に見えます。</p>
+
+          <h4 style="margin-top:14px;">エンジン (高温部) — 難削材の最前線</h4>
+          <ul>
+            <li><strong>タービンブレード</strong> (Inconel 718, Hastelloy X, René 41): 5軸同時加工 + セラミクス工具による高速切削、または超硬 + 高圧クーラント。航空エンジンの心臓部、寿命予測が最重要</li>
+            <li><strong>タービンディスク</strong> (Inconel 718, Udimet 720): 大径旋削 + ブローチ加工 (タービン羽根取付溝)、CBN 工具で硬旋削も</li>
+            <li><strong>燃焼器ライナー</strong> (Hastelloy X, Inconel 625): 薄肉円筒、変形制御が課題、ブロック治具でのクランプが工夫どころ</li>
+            <li><strong>ノズルガイドベーン</strong> (René 41 等): 鋳造後の仕上げ加工、超低速 (Vc 15-30 m/min) で寿命優先</li>
+          </ul>
+
+          <h4 style="margin-top:14px;">エンジン (低温部 / 冷部)</h4>
+          <ul>
+            <li><strong>圧縮機ブレード</strong> (Ti-6Al-4V, Ti-6242): トロコイダルミーリング + クライオで高能率化、薄肉のためびびり対策必須</li>
+            <li><strong>ファンディスク</strong> (Ti-17 等): 大径旋削、深溝加工、内部給油</li>
+            <li><strong>燃料ノズル</strong> (S45C 系 / Inconel 系深穴): ガンドリル L/D 60+ で精密深穴、高圧クーラント</li>
+          </ul>
+
+          <h4 style="margin-top:14px;">機体構造 (Airframe)</h4>
+          <ul>
+            <li><strong>翼桁・翼リブ</strong> (AL7075-T6, AL7050): PCD で超高速切削 (Vc 1500-4000 m/min)、MRR 最大化が勝負、薄肉ポケット加工で 50% 以上を削り捨てる「Bag-out」工法</li>
+            <li><strong>胴体フレーム</strong> (AL6061, AL2024): 大型フライス、長時間ツールパス</li>
+            <li><strong>CFRP 構造材</strong> (IM7/8552 等): 専用ダイヤモンドコーティング工具、乾式 + 粉塵吸引、デラミネーション対策が品質の核</li>
+            <li><strong>Ti-CFRP 接合部</strong>: スタックドリリング (Ti+CFRP+Al の積層)、工具設計が複雑</li>
+          </ul>
+
+          <h4 style="margin-top:14px;">ランディングギア / 構造金物</h4>
+          <ul>
+            <li><strong>ランディングギア部品</strong> (300M 鋼, AerMet 100): 超高強度鋼 (Rm > 2000 MPa)、CBN による硬旋削、表面残留応力管理が疲労寿命を決める</li>
+            <li><strong>機体取付金物</strong> (Ti-6Al-4V, 17-4PH): 厳しい寸法精度 (IT4-IT6) と疲労試験要求</li>
+          </ul>
+        `,
+      },
+      {
         heading: '品質保証と認証',
         html: `
           <p>航空機部品は<strong>人命に直結する</strong>ため、製造工程の管理が極めて厳しいです。</p>
@@ -4593,22 +4628,39 @@ const CHAPTERS = [
         `,
       },
       {
+        heading: 'Part C と Matlens への接続',
+        html: `
+          <p>本章で挙げた研究テーマや産業応用について、もっと踏み込んだ「研究の地形図」と「一次資料への導線」は、本アプリ末尾の <strong>第C1章「金属加工研究の実例集」</strong> に整理しました。CIRP / 主要研究グループ / 代表ジャーナル / 教科書 / 規格を俯瞰したい場合はそちらへ。</p>
+          <p>業務側の対になる Web アプリ <strong>Matlens</strong>（<a href="https://github.com/BoxPistols/Matlens" target="_blank" rel="noopener">github.com/BoxPistols/Matlens</a>）には、次の研究メモが本章の各テーマと対応します（相互参照規約は <a href="https://github.com/BoxPistols/machining-fundamentals/blob/main/integration-points.md" target="_blank" rel="noopener">integration-points.md</a> を参照）。</p>
+          <ul>
+            <li><strong>0002 AMS 航空宇宙材料規格</strong> — タービンブレード材料 (AMS 5662 Inconel 718, AMS 4928 Ti-6Al-4V) の規格的位置付け</li>
+            <li><strong>0005 NADCAP 認証</strong> — 本章「品質保証と認証」の業界文脈の詳細</li>
+            <li><strong>0008 5 軸同時制御切削の運動学と CNC 制御</strong> — 本章「5軸加工の必要性」の数学的詰め (Table-Table / Head-Head 機構、RTCP/TCPM)</li>
+            <li><strong>0009 切削プロセス計測</strong> — 工具温度・残留応力・加工変質層の測定手法 (XRD sin²ψ 法、ASTM E837)</li>
+            <li><strong>0010 特殊切削技術</strong> — MQL / クライオ (LN₂/CO₂) / UAM 楕円振動 / レーザー支援切削の最新動向</li>
+          </ul>
+        `,
+      },
+      {
         heading: '次のステップ',
         html: `
-          <p>この10章で、切削加工の全体像をおおまかに掴んだはずです。興味のある分野から、深堀りする分野を選んでいくのが良いでしょう。</p>
+          <p>この章で、切削加工の全体像をおおまかに掴んだはずです。興味のある分野から、深堀りする分野を選んでいくのが良いでしょう。</p>
           <ul>
             <li><strong>実務寄り</strong>：工具メーカーのカタログ、CNC操作の実習</li>
             <li><strong>設計寄り</strong>：CAD/CAMの習得、加工条件設計</li>
-            <li><strong>研究寄り</strong>：切削工学の教科書、FEM/CFD解析、機械学習の応用</li>
+            <li><strong>研究寄り</strong>：切削工学の教科書、FEM/CFD解析、機械学習の応用 (詳細は第C1章へ)</li>
           </ul>
           <p>このアプリは、今後さらにシミュレーター（旋削、穴あけなど）を追加していく予定です。</p>
         `,
       },
     ],
     terms: [
-      { name: '5軸加工', en: '5-axis Machining', def: 'X/Y/Z 3軸 + 回転2軸を同時制御する加工。複雑曲面に不可欠。' },
-      { name: 'NADCAP', en: 'National Aerospace and Defense Contractors Accreditation Program', def: '航空宇宙産業の特殊工程に関する国際認証制度。' },
-      { name: 'AS9100', en: 'AS9100 Standard', def: '航空宇宙業界の品質マネジメントシステム国際規格。' },
+      { name: '5軸加工', anchor: '5-axis', en: '5-axis Machining', def: 'X/Y/Z 3軸 + 回転2軸を同時制御する加工。Table-Table / Head-Head / ハイブリッドの3機構。複雑曲面に不可欠。RTCP/TCPM 機能で工具先端基準制御。' },
+      { name: 'NADCAP', anchor: 'NADCAP', en: 'National Aerospace and Defense Contractors Accreditation Program', def: '航空宇宙産業の特殊工程（熱処理、表面処理等）に関する国際認証制度。' },
+      { name: 'AS9100', anchor: 'AS9100', en: 'AS9100 Standard', def: '航空宇宙業界の品質マネジメントシステム国際規格。ISO 9001 を航空宇宙向けに拡張。' },
+      { name: 'タービンブレード', anchor: 'turbine-blade', en: 'Turbine Blade', def: '航空エンジン高温部の主要部品。Inconel 718 / Hastelloy X / René 41 等のNi基超合金、5軸同時加工 + セラミクスや CBN 工具で加工。' },
+      { name: 'トロコイダル加工', anchor: 'trochoidal', en: 'Trochoidal Milling', def: '工具を円弧軌道で進めて ae/D を小さく保つ加工法。Ti / Inconel 加工で工具寿命とMRRの両立に標準採用。' },
+      { name: 'クライオ加工', anchor: 'cryogenic-aero', en: 'Cryogenic Machining', def: '液体窒素 LN₂ (-196°C) または CO₂ (-78°C) を直接吹き付ける加工法。Ti 加工で工具寿命 2-3 倍の報告。Boeing / GE Aviation で採用例。' },
       { name: 'びびり振動', anchor: 'chatter', en: 'Chatter Vibration', def: '切削中に発生する自励振動。加工品質を著しく悪化させる。再生型と強制型があり、対策は SLD 参照。' },
       { name: 'Stability Lobe Diagram', anchor: 'SLD', en: 'Stability Lobe Diagram', def: '主軸回転数と許容切込み幅 blim の関係図。Altintas 2012 の単一 DOF モデル blim = −1 / (2·Kc·z·Re{Φ(ω_c)}) が基礎。安定域と不安定（びびり）域の境界を示す。' },
     ],
