@@ -1476,6 +1476,88 @@ figure.fig figcaption strong {
 const CHAPTER_SVGS = {
 
   // =====================================================================
+  // 第A1章: 原子の構造 (ナトリウム Na, Z=11 の電子配置を例に)
+  // =====================================================================
+  a1: {
+    caption: 'ナトリウム原子 Na (Z=11) の電子配置 — K殻 2 / L殻 8 / M殻 1。最外殻の<strong>価電子1個</strong>が金属の性質を決める。',
+    svg: `<svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .shell { fill: none; stroke: var(--line-hi); stroke-width: 1; stroke-dasharray: 2 3; }
+    .shell-label { fill: var(--text-2); font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+    .nucleus { fill: var(--accent); opacity: 0.9; }
+    .nucleus-label { fill: var(--bg-1); font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; }
+    .e-inner { fill: var(--text-1); }
+    .e-valence { fill: var(--accent); }
+    .e-valence-ring { fill: none; stroke: var(--accent); stroke-width: 1.5; opacity: 0.5; }
+    .annot { fill: var(--text-1); font-family: 'Noto Sans JP', sans-serif; font-size: 12px; }
+    .annot-key { fill: var(--accent); font-family: 'Noto Sans JP', sans-serif; font-size: 12px; font-weight: 700; }
+    .ttl { fill: var(--text-0); font-family: 'Noto Sans JP', sans-serif; font-size: 13px; font-weight: 700; }
+  </style>
+
+  <!-- タイトル -->
+  <text class="ttl" x="20" y="26">原子の構造（例: ナトリウム Na, Z=11）</text>
+
+  <!-- 電子殻 K, L, M -->
+  <circle class="shell" cx="260" cy="180" r="50"/>
+  <circle class="shell" cx="260" cy="180" r="90"/>
+  <circle class="shell" cx="260" cy="180" r="130"/>
+
+  <!-- 殻ラベル -->
+  <text class="shell-label" x="260" y="48" text-anchor="middle">M殻 (n=3)</text>
+  <text class="shell-label" x="260" y="88" text-anchor="middle">L殻 (n=2)</text>
+  <text class="shell-label" x="260" y="128" text-anchor="middle">K殻 (n=1)</text>
+
+  <!-- 原子核 -->
+  <circle class="nucleus" cx="260" cy="180" r="20"/>
+  <text class="nucleus-label" x="260" y="178" text-anchor="middle">11 p+</text>
+  <text class="nucleus-label" x="260" y="192" text-anchor="middle">12 n</text>
+
+  <!-- K殻電子 (2個: 上下) -->
+  <circle class="e-inner" cx="260" cy="130" r="4"/>
+  <circle class="e-inner" cx="260" cy="230" r="4"/>
+
+  <!-- L殻電子 (8個: 45度ごと) -->
+  <circle class="e-inner" cx="350" cy="180" r="4"/>
+  <circle class="e-inner" cx="170" cy="180" r="4"/>
+  <circle class="e-inner" cx="260" cy="90"  r="4"/>
+  <circle class="e-inner" cx="260" cy="270" r="4"/>
+  <circle class="e-inner" cx="324" cy="116" r="4"/>
+  <circle class="e-inner" cx="196" cy="116" r="4"/>
+  <circle class="e-inner" cx="324" cy="244" r="4"/>
+  <circle class="e-inner" cx="196" cy="244" r="4"/>
+
+  <!-- M殻電子 (1個: 価電子。強調) -->
+  <circle class="e-valence-ring" cx="352" cy="88" r="9"/>
+  <circle class="e-valence" cx="352" cy="88" r="5"/>
+
+  <!-- 価電子の指示線 -->
+  <line x1="362" y1="78" x2="430" y2="60" stroke="var(--accent)" stroke-width="1"/>
+  <text class="annot-key" x="436" y="56">価電子 1個</text>
+  <text class="annot" x="436" y="72">→ 金属結合の主役</text>
+
+  <!-- 凡例 (右側) -->
+  <g transform="translate(470, 110)">
+    <text class="ttl" x="0" y="0">凡例</text>
+
+    <circle class="nucleus" cx="10" cy="22" r="8"/>
+    <text class="annot" x="28" y="26">原子核 (陽子 + 中性子)</text>
+
+    <circle class="e-inner" cx="10" cy="48" r="4"/>
+    <text class="annot" x="28" y="52">内殻電子 (反応に出にくい)</text>
+
+    <circle class="e-valence" cx="10" cy="72" r="5"/>
+    <text class="annot" x="28" y="76">価電子 (結合・伝導の主役)</text>
+
+    <text class="annot" x="0" y="108">サイズ感:</text>
+    <text class="annot" x="0" y="124"> ・原子全体 ≈ 0.1 nm (10⁻¹⁰ m)</text>
+    <text class="annot" x="0" y="140"> ・原子核 ≈ 1 fm (10⁻¹⁵ m)</text>
+    <text class="annot" x="0" y="156"> ・体積比 1 : 10¹⁵</text>
+    <text class="annot" x="0" y="180" style="font-style: italic;">→ ドーム球場に砂粒1個</text>
+  </g>
+</svg>`,
+  },
+
+  // =====================================================================
   // 第1章: 加工方法の4分類ツリー図
   // =====================================================================
   1: {
@@ -2328,6 +2410,141 @@ const CHAPTER_SVGS = {
 
 
 const CHAPTERS = [
+  // ===========================================================================
+  // Part A: 材料の基礎 (原子レベルから切削における材料応答まで)
+  // 既存の Part B (id:1〜10, 切削加工そのもの) の前段として追加。
+  // ===========================================================================
+  {
+    id: 'a1',
+    num: 'A1',
+    title: '原子と電子',
+    summary: '物質を構成する最小単位。陽子・中性子・電子配置と化学結合の出発点。',
+    voiceSummary: '原子は陽子と中性子からなる原子核と、その周りの電子で構成されます。電子はエネルギー準位に従って殻に並び、最外殻の価電子が結合や電気伝導の主役を担います。化学結合には共有結合、イオン結合、金属結合があり、切削加工が対象とするのは金属結合の物質です。',
+    readTime: '7分',
+    hasSim: false,
+    lead: '切削加工は金属を削る作業です。ですが、なぜ金属は削れるのでしょうか。なぜ硬さが違うのでしょうか。なぜ削ると熱が出るのでしょうか。これらすべての答えは、最終的に<strong>原子と電子</strong>にたどり着きます。Part A では金属を「削る対象」ではなく「電子を共有する原子の集まり」として捉え直します。第A1章はその出発点として、物質を構成する最小単位を確認します。',
+    sections: [
+      {
+        heading: '原子は何でできているか',
+        html: `
+          <p>物質の最小単位は<strong>原子（atom）</strong>です。直径は約 <code>0.1 nm</code>（= 10⁻¹⁰ m）。鉄1グラムには約 10²² 個の原子が詰まっています。</p>
+          <p>原子は中央の<strong>原子核</strong>と、その周りに広がる<strong>電子雲</strong>からなります。</p>
+          <ul>
+            <li><strong>原子核</strong> = <strong>陽子（proton, +1電荷）</strong> + <strong>中性子（neutron, 電荷なし）</strong></li>
+            <li>陽子の数 = <strong>原子番号 Z</strong>。これが元素を決める（鉄なら Z=26、アルミなら Z=13）</li>
+            <li>中性子数は同じ元素でも変わる（<strong>同位体</strong>）。原子量はこの合計</li>
+            <li><strong>電子</strong>は陽子と同じ数だけある（中性原子の場合）</li>
+          </ul>
+          <p>質量で見ると、陽子と中性子はほぼ同じ重さで、電子はその<strong>1/1836</strong>。原子の質量はほぼ核に集中しています。</p>
+          <p>体積で見るとちょうど逆で、原子核の直径は <code>10⁻¹⁵ m</code> 程度しかなく、原子全体（10⁻¹⁰ m）の<strong>10万分の1</strong>。残りの体積はすべて電子雲が占めます。</p>
+          <p style="font-style:italic;color:var(--text-2);">→ 原子をドーム球場に例えると、原子核はマウンド上の砂粒1個分。残りはほぼスカスカの空間です。</p>
+        `,
+      },
+      {
+        heading: '電子配置と価電子',
+        html: `
+          <p>電子は原子核の周りをランダムに飛び回るのではなく、<strong>エネルギー準位</strong>に従って<strong>殻（shell）</strong>に並びます。</p>
+          <ul>
+            <li><strong>K殻</strong>（n=1）: 最大2個</li>
+            <li><strong>L殻</strong>（n=2）: 最大8個</li>
+            <li><strong>M殻</strong>（n=3）: 最大18個</li>
+            <li><strong>N殻</strong>（n=4）: 最大32個</li>
+            <li>...（厳密には s, p, d, f の<strong>軌道</strong>に細分される）</li>
+          </ul>
+          <p>原子の化学的・物理的性質を最も強く決めるのは、<strong>一番外側の殻にいる電子</strong>です。これを<strong>価電子（valence electrons）</strong>と呼びます。</p>
+          <p>価電子は次のすべての主役になります。</p>
+          <ul>
+            <li>他の原子との<strong>結合</strong>（化学結合）</li>
+            <li>金属の<strong>電気伝導・熱伝導</strong></li>
+            <li>金属光沢・色</li>
+            <li><strong>切削加工で消費されるエネルギーの行き先</strong>（後の章で詳細）</li>
+          </ul>
+          <p>右の図に示したナトリウム（Na, Z=11）は、K殻に2個、L殻に8個、M殻に1個の電子を持ちます。<strong>M殻の1個が価電子</strong>で、これがナトリウムを「金属」たらしめている張本人です。</p>
+        `,
+      },
+      {
+        heading: '化学結合の3種類',
+        html: `
+          <p>原子は<strong>安定な電子配置</strong>（最外殻が満杯）を求めて、価電子をやりとりします。やりとりの様式によって、結合は大きく3種類に分かれます。</p>
+          <table style="width:100%;border-collapse:collapse;font-size:13px;margin:12px 0;">
+            <thead>
+              <tr style="background:var(--bg-3);">
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">結合の種類</th>
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">電子の扱い</th>
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">代表例</th>
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">機械加工での扱い</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding:8px;border:1px solid var(--line);"><strong>共有結合</strong><br><span style="color:var(--text-2);font-size:11px;">covalent</span></td>
+                <td style="padding:8px;border:1px solid var(--line);">電子を<strong>2原子で共有</strong></td>
+                <td style="padding:8px;border:1px solid var(--line);">ダイヤモンド (C-C)、Si、SiC</td>
+                <td style="padding:8px;border:1px solid var(--line);">硬すぎて切削不可。<strong>研削・放電</strong>が中心</td>
+              </tr>
+              <tr>
+                <td style="padding:8px;border:1px solid var(--line);"><strong>イオン結合</strong><br><span style="color:var(--text-2);font-size:11px;">ionic</span></td>
+                <td style="padding:8px;border:1px solid var(--line);">電子を<strong>渡す/受け取る</strong></td>
+                <td style="padding:8px;border:1px solid var(--line);">NaCl、Al₂O₃（セラミクス）</td>
+                <td style="padding:8px;border:1px solid var(--line);">脆く割れやすい。研削が中心</td>
+              </tr>
+              <tr style="background:var(--bg-2);">
+                <td style="padding:8px;border:1px solid var(--line);"><strong>金属結合</strong><br><span style="color:var(--accent);font-size:11px;">metallic ★</span></td>
+                <td style="padding:8px;border:1px solid var(--line);">価電子を<strong>全員で共有</strong>（自由電子）</td>
+                <td style="padding:8px;border:1px solid var(--line);">鉄、アルミ、銅、チタン</td>
+                <td style="padding:8px;border:1px solid var(--line);"><strong>切削加工の主舞台</strong>（延性があるから削れる）</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>金属結合の特殊性 — 価電子が「自由電子の海」として原子の間を自由に動き回る — は次の<strong>第A2章「金属結合と自由電子」</strong>で詳しく扱います。ここでは「切削加工が削る相手は、ほぼすべて金属結合の物質」とだけ記憶してください。</p>
+        `,
+      },
+      {
+        heading: '結合エネルギーが金属の性質を決める',
+        html: `
+          <p>原子間の結合を切るのに必要なエネルギーを<strong>結合エネルギー</strong>と呼びます（単位 kJ/mol）。これが大きい金属ほど…</p>
+          <ul>
+            <li><strong>融点</strong>が高い</li>
+            <li><strong>硬度</strong>が高い</li>
+            <li><strong>切削抵抗</strong>が大きい（=削るのに力が要る）</li>
+            <li>結果として<strong>難削材</strong>になる</li>
+          </ul>
+          <p>主要金属の融点を比較してみましょう。</p>
+          <ul style="font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.9;">
+            <li>アルミニウム（Al）　660 °C　— 削りやすい</li>
+            <li>マグネシウム（Mg）　650 °C　— 削りやすい（ただし発火注意）</li>
+            <li>銅（Cu）　　　　　1085 °C　— 粘いが削れる</li>
+            <li>鉄（Fe）　　　　　1538 °C　— 標準</li>
+            <li>チタン（Ti）　　　1668 °C　— <span style="color:var(--ylw);">難削材</span></li>
+            <li>クロム（Cr）　　　1907 °C　— ステンレス・耐熱合金の主成分</li>
+            <li>モリブデン（Mo）　2623 °C　— 工具材料に使われる</li>
+            <li>タングステン（W）　3422 °C　— <span style="color:var(--ylw);">超難削。むしろ工具側</span></li>
+          </ul>
+          <p>後の章で出てくる<strong>切削条件（Vc, f, ap）の被削材依存性</strong>は、突き詰めれば「結合エネルギーがどれだけ大きいか」で決まります。チタンやインコネルが削りにくいのは、価電子と原子核の結びつきが鉄より強い → 結合を切るのに大きな力が要る → 切削抵抗が大きい、という連鎖です。</p>
+          <p style="margin-top:16px;padding:12px;background:var(--bg-2);border-left:3px solid var(--accent);border-radius:2px;">
+            <strong>本章のキーアイデア</strong><br>
+            金属の「削りやすさ」「硬さ」「熱の出やすさ」は、最終的に<strong>価電子の振る舞い</strong>と<strong>原子間の結合エネルギー</strong>で決まる。次章ではこの「価電子の振る舞い」が金属結合でどう特殊なのかを見ていく。
+          </p>
+        `,
+      },
+    ],
+    terms: [
+      { name: '原子', en: 'Atom', def: '物質の最小単位。中央の原子核（陽子+中性子）と、その周りの電子からなる。直径約 0.1 nm。' },
+      { name: '陽子', en: 'Proton', def: '正電荷を持つ核子。陽子数=原子番号 Z で元素が決まる。' },
+      { name: '中性子', en: 'Neutron', def: '電荷なしの核子。同じ元素でも中性子数が異なれば同位体になる。' },
+      { name: '電子', en: 'Electron', def: '負電荷を持つ素粒子。質量は陽子の 1/1836。エネルギー準位に従って殻・軌道に分布する。' },
+      { name: '価電子', en: 'Valence Electron', def: '最外殻の電子。化学結合・電気伝導・磁性すべての主役。' },
+      { name: '同位体', en: 'Isotope', def: '原子番号 Z は同じだが中性子数が異なる原子。化学的性質はほぼ同じ。' },
+      { name: '結合エネルギー', en: 'Bond Energy', def: '原子間結合を切るのに必要なエネルギー（kJ/mol）。融点・硬度・切削抵抗と相関する。' },
+      { name: '金属結合', en: 'Metallic Bond', def: '価電子を全原子で共有する結合様式。金属の延性・電気伝導・切削加工性の根源。詳細は第A2章。' },
+    ],
+    further: [
+      '高校：<strong>化学基礎</strong>「物質の構成」章 — 原子・電子配置・周期表の基礎',
+      '大学初年度：<strong>Atkins「物理化学」</strong>第1章（または<strong>マッカーリ・サイモン「物理化学」</strong>）',
+      '日本鉄鋼協会：<strong>鉄鋼便覧</strong>第I編「材料の基礎」— 金属の物性データの一次資料',
+      'NIST Atomic Spectra Database — 元素の電子配置・エネルギー準位の公式データ <code>https://www.nist.gov/pml/atomic-spectra-database</code>',
+    ],
+  },
   {
     id: 1,
     num: '01',
@@ -3098,7 +3315,7 @@ function renderHome() {
   mainEl.querySelectorAll('.chapter-card').forEach(c => {
     c.addEventListener('click', () => {
       state.view = 'chapter';
-      state.chapterId = parseInt(c.dataset.chapter);
+      state.chapterId = /^\d+$/.test(c.dataset.chapter) ? parseInt(c.dataset.chapter, 10) : c.dataset.chapter;
       render();
     });
   });
@@ -3255,7 +3472,7 @@ function renderChapter() {
   });
   mainEl.querySelectorAll('[data-goto]').forEach(b => {
     b.addEventListener('click', () => {
-      state.chapterId = parseInt(b.dataset.goto);
+      state.chapterId = /^\d+$/.test(b.dataset.goto) ? parseInt(b.dataset.goto, 10) : b.dataset.goto;
       render();
     });
   });
