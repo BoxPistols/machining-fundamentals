@@ -1,0 +1,49 @@
+Creative Commons Attribution 4.0 International (CC BY 4.0)
+
+Copyright (c) 2026 BoxPistols
+
+The learning content of this repository — including but not limited to:
+
+  - Chapter body text (Japanese / English)
+  - Narration / voice summaries (voiceSummary fields)
+  - SVG figures embedded in chapter definitions
+  - OGP image, favicon, and any visual assets depicting machining concepts
+  - Glossary entries and "further reading" references
+  - README prose describing the educational material
+
+is licensed under the Creative Commons Attribution 4.0 International License.
+
+You are free to:
+  - Share   — copy and redistribute the material in any medium or format
+  - Adapt   — remix, transform, and build upon the material
+            for any purpose, even commercially.
+
+Under the following terms:
+  - Attribution — You must give appropriate credit, provide a link to the
+    license, and indicate if changes were made. You may do so in any
+    reasonable manner, but not in any way that suggests the licensor
+    endorses you or your use.
+
+Full license text:
+  https://creativecommons.org/licenses/by/4.0/legalcode
+
+Human-readable summary:
+  https://creativecommons.org/licenses/by/4.0/
+
+---
+
+Attribution example:
+
+  "切削加工入門 — 学習ロードマップ" by BoxPistols, licensed under CC BY 4.0.
+  Originally published at https://github.com/BoxPistols/machining-fundamentals
+
+---
+
+Note on AI-authored content:
+
+The chapter text was drafted with the assistance of Claude (Anthropic) and
+reviewed by the maintainer. Readers should verify technical details against
+primary sources (JIS standards, tool manufacturer catalogs, peer-reviewed
+textbooks) before applying the information to practical machining work.
+The CC BY 4.0 license applies to the text as a creative arrangement and
+selection — not to the underlying facts, which are in the public domain.

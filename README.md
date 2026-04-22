@@ -3,7 +3,7 @@
 航空機やエンジンなど、精密な金属部品を作る **切削加工** を、全10章で体系的に概観する学習教材です。初学者が全体像を掴むことを目的にしています。
 
 🌐 **公開URL**: https://YOUR-PROJECT.vercel.app  
-（公開後、このURLを差し替えてください）
+（Vercel デプロイ後、このURLを差し替えてください）
 
 ## このアプリについて
 
@@ -12,7 +12,7 @@
 - **用語集と参考資料** — 日英対訳、教科書・規格・メーカー資料へのリンク
 - **体験シミュレーター** — 第7章「冷却液の役割」から起動できる3D CFDシミュレーター（Three.js）
 - **テキスト書き出し** — 他の音声読み上げツール（VOICEVOX、ElevenLabs等）に流し込めるプレーンテキスト出力
-- **音声読み上げモード** — ブラウザ内蔵音声、または xAI Grok TTS（各自でAPIキー登録）
+- **音声読み上げモード** — ブラウザ内蔵音声、または xAI Grok TTS
 - **ダーク / ライト テーマ切替**
 - **学習進捗の記録**（localStorage）
 
@@ -22,46 +22,83 @@
 
 ## 技術スタック
 
-- 単一HTML（外部ビルドなし）
+- 単一 HTML（外部ビルドなし）
 - Three.js r160（WebGL 3D描画、シミュレーター部分）
-- 2D CFDソルバ: Jos Stam の Stable Fluids 法の実装
+- 2D CFD ソルバ: Jos Stam の Stable Fluids 法の実装
 - Web Speech API（ブラウザ内蔵読み上げ）
 - IndexedDB（Grok TTS の音声キャッシュ）
-- Cloudflare Workers（xAI API のCORSプロキシ、任意）
+- Cloudflare Workers（xAI API プロキシ + レート制限）
+- Vercel（静的ホスティング）
 
-## Grok TTS（高品質音声読み上げ）の使い方 — 上級者向け
+## Grok TTS（高品質音声読み上げ）
 
-ブラウザ内蔵の音声で十分使えますが、さらに高品質な読み上げが欲しい場合は [xAI Grok TTS](https://x.ai/news/grok-stt-and-tts-apis) を使えます。ただし xAI API はブラウザから直接呼べないため、**Cloudflare Workers プロキシ** を各自で立てる必要があります。
+2 つのモードがあります。
 
-### 手順
+| モード | 設定 | 挙動 |
+|---|---|---|
+| **Shared**（デフォルト） | プロキシ URL のみ登録 | プロキシ運用者の xAI キーを共有。**1日あたり 30 回まで**（変更可） |
+| **BYOK** | プロキシ URL + 自分の xAI キーを登録 | 自分の課金で無制限に使用 |
 
-1. [xAI Console](https://console.x.ai/) でアカウント作成、APIキー発行、クレジット購入（$5程度）
-2. Cloudflare アカウントを作成
-3. Workers & Pages で新規 Worker 作成
-4. このリポジトリの `worker-proxy.js` の内容を貼り付け、`ALLOWED_ORIGIN` を自分が使うドメインに変更
-5. デプロイ、Worker URL を控える
-6. アプリの ⚙ 設定モーダルで、プロキシURL・APIキーを入力
-7. 接続テスト成功 → Grok TTSが使える
+### Shared モード（プロキシ運用者向け、1人 1回のセットアップ）
 
-APIキー・プロキシURLは **お使いのブラウザの localStorage にのみ保存** され、私のサーバーには送信されません。
+この OSS リポジトリを公開運用する人が必ず行う作業です。
+
+1. [xAI Console](https://console.x.ai/) で API キーを取得
+2. Cloudflare ダッシュボード > Workers & Pages で新規 Worker を作成
+3. `worker-proxy.js` を貼り付けて Save and Deploy
+4. Worker の Settings > **Variables and Secrets** に以下を追加
+   - `XAI_API_KEY`（Secret）— 取得した xAI キー
+   - `RATE_LIMIT_PER_DAY`（Text）— 例 `30`（省略時 30）
+   - `ALLOWED_ORIGIN`（Text）— 例 `https://your-site.vercel.app`（`*` で全許可）
+5. Worker の Settings > **Bindings** に KV Namespace を追加
+   - Variable name: `RATE_LIMIT_KV`
+   - KV Namespace: 新規作成して紐づけ
+   - **未バインドだとレート制限が効かないので注意**
+6. Worker の URL（`https://xxx.workers.dev`）をアプリの設定欄に貼る
+
+### BYOK モード（ユーザー向け）
+
+自分の xAI アカウントで使いたい人は、⚙ 設定から：
+
+1. プロキシ URL（運用者のもの、または自分で立てた Worker の URL）
+2. xAI API キー（`xai-...`）
+3. 必要ならプロキシ合言葉（`PROXY_SHARED_SECRET` を運用者が設定している場合）
+
+これで BYOK モードになり、Shared の上限を消費しません。API キーは**ブラウザの localStorage にのみ**保存され、サーバーには送信されません（プロキシ経由で xAI に転送されるのみ）。
+
+## Vercel デプロイ
+
+静的ファイルのみなので、ビルド設定は不要。
+
+```bash
+# CLI で一発デプロイ
+npm i -g vercel
+vercel            # 初回は対話設定、preview デプロイ
+vercel --prod     # 本番デプロイ
+```
+
+または GitHub 連携で、main への push で自動デプロイ。`vercel.json` にキャッシュ・セキュリティヘッダのみ定義しています。
 
 ## ローカル開発
 
 ```bash
-# リポジトリクローン
-git clone https://github.com/YOUR_USERNAME/machining-fundamentals.git
+git clone https://github.com/BoxPistols/machining-fundamentals.git
 cd machining-fundamentals
 
-# HTTPサーバー起動（Python）
 python3 -m http.server 8000
 # → http://localhost:8000/ を開く
 ```
 
-ファイル直開き（`file://`）だとシミュレーターのiframe読み込みなどでブラウザによっては制約があるため、HTTPサーバー経由がおすすめです。
+ファイル直開き（`file://`）だとシミュレーターの iframe 読み込みに制約があるため、HTTP サーバー経由を推奨。
 
 ## ライセンス
 
-コード部分は MIT ライセンスで自由にお使いいただけますが、学習コンテンツ（本文・図）の転載・改変の際は一言ご連絡ください。
+デュアルライセンスです。
+
+- **コード**（`index.html` 内 JS、`worker-proxy.js`、`vercel.json` 等）— [MIT](./LICENSE)
+- **学習コンテンツ**（章本文、SVG、音声原稿、README 等）— [CC BY 4.0](./LICENSE-CONTENT)
+
+コンテンツを使う場合はクレジット表記（著者名・リポジトリへのリンク）をお願いします。商用利用可。
 
 ---
 

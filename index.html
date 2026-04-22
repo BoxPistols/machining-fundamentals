@@ -3410,7 +3410,33 @@ const apiConfig = {
   grokKey: '',
   grokProxyUrl: '',      // 例: https://grok-tts-proxy.username.workers.dev
   grokProxySecret: '',   // プロキシに設定した合言葉（任意）
+  lastRateLimit: null,   // 直近レスポンスの {limit, remaining, resetAt} | null
 };
+
+// レート制限ヘッダ抽出 (Shared モード時のみ値が埋まる)
+function extractRateLimit(res) {
+  const limit = res.headers.get('X-RateLimit-Limit');
+  if (!limit) return null;
+  return {
+    limit: parseInt(limit) || 0,
+    remaining: parseInt(res.headers.get('X-RateLimit-Remaining')) || 0,
+    resetAt: parseInt(res.headers.get('X-RateLimit-Reset')) || 0,
+    mode: res.headers.get('X-Proxy-Mode') || 'shared',
+  };
+}
+
+// Grok プロキシエラーの整形
+function buildGrokError(res) {
+  let msg = `Grok TTS エラー: ${res.status}`;
+  if (res.status === 429) {
+    msg = '共有プロキシの1日あたり上限に達しました。翌日0:00 UTC以降に再試行するか、⚙設定で自分の xAI API キーを登録してください（BYOKなら無制限）。';
+  } else if (res.status === 401) {
+    msg += '（API キーが無効、またはプロキシ合言葉が違う可能性）';
+  } else if (res.status === 503) {
+    msg += '（プロキシ側に共有 API キーが未設定です。⚙設定で自分の xAI キーを登録してください）';
+  }
+  return new Error(msg);
+}
 
 function loadApiConfig() {
   try {
@@ -3564,13 +3590,13 @@ const providers = {
   },
 
   // ----- xAI Grok TTS -----
+  // 2モード: BYOK (自分の xAI キー) / Shared (プロキシ側の共有キー、1日N回制限)
   grok: {
     id: 'grok',
     label: 'xAI Grok TTS（$4.20/1M文字）',
-    requiresApiKey: true,
-    isConfigured: () => !!apiConfig.grokKey && !!apiConfig.grokProxyUrl,
+    requiresApiKey: false, // プロキシが共有キーを持っていれば鍵なしでも動く
+    isConfigured: () => !!apiConfig.grokProxyUrl,
     getVoices() {
-      // Grok TTSの固定音声（日本語対応）
       return [
         { id: 'ara', label: 'Ara（温かく親しみやすい）', lang: 'ja' },
         { id: 'eve', label: 'Eve（エネルギッシュ）', lang: 'ja' },
@@ -3580,20 +3606,17 @@ const providers = {
       ];
     },
     async synthesize(text, opts) {
-      if (!apiConfig.grokKey) {
-        throw new Error('Grok API キーが設定されていません。⚙設定から登録してください。');
-      }
       if (!apiConfig.grokProxyUrl) {
-        throw new Error('Grok プロキシ URL が設定されていません。xAI API はブラウザから直接呼べないため、Cloudflare Workers プロキシを経由する必要があります。⚙設定から登録してください。');
+        throw new Error('Grok プロキシ URL が未設定です。⚙設定から登録してください。');
       }
       const voiceId = opts.voiceId || 'ara';
-      // プロキシURL + /v1/tts
       const proxyUrl = apiConfig.grokProxyUrl.replace(/\/+$/, '');
       const endpoint = `${proxyUrl}/v1/tts`;
-      const headers = {
-        'Authorization': `Bearer ${apiConfig.grokKey}`,
-        'Content-Type': 'application/json',
-      };
+      const headers = { 'Content-Type': 'application/json' };
+      // BYOK: キーがあれば送る (→ Worker 側で無制限モードになる)
+      if (apiConfig.grokKey) {
+        headers['Authorization'] = `Bearer ${apiConfig.grokKey}`;
+      }
       if (apiConfig.grokProxySecret) {
         headers['X-Proxy-Secret'] = apiConfig.grokProxySecret;
       }
@@ -3601,24 +3624,16 @@ const providers = {
         method: 'POST',
         headers,
         body: JSON.stringify({
-          text: text,
+          text,
           voice_id: voiceId,
           language: opts.lang || 'ja',
-          output_format: {
-            codec: 'mp3',
-            sample_rate: 24000,
-            bit_rate: 128000,
-          },
+          output_format: { codec: 'mp3', sample_rate: 24000, bit_rate: 128000 },
         }),
       });
+      // レート制限ヘッダ取得 (Shared モードのみ付与される)
+      apiConfig.lastRateLimit = extractRateLimit(res);
       if (!res.ok) {
-        let msg = `Grok TTS エラー: ${res.status}`;
-        try {
-          const err = await res.json();
-          if (err.error && err.error.message) msg += ` - ${err.error.message}`;
-          else if (err.message) msg += ` - ${err.message}`;
-        } catch {}
-        throw new Error(msg);
+        throw buildGrokError(res);
       }
       return await res.blob();
     },
@@ -4588,18 +4603,19 @@ async function openSettingsDialog() {
         <div class="settings-section">
           <h3>🗣 xAI Grok TTS</h3>
           <p class="desc">
-            xAI の高品質な音声合成サービス。<strong>$4.20 / 100万文字</strong>の従量課金。
-            日本語対応、5種類の音声（Ara, Eve, Leo, Rex, Sal）が使えます。
-            API キーは <a href="https://console.x.ai/" target="_blank" rel="noopener">console.x.ai</a> で取得してください。
+            xAI の高品質な音声合成。日本語対応、5種類の音声（Ara, Eve, Leo, Rex, Sal）。
+            プロキシURLは必須、<strong>API キーは任意</strong>です。
           </p>
+          <ul class="desc" style="margin:8px 0 0 18px;padding:0;font-size:12px;line-height:1.7;">
+            <li><strong>Shared モード</strong>（キー未入力）: プロキシ側の共有キーを使用。<strong>1日あたり上限あり</strong>（デフォルト30回）。</li>
+            <li><strong>BYOK モード</strong>（キー入力あり）: 自分の xAI キー（<code>xai-...</code>）で直接利用、<strong>上限なし</strong>。API キーは <a href="https://console.x.ai/" target="_blank" rel="noopener">console.x.ai</a> で取得。</li>
+          </ul>
           <p class="desc" style="color: var(--ylw); font-size: 12px; margin-top: 6px;">
-            <strong>⚠ 重要:</strong> xAI API はブラウザから直接呼べないため、
-            Cloudflare Workers などでプロキシを立てる必要があります。
-            プロキシ用のコードは <code style="background: var(--bg-3); padding: 2px 6px;">worker-proxy.js</code> に同梱しています。
+            <strong>⚠</strong> xAI API は CORS でブラウザから直接呼べないため Cloudflare Workers プロキシを経由します。プロキシ用コードは <code style="background: var(--bg-3); padding: 2px 6px;">worker-proxy.js</code> を参照。
           </p>
 
           <div class="settings-field">
-            <label for="grok-proxy-url-input">プロキシ URL（Cloudflare Workers のエンドポイント）</label>
+            <label for="grok-proxy-url-input">プロキシ URL（必須）</label>
             <input type="text" id="grok-proxy-url-input" placeholder="https://grok-tts-proxy.xxx.workers.dev" value="${apiConfig.grokProxyUrl || ''}" autocomplete="off" spellcheck="false">
             <div class="field-hint">
               例: <code style="font-family: 'JetBrains Mono', monospace; color: var(--cyan);">https://grok-tts-proxy.your-account.workers.dev</code>
@@ -4607,18 +4623,18 @@ async function openSettingsDialog() {
           </div>
 
           <div class="settings-field">
-            <label for="grok-proxy-secret-input">プロキシ合言葉（オプション）</label>
+            <label for="grok-proxy-secret-input">プロキシ合言葉（任意・BYOK時のみ使用）</label>
             <input type="password" id="grok-proxy-secret-input" placeholder="（プロキシに PROXY_SHARED_SECRET を設定した場合のみ）" value="${apiConfig.grokProxySecret || ''}" autocomplete="off" spellcheck="false">
             <div class="field-hint">
-              プロキシURLが漏れても無断使用されないようにするための追加認証。未設定なら空欄でOK。
+              BYOK を乱用から守るための追加認証。Shared モードでは不要。
             </div>
           </div>
 
           <div class="settings-field">
-            <label for="grok-key-input">xAI API キー（<code>xai-</code> で始まる文字列）</label>
-            <input type="password" id="grok-key-input" placeholder="xai-..." value="${apiConfig.grokKey || ''}" autocomplete="off" spellcheck="false">
+            <label for="grok-key-input">xAI API キー（任意・入れると BYOK で無制限）</label>
+            <input type="password" id="grok-key-input" placeholder="xai-... （未入力なら Shared モード）" value="${apiConfig.grokKey || ''}" autocomplete="off" spellcheck="false">
             <div class="field-hint">
-              各項目を空欄にして保存すると、ブラウザから削除されます。
+              空欄にして保存すると、ブラウザから削除されます。
               <span id="grok-key-status" class="settings-field-status"></span>
             </div>
           </div>
@@ -4683,11 +4699,6 @@ async function openSettingsDialog() {
     const proxyUrl = proxyUrlInput.value.trim();
     const proxySecret = proxySecretInput.value.trim();
 
-    if (!key) {
-      statusEl.className = 'settings-field-status ng';
-      statusEl.textContent = 'xAI API キーを入力してください';
-      return;
-    }
     if (!proxyUrl) {
       statusEl.className = 'settings-field-status ng';
       statusEl.textContent = 'プロキシ URL を入力してください';
@@ -4695,18 +4706,15 @@ async function openSettingsDialog() {
     }
 
     statusEl.className = 'settings-field-status';
-    statusEl.textContent = '接続確認中...';
+    const modeLabel = key ? 'BYOK' : 'Shared';
+    statusEl.textContent = `接続確認中 (${modeLabel} モード)...`;
     testBtn.disabled = true;
 
     try {
       const endpoint = proxyUrl.replace(/\/+$/, '') + '/v1/tts';
-      const headers = {
-        'Authorization': `Bearer ${key}`,
-        'Content-Type': 'application/json',
-      };
-      if (proxySecret) {
-        headers['X-Proxy-Secret'] = proxySecret;
-      }
+      const headers = { 'Content-Type': 'application/json' };
+      if (key) headers['Authorization'] = `Bearer ${key}`;
+      if (proxySecret) headers['X-Proxy-Secret'] = proxySecret;
       const res = await fetch(endpoint, {
         method: 'POST',
         headers,
@@ -4717,10 +4725,13 @@ async function openSettingsDialog() {
           output_format: { codec: 'mp3', sample_rate: 24000, bit_rate: 128000 },
         }),
       });
+      const rl = extractRateLimit(res);
       if (res.ok) {
         const blob = await res.blob();
         statusEl.className = 'settings-field-status ok';
-        statusEl.textContent = `✓ 接続成功（${(blob.size/1024).toFixed(1)} KB の音声が返ってきました）`;
+        let msg = `✓ 接続成功 (${modeLabel}, ${(blob.size/1024).toFixed(1)} KB)`;
+        if (rl) msg += `　残り ${rl.remaining}/${rl.limit}（本日分）`;
+        statusEl.textContent = msg;
       } else {
         statusEl.className = 'settings-field-status ng';
         let msg = `${res.status} エラー`;
@@ -4729,8 +4740,12 @@ async function openSettingsDialog() {
           if (err.error && err.error.message) msg += `: ${err.error.message}`;
           else if (err.message) msg += `: ${err.message}`;
         } catch {}
-        if (res.status === 401 && proxySecret) {
-          msg += '（プロキシ合言葉が間違っている可能性）';
+        if (res.status === 429) {
+          msg = '共有プロキシの1日上限に到達。⚙で xAI キーを入れると BYOK になり無制限。';
+        } else if (res.status === 503) {
+          msg += '（プロキシ側に共有キー未設定。自分の xAI キーを入れて BYOK で試してください）';
+        } else if (res.status === 401 && proxySecret) {
+          msg += '（プロキシ合言葉が違う可能性）';
         } else if (res.status === 401) {
           msg += '（xAI API キーが無効の可能性）';
         }
@@ -4740,7 +4755,7 @@ async function openSettingsDialog() {
       statusEl.className = 'settings-field-status ng';
       let msg = e.message || '通信エラー';
       if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
-        msg += '（プロキシURLが間違っている・Workerがデプロイされていない可能性）';
+        msg += '（プロキシURL誤り・Worker未デプロイ・CORS未許可の可能性）';
       }
       statusEl.textContent = '✗ ' + msg;
     } finally {
