@@ -342,6 +342,18 @@ body.voice-enabled .ch-body h3 {
   scroll-margin-top: 80px;
   transition: all 0.2s;
 }
+/* 現在読み上げ中のブロック (paragraph 単位の natural highlight) */
+.ch-body [data-voice-block-id] {
+  scroll-margin-top: 96px;
+  transition: background-color 0.4s ease, border-left-color 0.4s ease;
+  border-left: 3px solid transparent;
+  padding-left: 12px;
+  margin-left: -15px;
+}
+.ch-body [data-voice-block-id].voice-block-current {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-left-color: var(--accent);
+}
 
 /* 要約モード表示の案内 */
 .voice-summary-note {
@@ -4279,10 +4291,87 @@ const CHAPTERS = [
         `,
       },
       {
-        heading: '航空機加工における冷却液',
+        heading: '4大冷却方式の比較',
         html: `
-          <p>航空機の難削材加工では冷却が極めて重要です。チタンやインコネルは熱伝導率が低く、切削熱が工具に集中するため、<strong>高圧クーラント</strong>（数十〜百気圧）を刃先に直接噴射する技術が使われます。</p>
-          <p>また、<strong>内部給油</strong>（工具の内部に油穴を設け、刃先から直接噴射）も効果的です。</p>
+          <p>実務で使われる代表的な冷却方式を、性能と適用条件で比較します。</p>
+          <table style="width:100%;border-collapse:collapse;font-size:12px;margin:10px 0;">
+            <thead>
+              <tr style="background:var(--bg-3);">
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">方式</th>
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">冷却性能</th>
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">潤滑性能</th>
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">切屑排出</th>
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">環境負荷</th>
+                <th style="padding:8px;text-align:left;border:1px solid var(--line);">主な用途</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding:8px;border:1px solid var(--line);"><strong>フラッド</strong><br><span style="color:var(--text-2);font-size:11px;">flood、水溶性 大流量</span></td><td style="padding:8px;border:1px solid var(--line);">◎</td><td style="padding:8px;border:1px solid var(--line);">○</td><td style="padding:8px;border:1px solid var(--line);">◎</td><td style="padding:8px;border:1px solid var(--line);">△ 廃液処理</td><td style="padding:8px;border:1px solid var(--line);">SUS / 一般鋼の汎用条件</td></tr>
+              <tr style="background:var(--bg-2);"><td style="padding:8px;border:1px solid var(--line);"><strong>内部給油 ★</strong><br><span style="color:var(--accent);font-size:11px;">through-coolant、5-70 bar</span></td><td style="padding:8px;border:1px solid var(--line);">◎◎</td><td style="padding:8px;border:1px solid var(--line);">◎</td><td style="padding:8px;border:1px solid var(--line);">◎◎</td><td style="padding:8px;border:1px solid var(--line);">△</td><td style="padding:8px;border:1px solid var(--line);"><strong>難削材ドリル必須</strong>、深穴 / トロコイダル</td></tr>
+              <tr><td style="padding:8px;border:1px solid var(--line);"><strong>高圧クーラント</strong><br><span style="color:var(--text-2);font-size:11px;">HPC、70-300 bar</span></td><td style="padding:8px;border:1px solid var(--line);">◎◎</td><td style="padding:8px;border:1px solid var(--line);">◎</td><td style="padding:8px;border:1px solid var(--line);">◎◎ 切屑破断</td><td style="padding:8px;border:1px solid var(--line);">△</td><td style="padding:8px;border:1px solid var(--line);">難削材旋削、深削り</td></tr>
+              <tr><td style="padding:8px;border:1px solid var(--line);"><strong>MQL</strong><br><span style="color:var(--text-2);font-size:11px;">微量潤滑、油 1-50 mL/h</span></td><td style="padding:8px;border:1px solid var(--line);">△</td><td style="padding:8px;border:1px solid var(--line);">◎</td><td style="padding:8px;border:1px solid var(--line);">○ エア併用</td><td style="padding:8px;border:1px solid var(--line);">◎</td><td style="padding:8px;border:1px solid var(--line);">AL / 鋳鉄、環境配慮型ライン</td></tr>
+              <tr style="color:var(--cyn);"><td style="padding:8px;border:1px solid var(--line);"><strong>クライオ</strong><br><span style="color:var(--text-2);font-size:11px;">LN₂ -196°C / CO₂ -78°C</span></td><td style="padding:8px;border:1px solid var(--line);">◎◎◎</td><td style="padding:8px;border:1px solid var(--line);">×</td><td style="padding:8px;border:1px solid var(--line);">○ 揮発</td><td style="padding:8px;border:1px solid var(--line);">◎</td><td style="padding:8px;border:1px solid var(--line);">Ti / Inconel 高能率、寿命2-3倍報告</td></tr>
+              <tr><td style="padding:8px;border:1px solid var(--line);"><strong>乾式 (dry)</strong><br><span style="color:var(--text-2);font-size:11px;">液体なし</span></td><td style="padding:8px;border:1px solid var(--line);">×</td><td style="padding:8px;border:1px solid var(--line);">×</td><td style="padding:8px;border:1px solid var(--line);">エアブロー</td><td style="padding:8px;border:1px solid var(--line);">◎◎</td><td style="padding:8px;border:1px solid var(--line);">FC250 (黒鉛自己潤滑)、Inconel セラミクス高速 (熱集中戦略)</td></tr>
+            </tbody>
+          </table>
+          <p style="margin-top:8px;">同じ材料でも工具材種・加工方式で最適冷却が変わる点が重要です。例えば Inconel 718 の超硬切削はフラッド必須（熱を逃がす戦略）ですが、セラミクスでは敢えて乾式（熱を切屑側に集中させる戦略）が採られます。</p>
+        `,
+      },
+      {
+        heading: '材料 × 加工方式 — 推奨冷却の早見表',
+        html: `
+          <table style="width:100%;border-collapse:collapse;font-size:12px;margin:10px 0;">
+            <thead>
+              <tr style="background:var(--bg-3);">
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">材料</th>
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">旋削</th>
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">フライス</th>
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">ドリル</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding:6px;border:1px solid var(--line);">S45C</td><td style="padding:6px;border:1px solid var(--line);">フラッド</td><td style="padding:6px;border:1px solid var(--line);">フラッド or MQL (高速)</td><td style="padding:6px;border:1px solid var(--line);">内部給油 (L/D&gt;5)</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);">SUS304 / 316L</td><td style="padding:6px;border:1px solid var(--line);">フラッド (大流量)</td><td style="padding:6px;border:1px solid var(--line);">フラッド (BUE 防止)</td><td style="padding:6px;border:1px solid var(--line);">内部給油</td></tr>
+              <tr style="color:var(--ylw);"><td style="padding:6px;border:1px solid var(--line);">Ti-6Al-4V</td><td style="padding:6px;border:1px solid var(--line);">フラッド or 高圧 + クライオ最強</td><td style="padding:6px;border:1px solid var(--line);">クライオで寿命2倍 (LN₂)</td><td style="padding:6px;border:1px solid var(--line);">内部給油 必須</td></tr>
+              <tr style="color:var(--ylw);"><td style="padding:6px;border:1px solid var(--line);">Inconel 718 (超硬)</td><td style="padding:6px;border:1px solid var(--line);">フラッド + 高圧</td><td style="padding:6px;border:1px solid var(--line);">フラッド + トロコイダル</td><td style="padding:6px;border:1px solid var(--line);">内部給油 必須</td></tr>
+              <tr style="color:var(--ylw);"><td style="padding:6px;border:1px solid var(--line);">Inconel 718 (セラミクス)</td><td style="padding:6px;border:1px solid var(--line);"><strong>乾式</strong> (熱集中戦略)</td><td style="padding:6px;border:1px solid var(--line);"><strong>乾式</strong></td><td style="padding:6px;border:1px solid var(--line);">— (専用工具なし)</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);">AL7075 / AL6061</td><td style="padding:6px;border:1px solid var(--line);">フラッド or MQL</td><td style="padding:6px;border:1px solid var(--line);">MQL or フラッド大流量 (高速時)</td><td style="padding:6px;border:1px solid var(--line);">内部給油</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);">FC250 (鋳鉄)</td><td style="padding:6px;border:1px solid var(--line);">乾式 + 粉塵吸引</td><td style="padding:6px;border:1px solid var(--line);">乾式</td><td style="padding:6px;border:1px solid var(--line);">乾式</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);">CFRP</td><td style="padding:6px;border:1px solid var(--line);">— (旋削適用稀)</td><td style="padding:6px;border:1px solid var(--line);">乾式 + 粉塵吸引 (樹脂軟化禁忌)</td><td style="padding:6px;border:1px solid var(--line);">乾式</td></tr>
+            </tbody>
+          </table>
+          <p style="font-size:12px;color:var(--text-2);">※「クライオ最強」はあくまで冷却性能の話。設備投資（LN₂ デュワー / 配管）と運用コストが大きいため、量産でなければ採算が合わないことも多い。</p>
+        `,
+      },
+      {
+        heading: '航空機加工における冷却液 — 内部給油と高圧',
+        html: `
+          <p>航空機の難削材加工で<strong>内部給油</strong>と<strong>高圧クーラント</strong>が必須となる物理的理由は、第A2章で見たチタン・インコネルの<strong>熱伝導率の低さ</strong>です。</p>
+          <ul>
+            <li>Ti-6Al-4V: 熱伝導率 約 7-22 W/(m·K)（鋼の 1/4〜1/10）</li>
+            <li>Inconel 718: 約 11 W/(m·K)（鋼の 1/7）</li>
+            <li>→ 切削で発生した熱がワークにも切屑にも逃げず、<strong>工具刃先に集中</strong></li>
+            <li>→ 表面冷却（フラッド）では刃先まで届かない。刃の隙間から内部給油で<strong>直接刃先を冷やす</strong>必要がある</li>
+          </ul>
+          <p><strong>高圧クーラント（HPC、70-300 bar）</strong>は、低圧では切屑と工具の間に蒸気膜（Leidenfrost 膜）ができて熱伝達が悪化する問題を、圧力で蒸気膜を破って解決する技術です。Sandvik / Walter 等が高圧対応工具を提供しています。</p>
+          <p><strong>クライオ加工</strong>はさらに踏み込んで液体窒素（-196°C）を直接吹き付ける手法。Ti 加工で工具寿命 2-3 倍の報告あり。設備投資は重いですが、Boeing / GE Aviation 等の量産ラインで採用例があります。詳細は Part C1「金属加工研究の実例集」の「難削材の高能率加工」テーマ参照。</p>
+        `,
+      },
+      {
+        heading: 'Part A への接続 — なぜ液体で冷えるのか',
+        html: `
+          <p>「冷却液は熱を奪う」は直感的ですが、その背後の物理は第A2章「金属結合と自由電子」で扱った<strong>熱伝導</strong>そのものです。</p>
+          <ul>
+            <li>金属側: 自由電子が熱を運ぶ（電子的熱伝導、速い）</li>
+            <li>液体側: 分子の対流と相変化（蒸発潜熱）が熱を奪う</li>
+            <li>界面: 工具と冷却液の<strong>熱伝達係数 h</strong> が支配。h が大きいほど効率良く熱が抜ける</li>
+          </ul>
+          <p>クライオ加工が圧倒的なのは、液体窒素の<strong>蒸発潜熱（199 kJ/kg）+ 低温（-196°C）</strong>の組み合わせで、h が他方式の数倍〜10倍に達するためです。</p>
+          <p>逆にセラミクス工具で Inconel を「乾式・高速で削る」戦略は、Part A6 の<strong>断熱せん断</strong>を意図的に発生させ、変形熱を切屑側に集中させて持ち去らせる方式。冷却液で刃先を急冷するとセラミクスが熱衝撃で割れるため、敢えて熱を加える側の戦略です。</p>
+          <p style="margin-top:12px;padding:12px;background:var(--bg-2);border-left:3px solid var(--accent);border-radius:2px;">
+            <strong>本章のキーアイデア</strong><br>
+            冷却液の選択は「材料の熱伝導率（A2）× 工具の耐熱性 × 加工方式」の組み合わせで決まる。同じ Inconel でも超硬とセラミクスで真逆の冷却戦略になるのは、工具材料の特性と切削モデルの違いから論理的に導ける。
+          </p>
         `,
       },
       {
@@ -4293,11 +4382,17 @@ const CHAPTERS = [
     terms: [
       { name: '冷却液', en: 'Coolant / Cutting Fluid', def: '切削中に供給される液体。冷却・潤滑・切りくず排出を担う。' },
       { name: 'クーラント', en: 'Coolant', def: '冷却液の別称。主に水溶性切削液を指すことが多い。' },
-      { name: 'MQL', en: 'Minimum Quantity Lubrication', def: '微量の油を霧状に吹き付ける方式。環境負荷が低い。' },
-      { name: '高圧クーラント', en: 'High-pressure Coolant', def: '数十気圧以上の高い圧力で冷却液を噴射する方式。難削材加工で有効。' },
+      { name: 'MQL', anchor: 'MQL', en: 'Minimum Quantity Lubrication', def: '微量の油（1〜50 mL/h）を霧状に吹き付ける方式。環境負荷が低い。AL や鋳鉄、環境配慮型ラインで主流化。' },
+      { name: '高圧クーラント', anchor: 'HPC', en: 'High-pressure Coolant (HPC)', def: '70〜300 bar の高圧で冷却液を噴射する方式。蒸気膜を破って刃先まで冷却液を届ける。難削材加工で有効。' },
+      { name: '内部給油', anchor: 'through-coolant', en: 'Through-Coolant', def: '工具内部に油穴を設けて刃先から直接冷却液を噴射する方式。Ti / Inconel ドリル必須、L/D > 5 の深穴で標準。' },
+      { name: 'クライオ加工', anchor: 'cryogenic', en: 'Cryogenic Machining', def: '液体窒素 LN₂ (-196°C) または CO₂ (-78°C) を直接吹き付ける加工法。Ti 加工で工具寿命 2-3 倍の報告。蒸発潜熱と低温で他方式の数倍の熱伝達。' },
+      { name: '乾式切削', en: 'Dry Cutting', def: '冷却液を使わない加工。FC250（黒鉛自己潤滑）、CFRP（樹脂軟化禁忌）、Inconel セラミクス高速（熱集中戦略）等で採用。' },
+      { name: '熱伝達係数', en: 'Heat Transfer Coefficient (h)', def: '工具と冷却液間の熱の流れやすさ [W/(m²·K)]。冷却方式の性能指標。クライオで他方式の数倍。' },
     ],
     further: [
-      '切削油メーカー（JX、出光、カストロール等）の技術資料が実務的',
+      '切削油メーカー（JX、出光、カストロール、Castrol、Quaker Houghton 等）の技術資料が実務的',
+      'CIRP Annals の "Cryogenic Machining" レビュー論文（2010年代以降複数）',
+      '<strong>Sandvik Coromant Application Guide for High-Pressure Coolant</strong>（公開 PDF）',
       '日本トライボロジー学会の資料に潤滑機構の科学的解説あり',
     ],
   },
@@ -5083,6 +5178,19 @@ function renderChapter() {
     </div>
   `;
 
+  // 各セクション内の top-level ブロック (p, ul, ol, h4, table, blockquote 等) に
+  // data-voice-block-id を付与。TTS 再生中の paragraph 単位 highlight + scroll に使う。
+  mainEl.querySelectorAll('[data-voice-content]').forEach((container) => {
+    const sIdx = container.dataset.voiceContent;
+    let bIdx = 0;
+    for (const child of container.children) {
+      // 空テキストの装飾要素はスキップ (figure / interactive container 等は対象外)
+      if (!child.textContent || !child.textContent.trim()) continue;
+      child.setAttribute('data-voice-block-id', `${sIdx}-${bIdx}`);
+      bIdx++;
+    }
+  });
+
   mainEl.querySelector('[data-back]').addEventListener('click', () => {
     state.view = 'home'; render();
   });
@@ -5591,21 +5699,53 @@ function buildQueue(ch) {
       });
     }
   } else {
-    // 全文モード：導入＋各セクション
+    // 全文モード：導入＋各セクション (block 単位で natural highlight 可能に)
     q.push({ text: normalizeForSpeech(ch.title + '。' + ch.lead), sectionIdx: -1 });
     ch.sections.forEach((s, i) => {
-      const heading = normalizeForSpeech(s.heading);
-      const body = normalizeForSpeech(s.html);
-      // 長すぎる場合は文単位で分割（Chrome対策）
-      const combined = heading + '。' + body;
-      const chunks = splitLongText(combined, 180);
-      chunks.forEach((chunk, j) => {
-        q.push({
-          text: chunk,
-          sectionIdx: i,
-          isFirstOfSection: j === 0,
-        });
+      // セクション見出しを単独 item として先に push (heading にスポット highlight)
+      q.push({
+        text: normalizeForSpeech(s.heading),
+        sectionIdx: i,
+        blockIdx: -1,
+        isFirstOfSection: true,
       });
+      // セクション本文をブロック単位で分割。
+      // renderChapter 後の DOM があれば優先 (data-voice-block-id がついている)、
+      // 無ければ HTML 文字列を fallback で文単位 split。
+      const container = document.querySelector(`[data-voice-content="${i}"]`);
+      if (container && container.children.length > 0) {
+        let blockIdx = 0;
+        for (const child of container.children) {
+          if (!child.hasAttribute('data-voice-block-id')) continue;
+          const blockText = normalizeForSpeech(child.outerHTML);
+          if (!blockText.trim()) continue;
+          // 長いブロックは Chrome speechSynthesis 対策で文単位 sub-split
+          const chunks = splitLongText(blockText, 180);
+          chunks.forEach((chunk, subIdx) => {
+            q.push({
+              text: chunk,
+              sectionIdx: i,
+              blockIdx,
+              subIdx,
+              isFirstOfSection: false,
+            });
+          });
+          blockIdx++;
+        }
+      } else {
+        // fallback: DOM 未レンダリング時 (旧挙動互換)
+        const body = normalizeForSpeech(s.html);
+        const chunks = splitLongText(body, 180);
+        chunks.forEach((chunk, j) => {
+          q.push({
+            text: chunk,
+            sectionIdx: i,
+            blockIdx: 0,
+            subIdx: j,
+            isFirstOfSection: false,
+          });
+        });
+      }
     });
   }
   return q;
@@ -5656,9 +5796,12 @@ function stopSpeech() {
   voice.currentUtterance = null;
   voice.markInterrupted = null;
   updateVoiceUI();
-  // ハイライト解除
+  // ハイライト解除 (セクション + ブロックの両方)
   document.querySelectorAll('[data-voice-current]').forEach(el => {
     el.removeAttribute('data-voice-current');
+  });
+  document.querySelectorAll('.voice-block-current').forEach(el => {
+    el.classList.remove('voice-block-current');
   });
 }
 
@@ -5668,19 +5811,37 @@ function playQueue() {
   speakCurrent();
 }
 
-// セクションハイライトとスクロール
+// セクション + ブロック単位 highlight + スクロール
 function updateHighlight(item) {
   document.querySelectorAll('[data-voice-current]').forEach(el => {
     el.removeAttribute('data-voice-current');
   });
-  if (item.sectionIdx >= 0) {
-    const h3 = document.querySelector(`h3[data-voice-section="${item.sectionIdx}"]`);
-    if (h3) {
-      h3.setAttribute('data-voice-current', 'true');
-      if (item.isFirstOfSection) {
-        h3.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+  document.querySelectorAll('.voice-block-current').forEach(el => {
+    el.classList.remove('voice-block-current');
+  });
+  if (item.sectionIdx < 0) return;
+
+  const h3 = document.querySelector(`h3[data-voice-section="${item.sectionIdx}"]`);
+  if (h3) h3.setAttribute('data-voice-current', 'true');
+
+  // blockIdx === -1 はセクション見出し読み上げ中、本文ブロックなし
+  if (item.blockIdx === -1 || item.blockIdx === undefined) {
+    if (h3) h3.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  // 本文ブロック highlight + 必要ならスクロール
+  const block = document.querySelector(
+    `[data-voice-block-id="${item.sectionIdx}-${item.blockIdx}"]`
+  );
+  if (block) {
+    block.classList.add('voice-block-current');
+    // 同じブロック内の sub-chunk (subIdx > 0) はスクロールしない (ジッタ回避)
+    if (!item.subIdx) {
+      block.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+  } else if (item.isFirstOfSection && h3) {
+    h3.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 }
 
