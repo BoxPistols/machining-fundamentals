@@ -83,18 +83,25 @@ async function redeemInviteCode(code, sessionId, env) {
 }
 ```
 
-### レート制限値の env 管理 (owner 判断で確定)
+### レート制限値の env 管理 (owner 判断で確定、peer 指摘で token 側修正)
 
 ```
-CHAT_LIMIT_ANON_REQ = 50         # Anonymous 1日あたり (owner 指定)
-CHAT_LIMIT_INVITED_REQ = 100     # Invited 1日あたり (暫定、owner 要確認)
-CHAT_LIMIT_TOKENS_PER_DAY_ANON = 50000      # Anonymous トークン上限 (req 上限の 2.5x を proportional 設定)
-CHAT_LIMIT_TOKENS_PER_DAY_INVITED = 100000  # Invited トークン上限 (同 proportional)
-CHAT_LIMIT_TOKENS_PER_REQ = 4000    # 1リクエスト入力上限
-CHAT_MAX_OUTPUT_TOKENS = 800        # 1リクエスト出力上限
+CHAT_LIMIT_ANON_REQ = 50             # Anonymous 1日あたり (owner 指定)
+CHAT_LIMIT_INVITED_REQ = 100         # Invited 1日あたり (暫定、owner 要確認)
+CHAT_LIMIT_TOKENS_ANON = 150000      # Anonymous token (req × 3k バッファ)
+CHAT_LIMIT_TOKENS_INVITED = 300000   # Invited token (req × 3k バッファ)
+CHAT_LIMIT_TOKENS_PER_REQ = 4000     # 1リクエスト入力上限
+CHAT_MAX_OUTPUT_TOKENS = 800         # 1リクエスト出力上限
 ```
 
-**Invited 100 の根拠**: Anonymous 50 に対して 2 倍。招待者には明確に「もう少し使える」という差別化を与える。運用開始後に実利用を見て env 調整。
+**token 値の根拠** (peer 指摘反映):
+- 1 req 平均 = input 2k + output 500 ≈ 2.5k tokens
+- 余裕を持って **3k tokens/req** で算出
+- Anonymous: 50 req × 3k = **150k tokens/day**
+- Invited: 100 req × 3k = **300k tokens/day**
+- → req 上限と token 上限がほぼ同時にヒットする（先に token で止まる違和感を回避）
+
+**Invited 100 の根拠**: Anonymous 50 に対して 2 倍、招待者に明確な差別化を与える。運用開始後に実利用を見て env 調整。
 
 Cloudflare ダッシュボードから即時変更可能。運用中に調整可能な設計。
 
