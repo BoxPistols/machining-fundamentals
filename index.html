@@ -1929,6 +1929,7 @@ body.chat-sidebar-open { padding-right: 380px; transition: padding-right 0.2s ea
   padding: 14px; border-top: 1px solid var(--line); background: var(--bg-2);
   display: flex; flex-direction: column; gap: 10px;
 }
+.chat-settings[hidden] { display: none; }
 .chat-settings label { display: block; font-size: 11px; color: var(--text-1); margin-bottom: 4px; font-weight: 700; }
 .chat-settings input {
   width: 100%; padding: 6px 8px; background: var(--bg-1);
@@ -6850,6 +6851,8 @@ function renderSim() {
     let simHtml = tpl.textContent;
     // 先頭の空白・改行を削除して <!DOCTYPE html> を先頭に
     simHtml = simHtml.replace(/^\s+/, '');
+    // テンプレ中の閉じ script タグは外側 script の早期終了を防ぐため \ でエスケープしてある。iframe に渡す前に戻す (戻さないと iframe 内の script が閉じず真っ黒になる)
+    simHtml = simHtml.replace(/<\\\/script/g, '</script');
     const blob = new Blob([simHtml], { type: 'text/html;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     state.lastSimBlobUrl = url;
@@ -9620,7 +9623,8 @@ document.addEventListener('click', (e) => {
 // =============================================================================
 // 横断検索 dialog (Cmd/Ctrl+P で起動)
 // =============================================================================
-(function setupSearch() {
+// search-overlay 等は main スクリプト閉じタグ以降に出てくるため DOMContentLoaded 待ち
+document.addEventListener('DOMContentLoaded', function setupSearch() {
   const overlay = document.getElementById('search-overlay');
   const input = document.getElementById('search-input');
   const results = document.getElementById('search-results');
@@ -9715,7 +9719,7 @@ document.addEventListener('click', (e) => {
       if (overlay.hidden) open(); else close();
     }
   });
-})();
+});
 
 // 初期描画 (URL ハッシュから初期 state を復元 → 外部からの deep link 対応)
 {
@@ -12050,6 +12054,15 @@ document.querySelectorAll('.learn-step').forEach(el => {
 });
 <\/script>
 
+</body>
+</html>
+</script>
+
+<!-- =============================================================================
+     ↑ sim-template (iframe 用 HTML) ここで終わり。以下は主 DOM の要素。
+     以前 sim-template 内に混入していたため主ページで search / chat が機能していなかった。
+     ============================================================================= -->
+
 <!-- =============================================================================
      検索ダイアログ (横断検索、Cmd/Ctrl+P で起動)
      ============================================================================= -->
@@ -12583,11 +12596,6 @@ function showError(msg) {
   const el = appendMessage({ role: 'system', content: msg });
   el.classList.add('chat-error');
 }
-<\/script>
-
-</body>
-</html>
-
 </script>
 
 </body>
