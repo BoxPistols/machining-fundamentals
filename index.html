@@ -4388,6 +4388,7 @@ const CHAPTERS = [
             <li>航空機での例：エンジンのシャフト類、ランディングギアの部品の一部</li>
           </ul>
         `,
+        interactive: 'turning-2d',
       },
       {
         heading: '転削（てんさく、Milling）',
@@ -6735,6 +6736,7 @@ function renderChapter() {
     if (kind === 'kienzle-fc')    buildKienzleVisualizer(el);
     if (kind === 'taylor-life')   buildTaylorVisualizer(el);
     if (kind === 'sld-explorer')  buildSldVisualizer(el);
+    if (kind === 'turning-2d')    buildTurning2dAnim(el);
   });
 
   mainEl.querySelector('[data-back]').addEventListener('click', () => {
@@ -8290,6 +8292,223 @@ function buildSldVisualizer(container) {
     dot.setAttribute('fill', stable ? 'var(--grn, #2ade7a)' : 'var(--ylw, #f59e0b)');
   }
   recompute();
+}
+
+// === ch2: 旋削 2D アニメーション (Three.js 不要、純 SVG + requestAnimationFrame) ===
+// ワーク (側面投影) を回転、バイトを送り方向に進める。切屑形成を簡略可視化。
+function buildTurning2dAnim(container) {
+  while (container.firstChild) container.removeChild(container.firstChild);
+  const root = vizFrame('旋削 2D アニメーション — ワーク回転 + バイト送り');
+  const { el: sliders, inputs, valueEls } = vizSliders([
+    { id: 'n',  label: 'n (rpm)', min: 100, max: 3000, step: 50, def: 1500 },
+    { id: 'f',  label: 'f (mm/rev)', min: 0.05, max: 0.5, step: 0.01, def: 0.2 },
+    { id: 'ap', label: 'ap (mm)', min: 0.5, max: 5, step: 0.1, def: 2.0 },
+  ], () => updateAnim());
+  root.appendChild(sliders);
+  const { el: results, els: resultEls } = vizResults([
+    { id: 'vc', label: 'Vc', unit: 'm/min' },
+    { id: 'vf', label: '送り速度', unit: 'mm/min' },
+    { id: 'mrr', label: 'MRR', unit: 'cm³/min' },
+  ]);
+  root.appendChild(results);
+
+  // SVG: 旋削の俯瞰側面図
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 600 240');
+  svg.setAttribute('class', 'bar-svg');
+  svg.style.height = '240px';
+
+  // Chuck (左、固定)
+  const chuck = document.createElementNS(SVG_NS, 'rect');
+  chuck.setAttribute('x', '20'); chuck.setAttribute('y', '90');
+  chuck.setAttribute('width', '40'); chuck.setAttribute('height', '60');
+  chuck.setAttribute('fill', 'var(--bg-3)'); chuck.setAttribute('stroke', 'var(--line-hi)');
+  svg.appendChild(chuck);
+  const chuckLabel = document.createElementNS(SVG_NS, 'text');
+  chuckLabel.setAttribute('x', '40'); chuckLabel.setAttribute('y', '170');
+  chuckLabel.setAttribute('font-family', 'JetBrains Mono, monospace');
+  chuckLabel.setAttribute('font-size', '10'); chuckLabel.setAttribute('fill', 'var(--text-2)');
+  chuckLabel.setAttribute('text-anchor', 'middle');
+  chuckLabel.textContent = 'チャック';
+  svg.appendChild(chuckLabel);
+
+  // Workpiece (cylinder side view, with rotation indication via radial lines)
+  const workG = document.createElementNS(SVG_NS, 'g');
+  workG.setAttribute('id', 'work-group');
+  const work = document.createElementNS(SVG_NS, 'rect');
+  work.setAttribute('x', '60'); work.setAttribute('y', '100');
+  work.setAttribute('width', '420'); work.setAttribute('height', '40');
+  work.setAttribute('fill', 'var(--text-2)');
+  work.setAttribute('opacity', '0.7');
+  workG.appendChild(work);
+  // 回転を示す中心線 + 周方向マーク
+  const centerLine = document.createElementNS(SVG_NS, 'line');
+  centerLine.setAttribute('x1', '60'); centerLine.setAttribute('y1', '120');
+  centerLine.setAttribute('x2', '480'); centerLine.setAttribute('y2', '120');
+  centerLine.setAttribute('stroke', 'var(--accent)');
+  centerLine.setAttribute('stroke-width', '0.5');
+  centerLine.setAttribute('stroke-dasharray', '4 3');
+  centerLine.setAttribute('opacity', '0.5');
+  workG.appendChild(centerLine);
+  // 回転インジケータ (側面の縦線、アニメで動かす)
+  for (let i = 0; i < 8; i++) {
+    const stripe = document.createElementNS(SVG_NS, 'line');
+    stripe.setAttribute('class', 'work-stripe');
+    stripe.setAttribute('y1', '100'); stripe.setAttribute('y2', '140');
+    stripe.setAttribute('stroke', 'var(--bg-1)');
+    stripe.setAttribute('stroke-width', '1.5');
+    stripe.setAttribute('opacity', '0.3');
+    stripe.dataset.idx = i;
+    workG.appendChild(stripe);
+  }
+  svg.appendChild(workG);
+
+  // 切削済み領域 (バイトが通った後、細くなる)
+  const cutPart = document.createElementNS(SVG_NS, 'rect');
+  cutPart.setAttribute('id', 'cut-part');
+  cutPart.setAttribute('x', '60'); cutPart.setAttribute('y', '105');
+  cutPart.setAttribute('width', '0'); cutPart.setAttribute('height', '30');
+  cutPart.setAttribute('fill', 'var(--bg-1)');
+  cutPart.setAttribute('stroke', 'var(--accent)');
+  cutPart.setAttribute('stroke-width', '0.5');
+  svg.appendChild(cutPart);
+
+  // バイト (工具) - X 移動 + Y 切込み
+  const tool = document.createElementNS(SVG_NS, 'g');
+  tool.setAttribute('id', 'tool-group');
+  const toolBody = document.createElementNS(SVG_NS, 'polygon');
+  toolBody.setAttribute('points', '-10,0 0,-15 12,-15 12,30 -10,30');
+  toolBody.setAttribute('fill', 'var(--accent)');
+  toolBody.setAttribute('opacity', '0.85');
+  tool.appendChild(toolBody);
+  const toolLabel = document.createElementNS(SVG_NS, 'text');
+  toolLabel.setAttribute('x', '0'); toolLabel.setAttribute('y', '40');
+  toolLabel.setAttribute('font-family', 'JetBrains Mono, monospace');
+  toolLabel.setAttribute('font-size', '10'); toolLabel.setAttribute('fill', 'var(--accent)');
+  toolLabel.setAttribute('text-anchor', 'middle');
+  toolLabel.textContent = 'バイト';
+  tool.appendChild(toolLabel);
+  svg.appendChild(tool);
+
+  // 切屑 (スパーク的に表現)
+  const chip = document.createElementNS(SVG_NS, 'g');
+  chip.setAttribute('id', 'chip-group');
+  for (let i = 0; i < 5; i++) {
+    const sp = document.createElementNS(SVG_NS, 'line');
+    sp.setAttribute('class', 'chip-spark');
+    sp.setAttribute('stroke', 'var(--ylw, #f59e0b)');
+    sp.setAttribute('stroke-width', '1.2');
+    sp.setAttribute('opacity', '0');
+    chip.appendChild(sp);
+  }
+  svg.appendChild(chip);
+
+  // 軸ラベル
+  const arrowFeed = document.createElementNS(SVG_NS, 'text');
+  arrowFeed.setAttribute('x', '300'); arrowFeed.setAttribute('y', '210');
+  arrowFeed.setAttribute('font-family', 'JetBrains Mono, monospace');
+  arrowFeed.setAttribute('font-size', '11'); arrowFeed.setAttribute('fill', 'var(--text-1)');
+  arrowFeed.setAttribute('text-anchor', 'middle');
+  arrowFeed.textContent = '← 送り方向 (バイトが進む)';
+  svg.appendChild(arrowFeed);
+
+  const rotLabel = document.createElementNS(SVG_NS, 'text');
+  rotLabel.setAttribute('x', '270'); rotLabel.setAttribute('y', '85');
+  rotLabel.setAttribute('font-family', 'JetBrains Mono, monospace');
+  rotLabel.setAttribute('font-size', '11'); rotLabel.setAttribute('fill', 'var(--accent)');
+  rotLabel.setAttribute('text-anchor', 'middle');
+  rotLabel.textContent = '↻ ワークが回転 (n rpm)';
+  svg.appendChild(rotLabel);
+
+  root.appendChild(svg);
+
+  // 制御ボタン
+  const ctrl = document.createElement('div');
+  ctrl.style.marginTop = '10px';
+  ctrl.style.display = 'flex';
+  ctrl.style.gap = '8px';
+  const playBtn = document.createElement('button');
+  playBtn.className = 'quiz-btn primary';
+  playBtn.textContent = '▶ 再生';
+  const stopBtn = document.createElement('button');
+  stopBtn.className = 'quiz-btn';
+  stopBtn.textContent = '■ リセット';
+  ctrl.appendChild(playBtn); ctrl.appendChild(stopBtn);
+  root.appendChild(ctrl);
+
+  container.appendChild(root);
+
+  // === Animation ===
+  const D = 50; // 工具径相当 (mm) — 表示用
+  let raf = null;
+  let toolX = 470;     // 初期: 右端
+  let stripePhase = 0;
+  let cutWidth = 0;
+
+  function updateAnim() {
+    const n = parseFloat(inputs.n.value);
+    const f = parseFloat(inputs.f.value);
+    const ap = parseFloat(inputs.ap.value);
+    const Vc = Math.PI * D * n / 1000;
+    const Vf = f * n;
+    const mrr = Vc * f * ap;
+    valueEls.n.el.textContent = `${n.toFixed(0)} rpm`;
+    valueEls.f.el.textContent = `${f.toFixed(2)} mm/rev`;
+    valueEls.ap.el.textContent = `${ap.toFixed(1)} mm`;
+    resultEls.vc.nodeValue = Vc.toFixed(0);
+    resultEls.vf.nodeValue = Vf.toFixed(0);
+    resultEls.mrr.nodeValue = mrr.toFixed(1);
+  }
+
+  function tick(t) {
+    const n = parseFloat(inputs.n.value);
+    const f = parseFloat(inputs.f.value);
+    const ap = parseFloat(inputs.ap.value);
+    // ワーク回転インジケータ (n rpm を視覚化、ストライプを横方向に動かす)
+    stripePhase = (stripePhase + n / 600) % 50;
+    workG.querySelectorAll('.work-stripe').forEach((s, i) => {
+      const x = 60 + ((i * 50 + stripePhase) % 420);
+      s.setAttribute('x1', x); s.setAttribute('x2', x);
+    });
+    // バイト位置 (右→左に進む、Vf 比例)
+    toolX -= f * n / 2400;  // 速度を見やすく抑制
+    if (toolX < 65) toolX = 470; // ループ
+    tool.setAttribute('transform', `translate(${toolX}, ${107 - ap * 2.5})`);
+    // 切削済み領域更新
+    cutWidth = Math.max(0, 470 - toolX);
+    cutPart.setAttribute('x', toolX);
+    cutPart.setAttribute('width', cutWidth);
+    cutPart.setAttribute('y', 105 - ap * 2.5);
+    cutPart.setAttribute('height', 30 + ap * 2.5);
+    // 切屑スパーク (バイト先端から飛ばす)
+    chip.querySelectorAll('.chip-spark').forEach((sp, i) => {
+      const phase = (t / 200 + i * 0.3) % 1;
+      const sx = toolX;
+      const sy = 100 - ap * 2.5;
+      const ex = sx + 10 + phase * 30;
+      const ey = sy - phase * 25;
+      sp.setAttribute('x1', sx); sp.setAttribute('y1', sy);
+      sp.setAttribute('x2', ex); sp.setAttribute('y2', ey);
+      sp.setAttribute('opacity', String(0.8 - phase * 0.8));
+    });
+    raf = requestAnimationFrame(tick);
+  }
+
+  playBtn.addEventListener('click', () => {
+    if (raf) cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(tick);
+  });
+  stopBtn.addEventListener('click', () => {
+    if (raf) { cancelAnimationFrame(raf); raf = null; }
+    toolX = 470;
+    tool.setAttribute('transform', `translate(470, 105)`);
+    cutPart.setAttribute('width', '0');
+    chip.querySelectorAll('.chip-spark').forEach(sp => sp.setAttribute('opacity', '0'));
+  });
+
+  updateAnim();
+  // 初期表示でバイトの位置を反映
+  tool.setAttribute('transform', `translate(470, 105)`);
 }
 
 // セクション + ブロック単位 highlight + スクロール
