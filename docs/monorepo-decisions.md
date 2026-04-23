@@ -1,8 +1,13 @@
-# Monorepo 統合 — 4 判断点メモ（草案）
+# Monorepo 統合 — 4 判断点メモ
 
-machining-fundamentals × Matlens の monorepo 統合（Level 2 → Level 4）に向けて、Matlens 側 peer から提示された 4 つの判断点について、本リポ側の **推奨方針** を整理する。
+**ステータス**: **Finalized** (2026-04-23 owner ALL OK 承認、Matlens 側 ADR-014 と同期)
+**前ステータス**: 草案 v1 (2026-04-23 起草)
+**owner 承認日**: 2026-04-23
+**ガバナンス**: 本ドキュメントの内容変更は両 repo 同時 PR (`integration-points.md` §4 Update Policy 準拠)
 
-最終決定はオーナー判断。本メモは proposal であり、合意形成後に Matlens 側 ADR-012 / ADR-013 と整合させる。
+machining-fundamentals × Matlens の monorepo 統合（Level 2 → Level 4）に向けて、Matlens 側 peer から提示された 4 つの判断点について、本リポ側の **採用方針** を整理する。
+
+決定済み。本メモは ADR-COM-014「monorepo 統合の実行計画」の判断点根拠として参照される。
 
 参照: [integration-points.md](../integration-points.md), Matlens [ADR-012](https://github.com/BoxPistols/Matlens/blob/main/docs/adr/ADR-012-machining-fundamentals-integration.md) / [ADR-013](https://github.com/BoxPistols/Matlens/blob/main/docs/adr/ADR-013-url-contract-and-terminology-ownership.md)
 
@@ -116,4 +121,5 @@ Phase 1 は既に Matlens 側で着手済（PR #74 merge）のため、本判断
 
 ---
 
-_最終更新: 2026-04-23（草案 v1）_
+_最終更新: 2026-04-23 (Finalized v1.0)_
+_次回見直し: Phase 4-A 着手時 (2026-06 想定)、または monorepo 構造変更要請時_

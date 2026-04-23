@@ -10,7 +10,7 @@
 - ステータス: **Accepted**（2026-04-23、Matlens PR #77 と同期昇格。owner ALL OK 承認 + 4判断点全面合意により）
 - 日付: 2026-04-23
 - 関連 ADR: ADR-012（戦略）/ ADR-013（運用規約）
-- 関連 peer / repo: `BoxPistols/machining-fundamentals` の `docs/monorepo-decisions.md`
+- 関連 peer / repo: peer 側 (Matlens) の `docs/research/` 全体、および本リポ (machining-fundamentals) の `docs/monorepo-decisions.md` (peer Matlens レビュー I1: self-reference 修正済)
 
 ---
 

@@ -29,8 +29,15 @@
 //     INVITE_KV        (KV Namespace)  招待コード管理 (Chat 用、任意 — 未設定時は invite 無効)
 // =============================================================================
 
+// セキュリティ: ALLOWED_ORIGIN は production では env で必ず指定すること。
+// 未設定時は "*" にフォールバックするが、これは開発・PoC 用途限定。
+// production で "*" のままだと、悪意サイトが visitor の IP/UA で 30 req/day 枠を
+// 消費する CSRF 的攻撃が成立する。env 必須化を recommend.
 const DEFAULT_ALLOWED_ORIGIN = "*";
 const DEFAULT_RATE_LIMIT = 30;
+// BYOK key 形式検証 (audit + 早期拒否)
+const BYOK_OPENAI_RE = /^Bearer sk-[A-Za-z0-9_-]{20,}$/;
+const BYOK_GEMINI_RE = /^Bearer AIza[A-Za-z0-9_-]{20,}$/;
 const XAI_API_BASE = "https://api.x.ai";
 const OPENAI_API_BASE = "https://api.openai.com/v1/chat/completions";
 const GEMINI_API_BASE =
@@ -312,9 +319,16 @@ async function redeemInviteCode(code, sessionId, env) {
 
 async function determineTier(request, env) {
   const clientAuth = request.headers.get("Authorization") || "";
-  // BYOK: sk- (OpenAI) / AIza (Gemini) どちらも受け付ける
+  // BYOK: 形式検証して受け付ける (peer Critical C4)
+  // 不正キーで upstream 大量 401 を発生させる攻撃を早期遮断、ログにキー値は出さない
+  const isOpenAIKey = BYOK_OPENAI_RE.test(clientAuth);
+  const isGeminiKey = BYOK_GEMINI_RE.test(clientAuth);
+  if (isOpenAIKey || isGeminiKey) {
+    return { tier: "byok", authHeader: clientAuth, byokProvider: isOpenAIKey ? "openai" : "gemini" };
+  }
+  // prefix だけ似ているが形式不一致のキーは「不正」として記録
   if (clientAuth.startsWith("Bearer sk-") || clientAuth.startsWith("Bearer AIza")) {
-    return { tier: "byok", authHeader: clientAuth };
+    return { tier: "anonymous", inviteFail: "byok_format_invalid" };
   }
   const inviteCode = request.headers.get("X-Invite-Code") || "";
   if (inviteCode) {

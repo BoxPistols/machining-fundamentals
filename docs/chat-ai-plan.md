@@ -414,7 +414,21 @@ v1 と同じ (requests/day + tokens/day)。値は §2 の env で tier 別に設
 
 | Phase | 期間 | 内容 |
 |---|---|---|
-| **Phase 0** 準備 | 1-2日 | OpenAI/Gemini API キー発行、Workers env 設定、**Gemini 3 接続テスト 5 項目**（実価格 / OpenAI 互換 endpoint 可否 / preview レート制限 / SSE 形式確認 / 日本語品質サンプル）、招待コード KV namespace 作成、ChatWidget HTML 雛形コミット |
+| **Phase 0** 準備 | 1-2日 | OpenAI/Gemini API キー発行、Workers env 設定、**Gemini 3 接続テスト 5 項目**（下記 Go/No-Go 基準）、招待コード KV namespace 作成、ChatWidget HTML 雛形コミット |
+
+### Phase 0 接続テスト Go/No-Go 基準
+
+各テストの結果に応じた分岐を明示（peer Matlens レビュー C3 反映）:
+
+| Test | 確認内容 | Pass | Fail 時の分岐 |
+|---|---|---|---|
+| 1 | OpenAI 互換 endpoint 存在 (`/v1beta/openai/`) | adapter パターン流用 | 独自 `/v1beta/generateContent` parser を別 PROVIDERS エントリで実装（+ 2h） |
+| 2 | SSE 形式が OpenAI 標準と一致 | parseSSEChunk 共通化 | Gemini 専用 parser 分岐（reasoning_content や `output_text` の差異吸収） |
+| 3 | Preview RPM が実用範囲（≥ 10 RPM） | Anonymous/Invited 既定で採用 | 既定から外す → BYOK 上位選択肢のみに格下げ |
+| 4 | 日本語品質サンプル 3 プロンプト | gpt-5.4-nano と同等以上で採用 | Gemini 2.5 Flash に fallback、または OpenAI 単独で運用 |
+| 5 | 実価格が想定内（入力 ≤ $0.30/1M） | コスト試算 §9 を更新 | 既定から外し Advanced 任意ユーザーのみ |
+
+接続テストの実施は Phase 0 1日目に完結、結果を本 plan の §3 と §9 に反映してから Phase 1 着手。
 | **Phase 1** MVP | 4-5日 | `/api/chat` 3ティア実装、OpenAI + Gemini アダプタ、招待コード KV 検証、in-memory RAG、フローティング UI、モデル選択ドロップダウン、BYOK 入力欄、Pack 3 systemPrompt |
 | **Phase 2** 体験向上 | 3-4日 | ストリーミング応答、マルチターン会話、レベル切替 UI、章末 Q&A セクション、招待コード管理 CLI、エラー UX |
 | **Phase 3** 精度向上 | 5日 | Cloudflare Vectorize、章本文 embedding バッチ、出典表示、HMAC 署名トークン検討 |
@@ -434,6 +448,33 @@ v1 と同じ。
 - BYOK API キー: localStorage 保存 (既存 TTS と同じ)、Workers 側は転送のみ、保存禁止
 - 招待コード: localStorage 保存、Workers 側は KV ルックアップのみ
 - いずれもサーバログに出さない
+
+### BYOK 形式検証 + 監査ポリシー (peer Matlens レビュー C4)
+
+不正な BYOK キーで upstream へ大量の 401 を投げて運用ログを汚染する攻撃を防ぐため、
+Workers 側で **正規表現による形式検証** を行い、不正な形式は upstream に到達する前に
+401 で拒否する。
+
+| プロバイダ | 形式 (Workers の正規表現) |
+|---|---|
+| OpenAI | `^Bearer sk-[A-Za-z0-9_-]{20,}$` |
+| Gemini | `^Bearer AIza[A-Za-z0-9_-]{20,}$` |
+
+**ログ方針** (キー値は決して記録しない):
+- 記録する: `timestamp`, `tier`, `provider`, `model`, `status`, `error_class`, `clientKeyHash` (sha256 first 8 chars)
+- 記録しない: `Authorization` ヘッダ全体、`X-Invite-Code`、入出力本文
+- Cloudflare Workers の `console.log` は dashboard / wrangler tail で見えるので注意
+
+### BYOK 責任マトリクス
+
+| 主体 | 提供 | 支払い | 制限 | 監査 |
+|---|---|---|---|---|
+| Anonymous | プロキシ運用者の API キー | 同上 | 50 req/day | proxy 運用者 |
+| Invited | 同上 | 同上 | 100 req/day | 同上 |
+| BYOK | ユーザー自身 | ユーザー自身 (provider 直接課金) | 無制限 (ただし upstream 制限) | provider dashboard |
+
+BYOK の費用 / 法的責任 / コンテンツ責任はすべて BYOK ユーザー側に帰属する旨を、
+ChatWidget の BYOK 入力欄付近に明示する。
 
 ### Abuse 防御
 - 同一 clientKey から 10秒内に 3 リクエスト超 → 短期スロットリング (429)

@@ -1,5 +1,14 @@
 # Integration Points — machining-fundamentals × Matlens
 
+| 項目 | 値 |
+|---|---|
+| **ステータス** | Active (運用中、ADR-COM-014 Accepted 後の正式規約) |
+| **owner** | BoxPistols (ito.atsu.mail@gmail.com) |
+| **作成** | 2026-04-23 |
+| **最終更新** | 2026-04-23 |
+| **次回見直し** | Vercel production URL 確定時、Matlens Phase 1 PR マージ時、または Phase 4-A 開始時のいずれか |
+| **対応 ADR** | ADR-COM-014 / Matlens ADR-012, ADR-013 |
+
 このドキュメントは、本リポジトリ **machining-fundamentals**（学習アプリ）と、対になる業務アプリ **Matlens**（<https://github.com/BoxPistols/Matlens>）の相互参照・統合方針を定めるものです。Matlens 側の `docs/adr/ADR-012-machining-fundamentals-integration.md` と対になります。
 
 両側の書き換えが発生する場合は、**まず本ドキュメントを更新し、それから実装 PR を立てる**運用とします。
