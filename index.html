@@ -827,6 +827,190 @@ body.voice-enabled.voice-mode-summary .voice-summary-note {
 }
 .pref-reset:hover { color: var(--ylw, #f59e0b); border-color: var(--ylw, #f59e0b); }
 
+/* === Quiz 章 (確認テスト) === */
+:root {
+  --ok: #4ec9a8;     /* 正解 (teal、緑よりアクセシブル) */
+  --miss: #d97757;   /* 不正解 (warm coral、罰的でない) */
+}
+.quiz-shell {
+  max-width: 720px; margin: 0 auto; padding: 8px 4px 60px;
+}
+.quiz-progress {
+  position: sticky; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--bg-3); margin: 0 -4px 24px; z-index: 10;
+}
+.quiz-progress-bar {
+  height: 100%; background: var(--accent);
+  transform-origin: left; transition: transform 0.3s ease;
+}
+.quiz-meta {
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  color: var(--text-2); margin-bottom: 18px;
+}
+.quiz-meta .score { color: var(--ok); font-weight: 700; }
+.quiz-chapter-tag {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  background: var(--bg-3); color: var(--text-2);
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  margin-bottom: 10px;
+}
+.quiz-question {
+  font-size: 17px; font-weight: 700; color: var(--text-0);
+  line-height: 1.6; margin: 0 0 24px 0;
+}
+.quiz-blank {
+  font-family: 'JetBrains Mono', monospace; font-size: 14px;
+  background: var(--bg-2); padding: 12px; border-radius: 4px;
+  margin-bottom: 12px; color: var(--text-1);
+  border-left: 3px solid var(--accent);
+}
+.quiz-blank-input {
+  width: 100%; padding: 10px 14px; font-size: 15px;
+  background: var(--bg-1); border: 2px solid var(--line);
+  color: var(--text-0); border-radius: 6px; font-family: inherit;
+}
+.quiz-blank-input:focus { outline: none; border-color: var(--accent); }
+.quiz-choices {
+  display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 16px;
+}
+.quiz-choice {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 14px 16px; background: var(--bg-2); border: 2px solid var(--line);
+  color: var(--text-0); border-radius: 6px; cursor: pointer;
+  font-family: inherit; font-size: 14px; line-height: 1.5;
+  text-align: left; transition: border-color 0.15s, background 0.15s;
+}
+.quiz-choice:hover:not(:disabled):not(.picked) {
+  border-color: var(--line-hi); background: var(--bg-3);
+}
+.quiz-choice:focus-visible {
+  outline: none; border-color: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.quiz-choice .key {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: var(--text-2); min-width: 18px; padding-top: 1px;
+}
+.quiz-choice.picked { border-color: var(--accent); background: var(--bg-3); }
+.quiz-choice.correct {
+  border-color: var(--ok); background: color-mix(in srgb, var(--ok) 12%, transparent);
+  animation: quiz-correct 0.32s cubic-bezier(.2,.8,.2,1);
+  box-shadow: 0 0 0 2px var(--ok), 0 0 24px -4px var(--ok);
+}
+.quiz-choice.wrong {
+  border-color: var(--miss); background: color-mix(in srgb, var(--miss) 10%, transparent);
+  animation: quiz-wrong 0.36s ease-out;
+}
+.quiz-choice.show-correct {
+  border-color: var(--ok); background: color-mix(in srgb, var(--ok) 10%, transparent);
+}
+@keyframes quiz-correct {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+@keyframes quiz-wrong {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+  100% { transform: translateX(0); }
+}
+.quiz-feedback {
+  padding: 14px 16px; border-radius: 6px;
+  margin-top: 16px; font-size: 13px; line-height: 1.7;
+  display: none;
+}
+.quiz-feedback.show { display: block; animation: quiz-fade-in 0.32s ease-out; }
+.quiz-feedback.ok {
+  background: color-mix(in srgb, var(--ok) 10%, transparent);
+  border-left: 3px solid var(--ok); color: var(--text-0);
+}
+.quiz-feedback.miss {
+  background: color-mix(in srgb, var(--miss) 10%, transparent);
+  border-left: 3px solid var(--miss); color: var(--text-0);
+}
+.quiz-feedback strong { color: var(--accent); }
+@keyframes quiz-fade-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+.quiz-hint-area {
+  margin-top: 14px; padding: 10px 14px;
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+  border-left: 3px solid var(--accent); border-radius: 4px;
+  font-size: 13px; color: var(--text-1); line-height: 1.6;
+  display: none;
+}
+.quiz-hint-area.show { display: block; animation: quiz-fade-in 0.4s ease-out; }
+.quiz-nav {
+  display: flex; gap: 10px; margin-top: 24px;
+  padding-top: 20px; border-top: 1px solid var(--line);
+}
+.quiz-btn {
+  padding: 10px 18px; background: var(--bg-2); border: 1px solid var(--line);
+  color: var(--text-1); border-radius: 6px; cursor: pointer;
+  font-family: inherit; font-size: 13px; font-weight: 700;
+}
+.quiz-btn:hover:not(:disabled) { background: var(--bg-3); color: var(--text-0); border-color: var(--line-hi); }
+.quiz-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.quiz-btn.primary { background: var(--accent); color: var(--bg-1); border-color: var(--accent); }
+.quiz-btn.primary:hover:not(:disabled) { filter: brightness(1.1); }
+.quiz-btn-spacer { flex: 1; }
+
+.quiz-review {
+  max-width: 720px; margin: 0 auto; padding: 8px 4px 60px;
+}
+.quiz-review h2 { font-size: 24px; font-weight: 700; margin: 0 0 18px 0; color: var(--text-0); }
+.quiz-review-summary {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  margin-bottom: 28px;
+}
+.quiz-review-card {
+  background: var(--bg-2); border: 1px solid var(--line);
+  padding: 16px; border-radius: 6px; text-align: center;
+}
+.quiz-review-card .label {
+  font-size: 11px; color: var(--text-2);
+  font-family: 'JetBrains Mono', monospace; margin-bottom: 6px;
+}
+.quiz-review-card .num {
+  font-size: 28px; font-weight: 700; color: var(--accent);
+  font-family: 'JetBrains Mono', monospace;
+}
+.quiz-review-card.score .num { color: var(--ok); }
+.quiz-review-list {
+  background: var(--bg-2); border: 1px solid var(--line);
+  border-radius: 6px; overflow: hidden;
+}
+.quiz-review-item {
+  display: grid; grid-template-columns: 24px 1fr auto; gap: 12px;
+  padding: 12px 16px; border-bottom: 1px solid var(--line);
+  align-items: center; font-size: 13px;
+}
+.quiz-review-item:last-child { border-bottom: none; }
+.quiz-review-item .icon {
+  width: 18px; height: 18px;
+}
+.quiz-review-item.ok .icon { color: var(--ok); }
+.quiz-review-item.miss .icon { color: var(--miss); }
+.quiz-review-item.skipped .icon { color: var(--text-2); }
+.quiz-review-item .q { color: var(--text-1); line-height: 1.5; }
+.quiz-review-item button {
+  padding: 4px 10px; background: transparent; border: 1px solid var(--line);
+  color: var(--text-2); border-radius: 4px; cursor: pointer; font-size: 11px;
+}
+.quiz-review-item button:hover { color: var(--accent); border-color: var(--accent); }
+.quiz-review-actions { display: flex; gap: 10px; margin-top: 24px; justify-content: center; }
+
+.quiz-cta-card {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 14%, transparent), color-mix(in srgb, var(--accent) 4%, transparent));
+  border: 1px solid var(--accent); border-radius: 8px;
+  padding: 20px 24px; margin: 24px 0; display: flex; align-items: center; gap: 16px;
+  cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
+}
+.quiz-cta-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px -8px var(--accent); }
+.quiz-cta-card .icon { width: 32px; height: 32px; color: var(--accent); }
+.quiz-cta-card .title { font-size: 16px; font-weight: 700; color: var(--text-0); margin: 0; }
+.quiz-cta-card .desc { font-size: 12px; color: var(--text-2); margin: 4px 0 0 0; }
+.quiz-cta-card .arrow { color: var(--accent); margin-left: auto; }
+
 /* === ロードマップ画面 === */
 .hero {
   margin-bottom: 48px;
@@ -1718,6 +1902,7 @@ body.chat-sidebar-open { padding-right: 380px; transition: padding-right 0.2s ea
   <div class="brand">切削加工入門<span class="sub">Machining Fundamentals — 学習ロードマップ</span></div>
   <nav class="nav">
     <button data-view="home" class="active" data-i18n="nav.roadmap">ロードマップ</button>
+    <button data-view="quiz" data-i18n="nav.quiz">確認テスト</button>
     <button data-view="about" data-i18n="nav.about">このアプリについて</button>
     <button id="voice-toggle" class="voice-toggle" title="音声読み上げモード" aria-label="音声モード切替">
       <span class="voice-icon-off"><svg class="icon icon-lg"><use href="#i-volume-off"/></svg></span>
@@ -5579,6 +5764,156 @@ const CHAPTERS = [
 ];
 
 // =============================================================================
+// QUIZ_BANK — 24 問の確認テスト (Domain Expert agent 出力をそのまま採用)
+// 詳細設計: Education Designer (3段階ヒント、即時フィードバック、SR なし v1)
+// UX: UX Designer (--ok/--miss、WebAudio、vibrate、a11y)
+// =============================================================================
+const QUIZ_BANK = [
+  { id:'qa1-1', chapterRef:'a1', type:'choice', difficulty:'easy', anchor:'metallic-bond',
+    question:'切削加工が主に対象とする材料は、次のどの化学結合を持つか?',
+    choices:['共有結合 (ダイヤモンド・SiC)','イオン結合 (NaCl・Al₂O₃)','金属結合 (鉄・Al・Ti)','ファンデルワールス結合 (高分子)'],
+    answer:2,
+    explanation:'切削が成立するのは「延性」があるから。延性の根源は金属結合 — 価電子が自由電子の海として原子間を動き回るため、原子層がずれても結合が保たれます。共有結合(ダイヤ)やイオン結合(セラミクス)は脆く、研削や放電の対象になります。' },
+  { id:'qa1-2', chapterRef:'a1', type:'fill', difficulty:'medium', anchor:'atom',
+    question:'Ti や Inconel が「難削材」と呼ばれる根本原因を、A1 章の言葉で答えてください。',
+    blank:'結合の切断に必要な ___ が大きいから (融点・硬度・切削抵抗の源)',
+    answer:'結合エネルギー',
+    hint:'kJ/mol で表され、融点と相関する量です。Ti の融点 1668°C に表れています。',
+    explanation:'結合エネルギーが大きい → 原子を引き離すのに大きな力が要る → 切削抵抗が大きい、という因果連鎖。Vc・f・ap の被削材依存性は、最終的にこの一語で説明できます。' },
+  { id:'qa2-1', chapterRef:'a2', type:'choice', difficulty:'medium', anchor:'thermal-conductivity',
+    question:'Ti と Cu はどちらも金属だが、熱伝導率は Cu 約 400, Ti 約 22 W/(m·K) と20倍違う。Ti が低い主因として最も妥当なのは?',
+    choices:['原子半径が極端に大きいから','自由電子の動きやすさ(有効電子数・散乱)が小さいから','BCC 構造だから','酸化皮膜が厚いから'],
+    answer:1,
+    explanation:'金属の熱伝導は主に自由電子が担います(Wiedemann-Franz 則)。Ti は d 電子の局在性が強く有効自由電子が少ない上に、HCP の格子による散乱も大きい。だから切削熱が逃げず刃先に集中 → Vc を上げられない。' },
+  { id:'qa3-1', chapterRef:'a3', type:'fill', difficulty:'medium', anchor:'hcp',
+    question:'BCC・FCC・HCP のうち、すべり系が3つしかなく延性に乏しい結晶構造を答えてください。',
+    blank:'結晶構造: ___ (Ti, Mg, Zn が代表例)',
+    answer:'HCP',
+    hint:'六方最密充填。充填率は FCC と同じ 74% ですが、すべり面が底面1枚に限られます。',
+    explanation:'FCC は12, BCC は48, HCP は3。Ti が削りにくい理由のひとつはこの少なさで、変形させたときに転位が動ける選択肢が少なく、すぐ加工硬化してしまう。' },
+  { id:'qa3-2', chapterRef:'a3', type:'choice', difficulty:'easy', anchor:'bcc',
+    question:'鉄は温度によって結晶構造が変わる。911°C 以下の α-Fe (常温で身近な鉄) は次のどれか?',
+    choices:['BCC','FCC','HCP','アモルファス'],
+    answer:0,
+    explanation:'常温の鉄(α 相、フェライト)は BCC、911°C を超えて γ 相(オーステナイト)になると FCC に変わる — これが焼入れ・焼戻しが成立する物理的根拠です。' },
+  { id:'qa4-1', chapterRef:'a4', type:'choice', difficulty:'hard', anchor:'dislocation',
+    question:'塑性変形は「結晶面が一斉にずれる」のではなく、転位が逐次移動することで起きる。なぜか?',
+    choices:['原子全部を一度に動かすには莫大なエネルギーが要り、理論強度の 1/100〜1/1000 で実際は降伏してしまうから','転位は実は存在せず、教育上の便宜的モデルだから','FCC のみで成立する話で、BCC では一斉にずれるから','電子が流れるための通路が必要だから'],
+    answer:0,
+    explanation:'完全結晶の理論せん断強度は実測の100〜1000倍。この巨大なギャップを埋めたのが Orowan・Polanyi・Taylor の転位理論(1934)。畳1枚を持ち上げるより、シワを作って端から送る方が楽 — このアナロジーが転位そのもの。' },
+  { id:'qa5-1', chapterRef:'a5', type:'fill', difficulty:'medium', anchor:'precipitation-hardening',
+    question:'Al 合金 (例: A7075) や Ni 基超合金 (Inconel 718) の主強化機構を答えてください。微細な硬い第二相が母相中に分散して転位を止める仕組みです。',
+    blank:'___ 強化 (析出物が転位ピン止めする機構)',
+    answer:'析出',
+    hint:'Al-Cu 系の時効処理(溶体化→急冷→低温で時効)が古典例。',
+    explanation:'Inconel 718 の強さは γ\' / γ\'\' 相 (Ni₃(Al,Ti) / Ni₃Nb) の微細析出が主因。転位がこの硬い粒子を切るか・回り込む(Orowan ループ)のに大きな力が要る → 高温強度が落ちない → 切削熱があっても軟化しない → 難削材になる。' },
+  { id:'qa6-1', chapterRef:'a6', type:'choice', difficulty:'hard', anchor:'shear-band',
+    question:'Johnson-Cook 構成式の3つの項のうち、Ti・Inconel で「鋸歯状切屑」を生む直接の原因はどれか?',
+    choices:['加工硬化項(歪み硬化)','歪み速度感受性項','熱軟化項(温度依存)','弾性項'],
+    answer:2,
+    explanation:'Ti は熱伝導率が低く、せん断帯で発生した熱が逃げる前に局所軟化 → そこに変形が集中 → さらに発熱…の正のフィードバック(断熱せん断帯, ASB)。Johnson-Cook の熱軟化項 (1−T*ᵐ) がこの暴走を表現。' },
+  { id:'qb3-1', chapterRef:3, type:'fill', difficulty:'easy', anchor:'Vc',
+    question:'切削速度 Vc を、工具径 D [mm] と主軸回転数 n [rpm] から計算する式を完成させてください。',
+    blank:'Vc = ___ · D · n / 1000   [m/min]',
+    answer:'π',
+    hint:'周長の式を思い出してください。直径 × ?。',
+    explanation:'Vc は刃先の周速度。1回転で進む距離が πD [mm]、それが分間 n 回なので πDn [mm/min] = πDn/1000 [m/min]。' },
+  { id:'qb3-2', chapterRef:3, type:'choice', difficulty:'medium', anchor:'fz',
+    question:'フライスの「送り f (mm/rev)」と「1刃あたり送り fz (mm/tooth)」の関係として正しいのは? (z = 刃数)',
+    choices:['f = fz / z','f = fz · z','f = fz + z','f と fz は同義'],
+    answer:1,
+    explanation:'1回転で z 枚の刃が順番に削るので、1回転あたりの進み f は fz × z。さらにテーブル送り Vf = fz · z · n。「fz = 0.1, z = 4 で f = 0.1」と取り違えるのは典型的失敗。' },
+  { id:'qb3-3', chapterRef:3, type:'choice', difficulty:'medium', anchor:'Vc',
+    question:'Ti-6Al-4V を超硬工具で旋削する場合の Vc 推奨レンジは?',
+    choices:['10〜20 m/min','40〜80 m/min','200〜350 m/min','1000〜3000 m/min'],
+    answer:1,
+    explanation:'S45C なら 200-350 が普通だが、Ti は熱伝導率の低さ(約22 W/(m·K))で刃先温度が暴走するため 40-80 m/min が標準。鋼の感覚で Ti に Vc 250 を入れると数分で工具寿命が終わる。' },
+  { id:'qb3-4', chapterRef:3, type:'fill', difficulty:'easy', anchor:'fn',
+    question:'ドリル加工で、深さ ÷ 工具径の比 5〜10 のときに「切屑詰まり防止のため一定深さごとに引き抜く」加工方法を答えてください。',
+    blank:'___ ドリリング (step drilling)',
+    answer:'ペック',
+    hint:'英語で「つつく」の意。鳥の動きから命名されています。',
+    explanation:'L/D ≤ 3 は一気貫通、3〜5 は through-coolant、5〜10 でペック必須、>10 はガンドリル。' },
+  { id:'qb4-1', chapterRef:4, type:'choice', difficulty:'hard', anchor:'Taylor',
+    question:'PCD (多結晶ダイヤモンド工具) を使ってはいけない被削材はどれか?',
+    choices:['A7075 アルミ合金','純銅','S45C 中炭素鋼','CFRP (炭素繊維強化樹脂)'],
+    answer:2,
+    explanation:'PCD は AL・Cu・CFRP では他を圧倒しますが、鉄系は禁忌。約700°C 超でダイヤモンド(純炭素)が鉄と化学反応して固溶・黒鉛化し刃先が瞬時に崩壊。鉄系には CBN を使う。' },
+  { id:'qb4-2', chapterRef:4, type:'fill', difficulty:'medium', anchor:'Vc',
+    question:'Ti / Inconel など難削材の高速加工で標準採用される、耐熱性 1100°C 級の PVD コーティング名を答えてください。',
+    blank:'___ コーティング (紫黒色、酸化アルミ層を表面に形成)',
+    answer:'TiAlN',
+    hint:'Ti と Al の窒化物。AlTiN とほぼ同義で表記されることもあります。',
+    explanation:'TiAlN/AlTiN は高温で表面に薄い Al₂O₃ 層を形成して内部を保護する自己保護機構を持つため、TiN(耐熱 600°C)より格段に高速加工に強い。さらに上位は AlCrN。' },
+  { id:'qb6-1', chapterRef:6, type:'choice', difficulty:'medium', anchor:'Kc',
+    question:'比切削抵抗 Kc [N/mm²] の代表値として、S45C と Inconel 718 はそれぞれおおよそいくらか?',
+    choices:['S45C 800 / Inconel 1200','S45C 2100 / Inconel 2900','S45C 4500 / Inconel 6000','両方とも約 1000'],
+    answer:1,
+    explanation:'Kc は単位切屑断面積あたりの主分力。S45C ≈ 2100, SUS304 ≈ 2600, Inconel 718 ≈ 2900 N/mm²。Kienzle 式 Fc = Kc · h^(1−mc) · b で動力概算に直結。' },
+  { id:'qb6-2', chapterRef:6, type:'choice', difficulty:'easy', anchor:'Kc',
+    question:'切削抵抗の3分力のうち「精度を最も悪化させる(工具を押し戻す)方向」はどれか?',
+    choices:['主分力(切削速度方向)','送り分力(送り方向)','背分力(切込み方向)','重力分力'],
+    answer:2,
+    explanation:'主分力 Fc は最も大きく動力消費に直結しますが、寸法精度を直接悪くするのは背分力(径方向力)。工具やワークを押し戻して「逃げ」を生み、削り残しや寸法ばらつきになる。' },
+  { id:'qb7-1', chapterRef:7, type:'choice', difficulty:'medium', anchor:'through-coolant',
+    question:'Ti-6Al-4V のディープドリル (L/D=8) を計画するとき、最も優先すべき冷却方式はどれか?',
+    choices:['乾式(ドライ)','外部ノズルからのフラッドクーラント','MQL(微量油霧)','工具内部からの内部給油(through-coolant)'],
+    answer:3,
+    explanation:'L/D > 3 の Ti ドリルでは内部給油が事実上必須。(1) 外部ノズルでは穴底まで届かない、(2) Ti の低熱伝導で刃先温度が逃げない、(3) 切屑排出が圧倒的に有利。' },
+  { id:'qb7-2', chapterRef:7, type:'fill', difficulty:'hard', anchor:'cryogenic',
+    question:'液体窒素(-196°C)や液体 CO₂(-78°C)を直接刃先に吹き付ける加工法を答えてください。Ti 加工で工具寿命 2-3 倍の報告があります。',
+    blank:'___ 加工 (LN₂ や CO₂ を使う極低温冷却)',
+    answer:'クライオ',
+    hint:'ギリシャ語の「氷の」に由来。Cryogenic Machining の和名です。',
+    explanation:'蒸発潜熱と低温で他方式の数倍の熱伝達。Boeing/GE Aviation で航空 Ti 部品に採用例あり。' },
+  { id:'qb8-1', chapterRef:8, type:'fill', difficulty:'medium', anchor:'Taylor',
+    question:'テイラーの工具寿命式を完成させてください。Vc は切削速度、T は工具寿命、C は定数です。',
+    blank:'Vc · T^___ = C',
+    answer:'n',
+    hint:'工具材種ごとに変わる指数。HSS で 0.1, 超硬で 0.22, セラミクスで 0.45, PCD で 0.6 程度。',
+    explanation:'1907年 F.W. Taylor が経験則として提唱。両対数プロットで傾き −1/n の直線。n が大きい工具材種ほど高速向き。' },
+  { id:'qb8-2', chapterRef:8, type:'choice', difficulty:'easy', anchor:'VB',
+    question:'工具寿命の主要指標である「逃げ面摩耗 VB」の ISO 3685 標準限界(仕上げ加工)はおおよそいくつか?',
+    choices:['VB = 0.05 mm','VB = 0.3 mm','VB = 1.0 mm','VB = 3.0 mm'],
+    answer:1,
+    explanation:'ISO 3685 で仕上げ 0.3 mm、荒加工 0.6 mm が標準。VB がこれを超えると寸法精度・表面粗さが急速に悪化し、最悪チッピングや工具破損につながる。' },
+  { id:'qb9-1', chapterRef:9, type:'fill', difficulty:'hard', anchor:'Ra',
+    question:'旋削の理論表面粗さ式 Ra ≈ f² / (32·r_ε) を踏まえて: r_ε = 0.8 mm のコーナ R 工具で、送り f を半分(0.2 → 0.1)にすると、理論 Ra は何倍になるか?',
+    blank:'Ra は ___ 倍になる (分数または小数で)',
+    answer:'1/4',
+    hint:'f が分子で2乗。f を半分にすれば f² は (1/2)² です。',
+    explanation:'理論 Ra ∝ f²。f を半分 → Ra は 1/4。実機では BUE・振動・塑性流れで理論値より悪化しますが、設計指針として強力な2乗則。' },
+  { id:'qb10-1', chapterRef:10, type:'fill', difficulty:'hard', anchor:'SLD',
+    question:'主軸回転数と許容切込み幅 blim の関係を示し、安定領域と不安定(びびり)領域の境界を表す図を答えてください。',
+    blank:'___ Diagram (略称 SLD)',
+    answer:'Stability Lobe',
+    hint:'Altintas 2012 が標準モデル化。葉(lobe)のような形をした安定/不安定境界線図です。',
+    explanation:'再生型びびりを Altintas 2012 の単一 DOF モデル blim = −1/(2·Kc·z·Re{Φ(ωc)}) で予測。「同じ ap でも回転数を変えるだけで安定/びびりが切り替わる」のが SLD の価値。' },
+  { id:'qc1-1', chapterRef:'c1', type:'fill', difficulty:'medium', anchor:'Taylor',
+    question:'切削・生産工学の最高峰国際学会 (1951年設立) の略称を答えてください。年1回の総会論文集が同名のジャーナルとして刊行されます。',
+    blank:'___ (College International pour la Recherche en Productique)',
+    answer:'CIRP',
+    hint:'フランス語の頭字語。会員制で、各国から1分野1名というエリート学会です。',
+    explanation:'CIRP Annals は切削研究の最高権威。Altintas, Childs, Klocke ら本書で挙がる教科書著者の多くが CIRP Fellow。' },
+  { id:'qc1-2', chapterRef:'c1', type:'choice', difficulty:'medium', anchor:'SLD',
+    question:'Part C で挙げられた「現代切削研究の5大テーマ」に含まれないものはどれか?',
+    choices:['びびり振動制御 (SLD・可変ピッチ工具)','工具寿命予測 × 機械学習','5軸加工とツールパス最適化','鋳造プロセスの欠陥制御'],
+    answer:3,
+    explanation:'5大テーマは (1) びびり振動制御, (2) 工具寿命予測×ML, (3) 難削材の高能率加工, (4) 切削シミュレーション, (5) 5軸加工とツールパス最適化。鋳造は別分野。' },
+  { id:'qc1-3', chapterRef:'c1', type:'fill', difficulty:'hard', anchor:'cryogenic',
+    question:'工具に超音波振動 (~20-40 kHz) を重畳して連続接触を回避し、工具摩耗を 1/5 以下に低減する難削材加工法の略称を答えてください。',
+    blank:'___ (Ultrasonic Assisted Machining)',
+    answer:'UAM',
+    hint:'超音波 = Ultrasonic、援用 = Assisted。3文字略称です。',
+    explanation:'工具を高周波で振動させると刃先が断続的に被削材から離れ、(a) 摩擦熱が減る (b) 切屑がちぎれる (c) BUE 形成が抑制される。' },
+  { id:'qc1-4', chapterRef:'c1', type:'choice', difficulty:'easy', anchor:'NADCAP',
+    question:'航空宇宙の特殊工程(熱処理・表面処理・NDT 等)について、サプライヤを認定する国際的な制度はどれか?',
+    choices:['AS9100','NADCAP','ISO 9001','FAR Part 25'],
+    answer:1,
+    explanation:'NADCAP は航空宇宙の「特殊工程」を実施するサプライヤを認定する第三者制度。AS9100 は QMS 規格 (ISO 9001 の航空版) で対象が違う。Boeing/Airbus/エンジン OEM が部品調達条件として NADCAP 認定を要求。' },
+];
+
+// =============================================================================
 // アプリ状態管理
 // =============================================================================
 
@@ -5599,6 +5934,88 @@ function saveDone() {
   try {
     sessionStorage.setItem('cfd-done', JSON.stringify(state.doneChapters));
   } catch {}
+}
+
+// =============================================================================
+// Quiz state + persistence (localStorage 'cfd-quiz', version=1)
+// =============================================================================
+const QUIZ_KEY = 'cfd-quiz';
+const QUIZ_VERSION = 1;
+const quizState = {
+  index: 0,
+  answers: {},      // { qid: { picked: 2 | 'text', correct: bool, hintsUsed: 0..1, ts } }
+  hintRevealed: false,
+  finished: false,
+};
+function loadQuiz() {
+  try {
+    const raw = localStorage.getItem(QUIZ_KEY);
+    if (!raw) return;
+    const obj = JSON.parse(raw);
+    if (obj.version !== QUIZ_VERSION) return;
+    quizState.answers = obj.answers || {};
+    quizState.index = obj.index || 0;
+    quizState.finished = !!obj.finished;
+  } catch {}
+}
+function saveQuiz() {
+  try {
+    localStorage.setItem(QUIZ_KEY, JSON.stringify({
+      version: QUIZ_VERSION,
+      answers: quizState.answers,
+      index: quizState.index,
+      finished: quizState.finished,
+    }));
+  } catch {}
+}
+function resetQuiz() {
+  quizState.index = 0;
+  quizState.answers = {};
+  quizState.hintRevealed = false;
+  quizState.finished = false;
+  try { localStorage.removeItem(QUIZ_KEY); } catch {}
+}
+loadQuiz();
+
+// 多感覚フィードバック (UX Designer 案: WebAudio sine + vibrate)
+let _audioCtx = null;
+function getAudioCtx() {
+  if (_audioCtx) return _audioCtx;
+  try {
+    _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  } catch { _audioCtx = null; }
+  return _audioCtx;
+}
+function playTone(freq, durMs, gain = 0.12) {
+  const ctx = getAudioCtx();
+  if (!ctx) return;
+  // ユーザー操作後に resume が必要な場合 (autoplay policy)
+  if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+  const osc = ctx.createOscillator();
+  const g = ctx.createGain();
+  osc.type = 'sine';
+  osc.frequency.value = freq;
+  g.gain.value = 0;
+  g.gain.linearRampToValueAtTime(gain, ctx.currentTime + 0.01);
+  g.gain.linearRampToValueAtTime(0, ctx.currentTime + durMs / 1000);
+  osc.connect(g).connect(ctx.destination);
+  osc.start();
+  osc.stop(ctx.currentTime + durMs / 1000 + 0.02);
+}
+function feedbackCorrect() {
+  playTone(880, 100); setTimeout(() => playTone(1320, 80), 80);
+  if (navigator.vibrate) navigator.vibrate(15);
+}
+function feedbackWrong() {
+  playTone(320, 140, 0.08);
+  if (navigator.vibrate) navigator.vibrate([20, 60, 20]);
+}
+
+// XSS-safe HTML エスケープ
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
 }
 
 // =============================================================================
@@ -5624,6 +6041,7 @@ function hashFromState() {
   }
   if (state.view === 'about') return '#/about';
   if (state.view === 'sim') return '#/sim';
+  if (state.view === 'quiz') return '#/quiz';
   return '';
 }
 
@@ -5642,6 +6060,7 @@ function stateFromHash() {
   }
   if (h === '/about') return { view: 'about', chapterId: null, chapterAnchor: null };
   if (h === '/sim') return { view: 'sim', chapterId: null, chapterAnchor: null };
+  if (h === '/quiz') return { view: 'quiz', chapterId: null, chapterAnchor: null };
   return { view: 'home', chapterId: null, chapterAnchor: null };
 }
 
@@ -5679,6 +6098,7 @@ function render() {
   else if (state.view === 'chapter') renderChapter();
   else if (state.view === 'about') renderAbout();
   else if (state.view === 'sim') renderSim();
+  else if (state.view === 'quiz') renderQuiz();
 
   _suppressHashChange = true;
   syncHashToState();
@@ -6058,6 +6478,270 @@ function renderSim() {
   });
 }
 
+// =============================================================================
+// renderQuiz — 確認テスト
+// 4 agent 設計の統合: Domain Expert (banks) / Edu Designer (flow) / UX (visual) / Engineer (arch)
+// =============================================================================
+function renderQuiz() {
+  if (quizState.finished) return renderQuizReview();
+  const total = QUIZ_BANK.length;
+  const idx = Math.max(0, Math.min(quizState.index, total - 1));
+  quizState.index = idx;
+  const q = QUIZ_BANK[idx];
+  const ans = quizState.answers[q.id];
+  const score = Object.values(quizState.answers).filter(a => a.correct).length;
+  const answeredCount = Object.keys(quizState.answers).length;
+  const progress = (answeredCount / total) * 100;
+
+  const chapterRefStr = String(q.chapterRef);
+  const chapterMeta = CHAPTERS.find(c => String(c.id) === chapterRefStr);
+  const chapterLabel = chapterMeta ? `第${chapterMeta.num}章 ${chapterMeta.title}` : `第${q.chapterRef}章`;
+
+  let inputHtml = '';
+  if (q.type === 'choice') {
+    inputHtml = `
+      <div class="quiz-choices" role="radiogroup" aria-label="選択肢">
+        ${q.choices.map((c, i) => {
+          let cls = 'quiz-choice';
+          let disabled = '';
+          if (ans) {
+            disabled = 'disabled';
+            if (i === q.answer) cls += ' show-correct';
+            if (i === ans.picked && !ans.correct) cls += ' wrong';
+          }
+          return `<button class="${cls}" data-pick="${i}" ${disabled}
+                  aria-label="選択肢 ${i + 1}: ${escapeHtml(c)}">
+                    <span class="key">${i + 1}</span><span>${escapeHtml(c)}</span>
+                  </button>`;
+        }).join('')}
+      </div>
+    `;
+  } else {
+    // fill
+    const userVal = ans ? escapeHtml(String(ans.picked)) : '';
+    inputHtml = `
+      <div class="quiz-blank">${escapeHtml(q.blank)}</div>
+      <input type="text" class="quiz-blank-input" id="quiz-fill-input"
+             placeholder="答えを入力 (Enter で確定)"
+             value="${userVal}"
+             ${ans ? 'disabled' : ''}
+             autocomplete="off" spellcheck="false"
+             aria-label="穴埋め入力">
+    `;
+  }
+
+  const showHint = quizState.hintRevealed || (ans && ans.hintsUsed);
+  const hintHtml = q.hint ? `
+    <div class="quiz-hint-area ${showHint ? 'show' : ''}" id="quiz-hint">
+      <strong>ヒント:</strong> ${escapeHtml(q.hint)}
+    </div>
+  ` : '';
+
+  let feedbackHtml = '';
+  if (ans) {
+    feedbackHtml = `
+      <div class="quiz-feedback show ${ans.correct ? 'ok' : 'miss'}" role="status" aria-live="polite">
+        <strong>${ans.correct ? '正解' : '不正解'}</strong>
+        ${ans.correct ? '' : (q.type === 'fill' ? `（正答: <strong>${escapeHtml(q.answer)}</strong>）` : '')}
+        <div style="margin-top:6px;">${escapeHtml(q.explanation)}</div>
+        ${q.anchor ? `<div style="margin-top:8px; font-size:11px;"><a href="#/chapter/${chapterRefStr}/${q.anchor}" style="color:var(--accent);">→ 該当章で確認</a></div>` : ''}
+      </div>
+    `;
+  }
+
+  mainEl.innerHTML = `
+    <div class="quiz-progress" aria-hidden="true">
+      <div class="quiz-progress-bar" style="transform: scaleX(${(progress / 100).toFixed(3)})"></div>
+    </div>
+    <div class="quiz-shell">
+      <div class="quiz-meta">
+        <span>問 ${idx + 1} / ${total}　<span style="color:var(--text-2);">[${q.difficulty}]</span></span>
+        <span>正解 <span class="score">${score}</span> / 解答 ${answeredCount}</span>
+      </div>
+      <div class="quiz-chapter-tag">${escapeHtml(chapterLabel)}</div>
+      <h2 class="quiz-question">${escapeHtml(q.question)}</h2>
+      ${inputHtml}
+      ${q.type === 'fill' && !ans ? `
+        <div style="margin-top:12px; display:flex; gap:8px;">
+          <button class="quiz-btn primary" id="quiz-submit-fill">解答する (Enter)</button>
+        </div>
+      ` : ''}
+      ${hintHtml}
+      ${feedbackHtml}
+      <div class="quiz-nav">
+        <button class="quiz-btn" id="quiz-prev" ${idx === 0 ? 'disabled' : ''}>← 前へ</button>
+        ${q.hint && !ans ? `<button class="quiz-btn" id="quiz-hint-btn" ${showHint ? 'disabled' : ''}>ヒント</button>` : ''}
+        <div class="quiz-btn-spacer"></div>
+        <button class="quiz-btn ${ans ? 'primary' : ''}" id="quiz-next">
+          ${idx === total - 1 ? (ans ? '採点する →' : 'スキップして次へ') : (ans ? '次へ →' : 'スキップ →')}
+        </button>
+      </div>
+    </div>
+  `;
+
+  // Wire up events
+  if (q.type === 'choice') {
+    mainEl.querySelectorAll('[data-pick]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (ans) return;
+        const picked = parseInt(btn.dataset.pick, 10);
+        const correct = picked === q.answer;
+        quizState.answers[q.id] = {
+          picked, correct, hintsUsed: quizState.hintRevealed ? 1 : 0, ts: Date.now(),
+        };
+        quizState.hintRevealed = false;
+        saveQuiz();
+        if (correct) feedbackCorrect(); else feedbackWrong();
+        render();
+      });
+    });
+  } else {
+    const input = mainEl.querySelector('#quiz-fill-input');
+    const submit = () => {
+      if (ans) return;
+      const val = (input.value || '').trim();
+      if (!val) return;
+      const correct = normalizeAnswer(val) === normalizeAnswer(q.answer);
+      quizState.answers[q.id] = {
+        picked: val, correct, hintsUsed: quizState.hintRevealed ? 1 : 0, ts: Date.now(),
+      };
+      quizState.hintRevealed = false;
+      saveQuiz();
+      if (correct) feedbackCorrect(); else feedbackWrong();
+      render();
+    };
+    if (input) {
+      if (!ans) input.focus();
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); submit(); }
+      });
+    }
+    const submitBtn = mainEl.querySelector('#quiz-submit-fill');
+    if (submitBtn) submitBtn.addEventListener('click', submit);
+  }
+
+  // Hint reveal
+  const hintBtn = mainEl.querySelector('#quiz-hint-btn');
+  if (hintBtn) {
+    hintBtn.addEventListener('click', () => {
+      quizState.hintRevealed = true;
+      const hintEl = mainEl.querySelector('#quiz-hint');
+      if (hintEl) hintEl.classList.add('show');
+      hintBtn.disabled = true;
+    });
+  }
+
+  // Prev / Next
+  mainEl.querySelector('#quiz-prev').addEventListener('click', () => {
+    if (idx > 0) { quizState.index = idx - 1; quizState.hintRevealed = false; saveQuiz(); render(); }
+  });
+  mainEl.querySelector('#quiz-next').addEventListener('click', () => {
+    if (idx === total - 1) {
+      quizState.finished = true;
+      saveQuiz();
+      render();
+    } else {
+      quizState.index = idx + 1;
+      quizState.hintRevealed = false;
+      saveQuiz();
+      render();
+    }
+  });
+
+  // 数字キー (1-4) ショートカット (choice のみ、未解答時)
+  if (q.type === 'choice' && !ans) {
+    const keyHandler = (e) => {
+      if (e.isComposing) return;
+      const target = e.target;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) return;
+      if (e.key >= '1' && e.key <= '4') {
+        const i = parseInt(e.key, 10) - 1;
+        if (i < q.choices.length) {
+          const btn = mainEl.querySelector(`[data-pick="${i}"]`);
+          if (btn && !btn.disabled) btn.click();
+        }
+      } else if (e.key === 'n' || e.key === 'N') {
+        const next = mainEl.querySelector('#quiz-next');
+        if (next) next.click();
+      }
+    };
+    document.addEventListener('keydown', keyHandler);
+    // クリーンアップ: 次の render 時に重複しないよう mainEl に attach
+    if (mainEl._quizKeyHandler) document.removeEventListener('keydown', mainEl._quizKeyHandler);
+    mainEl._quizKeyHandler = keyHandler;
+  }
+}
+
+function normalizeAnswer(s) {
+  return String(s).trim().toLowerCase()
+    .replace(/[\s　]+/g, '')
+    .replace(/[（）]/g, '');
+}
+
+function renderQuizReview() {
+  const total = QUIZ_BANK.length;
+  const answered = Object.keys(quizState.answers).length;
+  const correct = Object.values(quizState.answers).filter(a => a.correct).length;
+  const accuracy = answered > 0 ? Math.round((correct / answered) * 100) : 0;
+
+  mainEl.innerHTML = `
+    <div class="quiz-review">
+      <h2>確認テスト 結果</h2>
+      <div class="quiz-review-summary">
+        <div class="quiz-review-card score">
+          <div class="label">正解率</div>
+          <div class="num">${accuracy}<span style="font-size:14px;">%</span></div>
+        </div>
+        <div class="quiz-review-card">
+          <div class="label">正解数</div>
+          <div class="num">${correct}<span style="font-size:14px;">/${total}</span></div>
+        </div>
+        <div class="quiz-review-card">
+          <div class="label">解答数</div>
+          <div class="num">${answered}<span style="font-size:14px;">/${total}</span></div>
+        </div>
+      </div>
+      <div class="quiz-review-list">
+        ${QUIZ_BANK.map((q, i) => {
+          const a = quizState.answers[q.id];
+          const cls = !a ? 'skipped' : (a.correct ? 'ok' : 'miss');
+          const iconId = !a ? 'i-close' : (a.correct ? 'i-check' : 'i-warning');
+          return `<div class="quiz-review-item ${cls}">
+            <svg class="icon"><use href="#${iconId}"/></svg>
+            <span class="q">${i + 1}. ${escapeHtml(q.question.slice(0, 60))}${q.question.length > 60 ? '…' : ''}</span>
+            <button data-retry="${i}">${a ? 'やり直す' : '解く'}</button>
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="quiz-review-actions">
+        <button class="quiz-btn" id="quiz-restart">最初から再受験</button>
+        <button class="quiz-btn primary" id="quiz-back-home">ホームへ</button>
+      </div>
+    </div>
+  `;
+
+  mainEl.querySelectorAll('[data-retry]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const i = parseInt(btn.dataset.retry, 10);
+      const q = QUIZ_BANK[i];
+      if (q) delete quizState.answers[q.id];
+      quizState.index = i;
+      quizState.finished = false;
+      quizState.hintRevealed = false;
+      saveQuiz();
+      render();
+    });
+  });
+  mainEl.querySelector('#quiz-restart').addEventListener('click', () => {
+    if (!confirm(prefs.lang === 'en' ? 'Reset all quiz progress?' : '全クイズ進捗をリセットして最初から始めますか？')) return;
+    resetQuiz();
+    render();
+  });
+  mainEl.querySelector('#quiz-back-home').addEventListener('click', () => {
+    state.view = 'home'; render();
+  });
+}
+
 // ナビゲーション（data-view属性のボタンのみ）
 document.querySelectorAll('.nav button[data-view]').forEach(b => {
   b.addEventListener('click', () => {
@@ -6195,6 +6879,7 @@ function applyPrefs() {
 const I18N = {
   ja: {
     'nav.roadmap': 'ロードマップ',
+    'nav.quiz': '確認テスト',
     'nav.about': 'このアプリについて',
     'tooltip.voice': '音声で読み上げ',
     'tooltip.settings': '設定（APIキー等）',
@@ -6228,6 +6913,7 @@ const I18N = {
   },
   en: {
     'nav.roadmap': 'Roadmap',
+    'nav.quiz': 'Quiz',
     'nav.about': 'About',
     'tooltip.voice': 'Read aloud',
     'tooltip.settings': 'Settings (API keys, etc.)',
