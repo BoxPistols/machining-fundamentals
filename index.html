@@ -11087,22 +11087,21 @@ const GRV = scenario.groove;
 
 const workpieceGroup = new THREE.Group();
 
-// Brushed steel texture (top surface)
+// Brushed titanium / Al 合金 風テクスチャ (航空機素材イメージ)
 const brushTex = (() => {
   const c = document.createElement('canvas');
   c.width = 512; c.height = 512;
   const g = c.getContext('2d');
   const grad = g.createLinearGradient(0, 0, 512, 0);
-  grad.addColorStop(0, '#a08560');
-  grad.addColorStop(0.5, '#8a7049');
-  grad.addColorStop(1, '#6a5538');
+  grad.addColorStop(0, '#c8ccd0');
+  grad.addColorStop(0.5, '#a8adb3');
+  grad.addColorStop(1, '#8c9196');
   g.fillStyle = grad;
   g.fillRect(0, 0, 512, 512);
-  // Horizontal brushed hairlines
   for (let i = 0; i < 2000; i++) {
     const y = Math.random() * 512;
     g.globalAlpha = Math.random() * 0.3;
-    g.strokeStyle = Math.random() < 0.5 ? '#b89a70' : '#3a2f1f';
+    g.strokeStyle = Math.random() < 0.5 ? '#d8dde0' : '#52585d';
     g.lineWidth = 0.5;
     g.beginPath();
     g.moveTo(0, y); g.lineTo(512, y + (Math.random() - 0.5) * 2);
@@ -11115,16 +11114,16 @@ const brushTex = (() => {
   return tex;
 })();
 
-// Side texture (darker, less brushed)
+// 側面テクスチャ (トップより若干暗め、ブラッシュ目弱め)
 const sideTex = (() => {
   const c = document.createElement('canvas');
   c.width = 256; c.height = 128;
   const g = c.getContext('2d');
-  g.fillStyle = '#6a5640';
+  g.fillStyle = '#7a7e84';
   g.fillRect(0, 0, 256, 128);
   for (let i = 0; i < 150; i++) {
     g.globalAlpha = Math.random() * 0.4;
-    g.fillStyle = Math.random() < 0.5 ? '#8a7455' : '#3a2f20';
+    g.fillStyle = Math.random() < 0.5 ? '#9aa0a6' : '#404448';
     g.fillRect(Math.random() * 256, Math.random() * 128, Math.random() * 20 + 2, 1);
   }
   g.globalAlpha = 1;
@@ -11132,17 +11131,17 @@ const sideTex = (() => {
   return tex;
 })();
 
-// Groove interior texture (rougher, darker — freshly cut metal)
+// 溝内テクスチャ (切削直後の鮮度の高い金属面。酸化皮膜なしで明るく反射強め。粗さは工具痕で表現)
 const grooveTex = (() => {
   const c = document.createElement('canvas');
   c.width = 256; c.height = 256;
   const g = c.getContext('2d');
-  g.fillStyle = '#5a4838';
+  g.fillStyle = '#b0b5ba';
   g.fillRect(0, 0, 256, 256);
-  // Tool mark arcs (circular patterns from end-mill path)
+  // エンドミル送り痕の円弧 (tool-mark arcs)
   for (let i = 0; i < 40; i++) {
     g.globalAlpha = 0.15 + Math.random() * 0.2;
-    g.strokeStyle = Math.random() < 0.5 ? '#7a6345' : '#2f2618';
+    g.strokeStyle = Math.random() < 0.5 ? '#d0d5da' : '#44494e';
     g.lineWidth = 0.7;
     g.beginPath();
     g.arc(Math.random() * 256, Math.random() * 256, 10 + Math.random() * 30, 0, Math.PI * 2);
@@ -11155,27 +11154,27 @@ const grooveTex = (() => {
   return tex;
 })();
 
-// ワークマテリアル：工具との明暗バランスを取り、全体が見やすく
+// ワーク素材: Ti-6Al-4V / Al 7075 系の航空機素材イメージ (冷たいシルバー)
 const wpMat = new THREE.MeshStandardMaterial({
   map: brushTex,
-  color: 0xb89668,       // 少し暗めのブラス系
-  roughness: 0.65,       // マット寄り
-  metalness: 0.55,       // 金属感は残す
-  envMapIntensity: 0.5,
+  color: 0xbac0c6,       // ブラッシュチタン
+  roughness: 0.45,
+  metalness: 0.82,
+  envMapIntensity: 0.7,
 });
 const wpSideMat = new THREE.MeshStandardMaterial({
   map: sideTex,
-  color: 0x8e7248,
-  roughness: 0.75,
-  metalness: 0.45,
-  envMapIntensity: 0.5,
+  color: 0x8a9097,       // 側面は若干暗め (陰影で立体感)
+  roughness: 0.55,
+  metalness: 0.75,
+  envMapIntensity: 0.6,
 });
 const grooveMat = new THREE.MeshStandardMaterial({
   map: grooveTex,
-  color: 0x7a5e3e,       // 溝内は少し暗く、ただし見えなくならない程度
-  roughness: 0.85,
-  metalness: 0.35,
-  envMapIntensity: 0.4,
+  color: 0xc0c5ca,       // 切削直後の新鮮面 — 本体より明るく、反射も強め
+  roughness: 0.5,
+  metalness: 0.78,
+  envMapIntensity: 0.7,
 });
 // Use multi-material per face: [+X, -X, +Y, -Y, +Z, -Z]
 function makeWpMaterials() {
