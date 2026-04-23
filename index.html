@@ -779,9 +779,24 @@ body.voice-enabled.voice-mode-summary .voice-summary-note {
   max-width: none;
   padding: 0;
 }
-/* 章詳細のタイポグラフィ列を読みやすい幅に絞る (SVG figure 720px も内包可) */
+/* 章詳細のタイポグラフィ列。デフォルトは 880px、ユーザー設定で切替 */
 .chapter-detail { max-width: 880px; margin: 0 auto; }
 .chapter-detail .fig { margin-left: auto; margin-right: auto; }
+[data-content-width="narrow"]  .chapter-detail { max-width: 720px; }
+[data-content-width="wide"]    .chapter-detail { max-width: 1080px; }
+[data-content-width="full"]    .chapter-detail { max-width: 1280px; }
+
+/* フォントサイズスケール (root font-size を倍率で変える) */
+[data-font-size="s"]  { font-size: 14px; }
+[data-font-size="m"]  { font-size: 16px; }
+[data-font-size="l"]  { font-size: 17.5px; }
+[data-font-size="xl"] { font-size: 19px; }
+
+/* フォントファミリ切替 */
+[data-font="sans-jp"] body { font-family: 'Noto Sans JP', system-ui, sans-serif; }
+[data-font="serif-jp"] body { font-family: 'Noto Serif JP', 'Hiragino Mincho ProN', serif; }
+[data-font="mono"] body { font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace; }
+[data-font="system"] body { font-family: -apple-system, system-ui, "Segoe UI", sans-serif; }
 
 /* === SVG sprite を使ったアイコン共通 (絵文字を全廃) === */
 .icon {
@@ -796,6 +811,21 @@ body.voice-enabled.voice-mode-summary .voice-summary-note {
 }
 .icon-fill { fill: currentColor; stroke: none; }
 .icon-lg { width: 18px; height: 18px; }
+
+/* 表示設定セクション */
+.prefs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 540px) { .prefs-grid { grid-template-columns: 1fr; } }
+.prefs-row { display: flex; gap: 6px; align-items: center; }
+.prefs-row select {
+  flex: 1; padding: 6px 8px; background: var(--bg-1);
+  border: 1px solid var(--line); color: var(--text-0);
+  border-radius: 4px; font-family: inherit; font-size: 13px;
+}
+.pref-reset {
+  padding: 6px 8px; background: transparent; border: 1px solid var(--line);
+  color: var(--text-2); cursor: pointer; border-radius: 4px;
+}
+.pref-reset:hover { color: var(--ylw, #f59e0b); border-color: var(--ylw, #f59e0b); }
 
 /* === ロードマップ画面 === */
 .hero {
@@ -1622,16 +1652,16 @@ figure.fig figcaption strong {
 <header class="topbar">
   <div class="brand">切削加工入門<span class="sub">Machining Fundamentals — 学習ロードマップ</span></div>
   <nav class="nav">
-    <button data-view="home" class="active">ロードマップ</button>
-    <button data-view="about">このアプリについて</button>
+    <button data-view="home" class="active" data-i18n="nav.roadmap">ロードマップ</button>
+    <button data-view="about" data-i18n="nav.about">このアプリについて</button>
     <button id="voice-toggle" class="voice-toggle" title="音声読み上げモード" aria-label="音声モード切替">
       <span class="voice-icon-off"><svg class="icon icon-lg"><use href="#i-volume-off"/></svg></span>
       <span class="voice-icon-on"><svg class="icon icon-lg"><use href="#i-volume-on"/></svg></span>
     </button>
-    <button id="settings-toggle" class="settings-toggle" title="設定（APIキー等）" aria-label="設定">
+    <button id="settings-toggle" class="settings-toggle" data-i18n-title="tooltip.settings" data-i18n-aria-label="tooltip.settings" title="設定（APIキー等）" aria-label="設定">
       <svg class="icon icon-lg"><use href="#i-cog"/></svg>
     </button>
-    <button id="theme-toggle" class="theme-toggle" title="テーマを切り替え" aria-label="テーマ切替">
+    <button id="theme-toggle" class="theme-toggle" data-i18n-title="tooltip.theme" data-i18n-aria-label="tooltip.theme" title="テーマを切り替え" aria-label="テーマ切替">
       <span class="theme-icon-dark"><svg class="icon icon-lg"><use href="#i-moon"/></svg></span>
       <span class="theme-icon-light"><svg class="icon icon-lg"><use href="#i-sun"/></svg></span>
     </button>
@@ -5615,6 +5645,142 @@ function saveApiConfig() {
 loadApiConfig();
 
 // =============================================================================
+// 表示設定 (lang / font / fontSize / contentWidth) + i18n
+// localStorage 永続、reset 対応
+// =============================================================================
+const PREF_DEFAULTS = {
+  lang: 'ja',                // 'ja' | 'en'
+  font: 'sans-jp',           // 'sans-jp' | 'serif-jp' | 'mono' | 'system'
+  fontSize: 'm',             // 's' | 'm' | 'l' | 'xl'
+  contentWidth: 'default',   // 'narrow' | 'default' | 'wide' | 'full'
+};
+const PREF_KEY = 'cfd-prefs';
+const prefs = { ...PREF_DEFAULTS };
+
+function loadPrefs() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(PREF_KEY) || '{}');
+    for (const k of Object.keys(PREF_DEFAULTS)) {
+      if (saved[k] != null) prefs[k] = saved[k];
+    }
+  } catch {}
+}
+function savePrefs() {
+  try { localStorage.setItem(PREF_KEY, JSON.stringify(prefs)); } catch {}
+}
+function resetPrefs() {
+  Object.assign(prefs, PREF_DEFAULTS);
+  savePrefs();
+  applyPrefs();
+}
+function resetPref(key) {
+  if (PREF_DEFAULTS[key] != null) {
+    prefs[key] = PREF_DEFAULTS[key];
+    savePrefs();
+    applyPrefs();
+  }
+}
+function applyPrefs() {
+  const root = document.documentElement;
+  root.setAttribute('data-lang', prefs.lang);
+  root.setAttribute('data-font', prefs.font);
+  root.setAttribute('data-font-size', prefs.fontSize);
+  root.setAttribute('data-content-width', prefs.contentWidth);
+  document.documentElement.lang = prefs.lang;
+  applyI18n();
+}
+
+// i18n 辞書 (UI 主要要素のみ。本文は日本語のまま)
+const I18N = {
+  ja: {
+    'nav.roadmap': 'ロードマップ',
+    'nav.about': 'このアプリについて',
+    'tooltip.voice': '音声で読み上げ',
+    'tooltip.settings': '設定（APIキー等）',
+    'tooltip.theme': 'テーマを切り替え',
+    'btn.markDone': 'この章を学習済みにする',
+    'btn.markedDone': 'この章を学習済み',
+    'btn.export': 'テキスト書き出し',
+    'btn.exportAll': '全章まとめて書き出し',
+    'btn.backToRoadmap': '← ロードマップに戻る',
+    'btn.close': '閉じる',
+    'btn.save': '保存',
+    'btn.reset': 'リセット',
+    'btn.resetAll': 'すべて初期化',
+    'settings.title': '設定',
+    'settings.display': '表示設定',
+    'settings.language': '言語',
+    'settings.font': 'フォント',
+    'settings.fontSize': 'フォントサイズ',
+    'settings.contentWidth': 'コンテンツ幅',
+    'fontSize.s': '小', 'fontSize.m': '中', 'fontSize.l': '大', 'fontSize.xl': '特大',
+    'width.narrow': '狭い (720px)', 'width.default': '標準 (880px)',
+    'width.wide': '広い (1080px)', 'width.full': '最大 (1280px)',
+    'font.sans-jp': 'Noto Sans JP', 'font.serif-jp': 'Noto Serif JP',
+    'font.mono': 'JetBrains Mono', 'font.system': 'システム標準',
+    'chat.fab': 'AI に質問',
+    'chat.title': '学習アシスタント',
+    'chat.placeholder': '質問を入力（Enter 送信、Shift+Enter 改行）',
+    'chat.send': '送信',
+    'chat.stop': '停止',
+    'chat.clearConfirm': '会話履歴をクリアします。よろしいですか？',
+  },
+  en: {
+    'nav.roadmap': 'Roadmap',
+    'nav.about': 'About',
+    'tooltip.voice': 'Read aloud',
+    'tooltip.settings': 'Settings (API keys, etc.)',
+    'tooltip.theme': 'Toggle theme',
+    'btn.markDone': 'Mark this chapter as done',
+    'btn.markedDone': 'Chapter completed',
+    'btn.export': 'Export text',
+    'btn.exportAll': 'Export all chapters',
+    'btn.backToRoadmap': '← Back to roadmap',
+    'btn.close': 'Close',
+    'btn.save': 'Save',
+    'btn.reset': 'Reset',
+    'btn.resetAll': 'Reset all',
+    'settings.title': 'Settings',
+    'settings.display': 'Display',
+    'settings.language': 'Language',
+    'settings.font': 'Font',
+    'settings.fontSize': 'Font size',
+    'settings.contentWidth': 'Content width',
+    'fontSize.s': 'Small', 'fontSize.m': 'Medium', 'fontSize.l': 'Large', 'fontSize.xl': 'X-Large',
+    'width.narrow': 'Narrow (720px)', 'width.default': 'Default (880px)',
+    'width.wide': 'Wide (1080px)', 'width.full': 'Full (1280px)',
+    'font.sans-jp': 'Noto Sans JP', 'font.serif-jp': 'Noto Serif JP',
+    'font.mono': 'JetBrains Mono', 'font.system': 'System default',
+    'chat.fab': 'Ask AI',
+    'chat.title': 'Learning Assistant',
+    'chat.placeholder': 'Type your question (Enter to send, Shift+Enter for newline)',
+    'chat.send': 'Send',
+    'chat.stop': 'Stop',
+    'chat.clearConfirm': 'Clear conversation history?',
+  },
+};
+function t(key) {
+  const dict = I18N[prefs.lang] || I18N.ja;
+  return dict[key] || I18N.ja[key] || key;
+}
+function applyI18n() {
+  document.querySelectorAll('[data-i18n]').forEach((el) => {
+    el.textContent = t(el.dataset.i18n);
+  });
+  document.querySelectorAll('[data-i18n-title]').forEach((el) => {
+    el.title = t(el.dataset.i18nTitle);
+  });
+  document.querySelectorAll('[data-i18n-aria-label]').forEach((el) => {
+    el.setAttribute('aria-label', t(el.dataset.i18nAriaLabel));
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
+    el.placeholder = t(el.dataset.i18nPlaceholder);
+  });
+}
+loadPrefs();
+applyPrefs();
+
+// =============================================================================
 // IndexedDB 音声キャッシュ
 // =============================================================================
 // キー形式: provider + ':' + voice_id + ':' + rate + ':' + hash(text)
@@ -6811,6 +6977,72 @@ async function openSettingsDialog() {
           <strong style="margin-top:8px;">個人のマシンで自分専用で使う想定</strong>です。
         </div>
 
+        <!-- 表示設定 (lang / font / fontSize / contentWidth) -->
+        <div class="settings-section" id="display-prefs-section">
+          <h3><svg class="icon icon-lg"><use href="#i-cog"/></svg> <span data-i18n="settings.display">表示設定</span></h3>
+          <div class="prefs-grid">
+            <div class="settings-field">
+              <label data-i18n="settings.language">言語</label>
+              <div class="prefs-row">
+                <select id="pref-lang">
+                  <option value="ja">日本語</option>
+                  <option value="en">English</option>
+                </select>
+                <button class="dialog-btn pref-reset" data-pref="lang" title="この項目だけ初期化" aria-label="reset language">
+                  <svg class="icon"><use href="#i-close"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="settings-field">
+              <label data-i18n="settings.font">フォント</label>
+              <div class="prefs-row">
+                <select id="pref-font">
+                  <option value="sans-jp">Noto Sans JP</option>
+                  <option value="serif-jp">Noto Serif JP</option>
+                  <option value="mono">JetBrains Mono</option>
+                  <option value="system">System default</option>
+                </select>
+                <button class="dialog-btn pref-reset" data-pref="font" aria-label="reset font">
+                  <svg class="icon"><use href="#i-close"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="settings-field">
+              <label data-i18n="settings.fontSize">フォントサイズ</label>
+              <div class="prefs-row">
+                <select id="pref-fontSize">
+                  <option value="s">S (14px)</option>
+                  <option value="m">M (16px)</option>
+                  <option value="l">L (17.5px)</option>
+                  <option value="xl">XL (19px)</option>
+                </select>
+                <button class="dialog-btn pref-reset" data-pref="fontSize" aria-label="reset font size">
+                  <svg class="icon"><use href="#i-close"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="settings-field">
+              <label data-i18n="settings.contentWidth">コンテンツ幅</label>
+              <div class="prefs-row">
+                <select id="pref-contentWidth">
+                  <option value="narrow">Narrow (720px)</option>
+                  <option value="default">Default (880px)</option>
+                  <option value="wide">Wide (1080px)</option>
+                  <option value="full">Full (1280px)</option>
+                </select>
+                <button class="dialog-btn pref-reset" data-pref="contentWidth" aria-label="reset content width">
+                  <svg class="icon"><use href="#i-close"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex; justify-content:flex-end; margin-top:12px;">
+            <button class="dialog-btn" id="pref-reset-all" style="color: var(--ylw, #f59e0b);">
+              <svg class="icon"><use href="#i-trash"/></svg> <span data-i18n="btn.resetAll">すべて初期化</span>
+            </button>
+          </div>
+        </div>
+
         <div class="settings-section">
           <h3><svg class="icon icon-lg"><use href="#i-mic"/></svg> xAI Grok TTS</h3>
           <p class="desc">
@@ -6882,6 +7114,39 @@ async function openSettingsDialog() {
     </div>
   `;
   document.body.appendChild(backdrop);
+
+  // === 表示設定 (lang/font/fontSize/contentWidth) のセレクト初期化と event 配線 ===
+  ['lang', 'font', 'fontSize', 'contentWidth'].forEach((key) => {
+    const sel = document.getElementById('pref-' + key);
+    if (!sel) return;
+    sel.value = prefs[key];
+    sel.addEventListener('change', () => {
+      prefs[key] = sel.value;
+      savePrefs();
+      applyPrefs();
+    });
+  });
+  document.querySelectorAll('.pref-reset').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const k = btn.dataset.pref;
+      resetPref(k);
+      const sel = document.getElementById('pref-' + k);
+      if (sel) sel.value = prefs[k];
+    });
+  });
+  const resetAllBtn = document.getElementById('pref-reset-all');
+  if (resetAllBtn) {
+    resetAllBtn.addEventListener('click', () => {
+      if (!confirm(prefs.lang === 'en'
+        ? 'Reset all display preferences (language / font / size / width) to defaults?'
+        : 'すべての表示設定 (言語/フォント/サイズ/幅) を初期値に戻しますか？')) return;
+      resetPrefs();
+      ['lang', 'font', 'fontSize', 'contentWidth'].forEach((key) => {
+        const sel = document.getElementById('pref-' + key);
+        if (sel) sel.value = prefs[key];
+      });
+    });
+  }
 
   const keyInput = document.getElementById('grok-key-input');
   const proxyUrlInput = document.getElementById('grok-proxy-url-input');
@@ -9374,7 +9639,7 @@ document.querySelectorAll('.learn-step').forEach(el => {
 <div id="chat-widget" class="chat-widget closed" role="complementary" aria-label="AI 学習アシスタント">
   <button id="chat-fab" class="chat-fab" type="button" aria-expanded="false" aria-controls="chat-panel">
     <svg class="icon icon-lg"><use href="#i-chat"/></svg>
-    <span>AI に質問</span>
+    <span data-i18n="chat.fab">AI に質問</span>
   </button>
   <div id="chat-panel" class="chat-panel" hidden>
     <header>
