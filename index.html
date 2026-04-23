@@ -6977,7 +6977,9 @@ document.getElementById('settings-toggle').addEventListener('click', openSetting
 document.addEventListener('click', (e) => {
   const chBtn = e.target.closest('[data-export-chapter]');
   if (chBtn) {
-    const id = parseInt(chBtn.dataset.exportChapter);
+    // Part A は文字列 ID ('a1' 等)、Part B は数値 (1〜10)。両対応で parse。
+    const raw = chBtn.dataset.exportChapter;
+    const id = /^\d+$/.test(raw) ? parseInt(raw, 10) : raw;
     const ch = CHAPTERS.find(c => c.id === id);
     if (ch) openExportDialog({ type: 'chapter', chapter: ch });
     return;
