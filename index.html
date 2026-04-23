@@ -1940,6 +1940,18 @@ body.chat-sidebar-open { padding-right: 380px; transition: padding-right 0.2s ea
 .chat-settings .actions { display: flex; gap: 6px; justify-content: flex-end; }
 
 .chat-error { padding: 10px 12px; background: color-mix(in srgb, var(--ylw, #f59e0b) 18%, transparent); border-left: 3px solid var(--ylw, #f59e0b); border-radius: 4px; font-size: 12px; color: var(--text-0); }
+.chat-fallback { border-left: 2px dashed var(--text-2); padding-left: 8px; opacity: 0.95; }
+.chat-fallback .role::after { content: ' (定型)'; color: var(--text-2); font-size: 10px; }
+.chat-cached { border-left: 2px solid var(--accent); padding-left: 8px; }
+.chat-cached .role::after { content: ' (用意済)'; color: var(--accent); font-size: 10px; }
+.deep-dive-btn {
+  margin-top: 8px; display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 10px; background: transparent; border: 1px solid var(--accent);
+  color: var(--accent); border-radius: 4px; cursor: pointer;
+  font: 11px/1 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: 0.05em;
+}
+.deep-dive-btn:hover:not(:disabled) { background: var(--accent); color: var(--bg-1); }
+.deep-dive-btn:disabled { opacity: 0.5; cursor: wait; }
 .chat-error a, .chat-error button.link { color: var(--accent); text-decoration: underline; cursor: pointer; background: transparent; border: 0; padding: 0; font: inherit; }
 
 @media (max-width: 480px) {
@@ -12504,7 +12516,7 @@ function renderEmpty() {
     btn.type = 'button';
     btn.className = 'suggestion';
     btn.textContent = s;
-    btn.addEventListener('click', () => sendMessage(s));
+    btn.addEventListener('click', () => sendSuggestion(s));
     div.appendChild(btn);
   }
   els.messages.appendChild(div);
@@ -12541,9 +12553,158 @@ function currentContext() {
   };
 }
 
-async function sendMessage(text) {
+// =============================================================================
+// フォールバック応答バンク — AI 未接続時 (proxyUrl 空 / network err / 5xx) に使う定型答
+// 事実整合性は章本文と揃えてある。キーワード「すべて含む」AND で判定。
+// =============================================================================
+const FALLBACK_BANK = [
+  { keys: ['クライオ', 'Ti'], chapter: '7',
+    answer: 'クライオ加工が Ti に効く理由は、液体窒素 LN₂ (-196 °C) の「低温 + 蒸発潜熱 199 kJ/kg」で刃先の熱伝達係数 h が通常冷却液の数倍〜10 倍に達するためです。Ti は熱伝導率 6-7 W/m·K と低く刃先に熱が溜まりやすいので、この強力冷却が工具寿命 2-3 倍に直結します。Boeing / GE Aviation の量産ラインで採用例あり。' },
+  { keys: ['内部給油'], chapter: '7',
+    answer: '内部給油 (through-coolant) は工具内部の油穴から刃先へ直接冷却液を噴射する方式で、以下 3 つの理由で深穴 Ti / Inconel 加工で事実上必須です。(1) 外部ノズルでは穴底まで届かない、(2) Ti の低熱伝導で刃先温度が外に逃げない、(3) 切屑を穴底から排出する圧力源になる。L/D > 5 で標準、L/D > 3 の Ti では必須レベルです。' },
+  // 'f' 単独はキーとして広すぎるので 'Vc' + '決める' / 'fz' のみで識別 (将来エントリと衝突しない)
+  { keys: ['Vc', '決める'], chapter: '3',
+    answer: 'Vc (切削速度 m/min) と f (送り mm/rev) は被削材と工具材種のマトリクスで決めます。例: S45C × 超硬 → Vc 150-250 / f 0.1-0.3、Ti-6Al-4V × コーティング超硬 → Vc 30-70 / f 0.08-0.2。判断順: (1) 工具メーカ推奨の中央値から開始、(2) 工具寿命と表面粗さで微調整、(3) MRR (金属除去率) と機械剛性の上限で律速。' },
+  { keys: ['fz'], chapter: '3',
+    answer: 'fz は「1 刃当たり送り」(mm/tooth)、f は「1 回転当たり送り」(mm/rev)。関係式は f = fz × z (刃数)。旋削は刃 1 枚なので f = fz ですが、フライス/ドリルは多刃なので仕様書は fz で書かれることが多いです。CAM/NC では送り速度 F (mm/min) = f × n = fz × z × n に変換されます。' },
+  { keys: ['Kc'], chapter: '6',
+    answer: 'Kc (比切削抵抗 N/mm²) は「単位断面積の切屑を作るのに必要な力」で、切削動力 Pc の見積りに使います。Kienzle 式: Kc = Kc1.1 × h^(-mc) (h は切屑厚さ mm)。Inconel 718 の Kc が大きい (3500-4500) のは、γ" 析出強化 + 加工硬化 + 低熱伝導の合算で刃先に大きな塑性変形抵抗が生じるためです。' },
+  { keys: ['Taylor'], chapter: '8',
+    answer: 'Taylor 式 V × T^n = C は「切削速度 V と工具寿命 T の関係」を表し、n は工具材種依存の寿命指数 (HSS ≈ 0.1、超硬 0.2-0.25、セラミクス 0.4-0.6、CBN 0.6+)。n を上げるには耐熱・耐摩耗性の高い材種に切替えるのが王道で、コーティング (TiAlN / AlCrN) で実効的に n が上がる効果もあります。' },
+  { keys: ['VB'], chapter: '8',
+    answer: 'VB (逃げ面摩耗幅 mm) の限界は加工種別で変わります: 仕上げ加工 VB < 0.3 mm、荒加工 VB < 0.6 mm、ドリル/タップは異なる尺度。VB は時間と共に初期摩耗 → 安定摩耗 → 急激摩耗と進行し、急激摩耗手前が「寿命」。実機では音響・振動・電流値から推定します。' },
+  { keys: ['Ra'], chapter: '9',
+    answer: '理論 Ra は旋削で Ra ≒ f² / (32 × r_ε) (r_ε はノーズ半径 mm、f は送り mm/rev)。f を半分にすると Ra は 1/4 に改善しますが、生産性は半減します。Ra と Rz の使い分け: Ra は平均粗さで意匠/シール面に、Rz は 10 点平均で摺動・疲労面に使うのが実務標準 (ISO 4287)。' },
+  { keys: ['Rz'], chapter: '9',
+    answer: 'Rz は ISO 4287 の「最大高さ」で、基準長さ内の最高山と最深谷の差。Ra (算術平均) より外れ値に敏感なので、摺動/疲労/シール面などピーク応力が問題になる用途で使います。Ra と Rz は相関しますが比例定数は一定でない (粗さ波形の形状依存)。' },
+  { keys: ['BCC', 'FCC'], chapter: 'a3',
+    answer: 'BCC (体心立方) と FCC (面心立方) は結晶構造の違い。FCC はすべり系 12、充填率 0.74 で延性が高く (Al, Cu, SUS304)、BCC はすべり系 48 だが温度依存で DBTT (延性脆性遷移) を持つ (炭素鋼)。HCP はすべり系 3 のみで極めて異方性が強い (Ti, Mg)。この差が切削性の連続切屑か不連続切屑かを左右します。' },
+  { keys: ['HCP', 'Ti'], chapter: 'a3',
+    answer: 'Ti が HCP (六方最密) なのは、原子半径と電子配置で最密充填したとき HCP が最安全定構造になるためです。HCP はすべり系が 3 (基底面 {0001}<11-20>) しかなく塑性変形の自由度が低いので、切削時に局所的な断熱せん断帯が発生しやすく工具への衝撃荷重が大きい。これが Ti 難削性の結晶学的根拠です。' },
+  { keys: ['転位'], chapter: 'a4',
+    answer: '転位 (dislocation) は結晶内の線欠陥で、すべり面上を移動することで塑性変形を担います。必要な応力は結合エネルギを一気に壊すより桁違いに小さい (Peierls 応力) ため、金属は降伏応力が理論強度の 1/100 程度で降伏できます。切削では刃先前方で高密度の転位が発生・もつれ、それが加工硬化と切屑生成の微視的メカニズムです。' },
+  { keys: ['Johnson-Cook'], chapter: 'a6',
+    answer: 'Johnson-Cook 構成式 σ = (A + B ε^n)(1 + C ln ε̇*)(1 - T*^m) の 3 項は、(1) ひずみ硬化項 (静的応力-ひずみ)、(2) ひずみ速度項 (切削は 10⁴-10⁶ /s の超高速域)、(3) 温度軟化項 (刃先近傍は融点の 0.5-0.8 倍)。切削 FEM の標準モデルで、Ti や Inconel は (3) の軟化が顕著です。' },
+  { keys: ['断熱せん断'], chapter: 'a6',
+    answer: '断熱せん断帯 (adiabatic shear band) は、塑性変形熱が周囲に逃げる前に局所温度上昇 → 軟化 → 更に変形が集中する正帰還で生じる帯状の破壊面。Ti や高強度鋼で顕著で、切削では切屑のセグメント化 (鋸歯状切屑) として観察され、切削力の振動と刃先衝撃の原因になります。' },
+  { keys: ['電子の海'], chapter: 'a1',
+    answer: '電子の海モデル (free electron sea) は、金属原子が価電子を手放して陽イオンになり、自由電子が結晶全体を満たすというイメージ。この結果として (1) 高い電気伝導性、(2) 光沢 (可視光を反射)、(3) 延性 (イオン同士がすべっても電子雲が繋ぎとめる) が説明できます。切削で金属が塑性変形できるのもこの結合様式が本質です。' },
+  { keys: ['光沢'], chapter: 'a1',
+    answer: '金属に光沢があるのは、自由電子が可視光 (波長 400-700 nm) の電場に追随して振動し、入射光をほぼ全反射するためです。波長依存の応答差で Cu は赤みがかり、Au は黄色く、Al や Ag はニュートラルシルバーになります。酸化膜が付くと光沢が失われるのは、この電子-光結合が絶縁体層で遮られるため。' },
+  { keys: ['難削材'], chapter: 'a2',
+    answer: 'Ti / Inconel が難削材と呼ばれるのは、(1) 熱伝導率が低く刃先に熱が溜まる (Ti 7, Inconel 11 W/m·K、鋼の 1/5-1/7)、(2) 加工硬化しやすく二度切り不可、(3) 化学親和性が高く工具と凝着しやすい、の 3 複合要因です。対策は低速 + 高圧内部給油 + 剛性ある工具、またはクライオ加工。' },
+  { keys: ['SLD'], chapter: '10',
+    answer: 'Stability Lobe Diagram (SLD) は主軸回転数 n と切込み ap を軸にした安定領域マップ。白部分が「びびりなし」、黒部分が「びびり発生」。ローブ (葉状) の頂点は工具-ワーク系の固有振動数の分数調波 n = f_n × 60 / k で決まります。実機では「ローブ頂点で高 ap を取る」のが効率解です。' },
+  { keys: ['stability'], chapter: '10',
+    answer: 'Stability Lobe Diagram (SLD) は主軸回転数 n と切込み ap を軸にした安定領域マップ。白部分が「びびりなし」、黒部分が「びびり発生」。ローブ (葉状) の頂点は工具-ワーク系の固有振動数の分数調波 n = f_n × 60 / k で決まります。実機では「ローブ頂点で高 ap を取る」のが効率解です。' },
+  { keys: ['びびり'], chapter: '10',
+    answer: 'びびり (chatter) 対策の優先順位: (1) 工具張り出しを短く (剛性 ∝ 1/L³)、(2) SLD の安定ローブで n を選ぶ、(3) ap/ae を減らす (最後手)、(4) 可変リード工具や制振ホルダ投入。びびりは再生型 (self-excited) が多く、表面痕跡の波長と回転周期の関係で同定できます。' },
+  // --- 追加バンク: suggestionsFor の全プリセットをカバー ---
+  { keys: ['価電子'], chapter: 'a1',
+    answer: '価電子 (valence electron) は原子の最外殻電子で、金属では結晶全体を自由に動き回る「電子の海」を形成します。この自由電子が電気伝導・熱伝導・光沢・延性を同時に説明する鍵。Fe は 3d⁶4s² の 8 個、Al は 3s²3p¹ の 3 個、Cu は 3d¹⁰4s¹ の 1 個が価電子に相当します。' },
+  { keys: ['熱伝導率', 'Ti'], chapter: 'a2',
+    answer: 'Ti の熱伝導率が 6-7 W/m·K と低い (鋼 50、Al 240、Cu 400 W/m·K) のは、(1) 電子状態密度が小さく自由電子による熱輸送が少ない、(2) HCP 結晶の異方性でフォノン散乱が多い、(3) 電子-フォノン結合が弱い、の複合要因。結果として切削時に刃先に熱が溜まりやすく、難削材となる物理的根拠です。' },
+  { keys: ['すべり系'], chapter: 'a4',
+    answer: 'すべり系の数 = すべり面 × すべり方向で決まる塑性変形の自由度。FCC 12 (延性高、Al/Cu/SUS304)、BCC 48 だが温度依存で DBTT 持ち (鋼)、HCP 3 のみ (Ti/Mg、異方性強)。5 独立系 (Von Mises) が均質変形の最低条件で、HCP は満たさず切削で不連続切屑になりやすい。' },
+  { keys: ['マルテンサイト'], chapter: 'a5',
+    answer: 'マルテンサイトは高温 γ (FCC) を急冷すると C が拡散する時間がないまま BCC に変態し、格子に強制侵入した C で歪んで BCT (体心正方) になる組織。無拡散変態で原子 1 つ 1 つが協同的にシフトする (剪断型)。硬さ HV 700+、切削加工性は極めて悪く、焼戻しで靱性を戻してから加工するのが通例。' },
+  { keys: ['γ', 'Inconel'], chapter: 'a5',
+    answer: 'Inconel 718 の γ" (ガンマダブルプライム) は Ni₃Nb の準安定 BCT 析出相で、整合歪により主強化相として働きます (γ\' Ni₃(Al,Ti) より強化寄与大)。650 ℃ 以上の長時間暴露で安定相 δ (Ni₃Nb 斜方晶) に過時効し強度低下。ジェットエンジンの高温クリープ要求から γ" が設計の中心相です。' },
+  { keys: ['Vc', '上げる'], chapter: '3',
+    answer: 'Vc を上げると (1) 刃先温度上昇 (Vc の 0.5-0.8 乗に比例、Ti では急峻)、(2) 工具寿命低下 (Taylor 式 V×T^n=C より、n=0.25 なら V 倍で T は 1/16)、(3) 表面粗さは改善 (BUE 減)、(4) MRR 比例増加、(5) 切削力やや低下 (熱軟化)。Ti / Inconel では (1)(2) が厳しく低速推奨、Al では高速化可能。' },
+  { keys: ['タービンブレード'], chapter: '10',
+    answer: 'タービンブレードをセラミクスで削る (超硬でなく) 理由は、Inconel 718 の高温強度と加工硬化で超硬寿命が短すぎるため。Al₂O₃-SiC ウイスカ強化セラミクスは 1000 ℃ でも硬度を保ち、Vc 200-300 m/min と超硬の 5-10 倍速度で加工可能。ただし靱性が低くチッピングしやすいので剛性の高い機械と安定した切屑厚が必須。' },
+  { keys: ['セラミクス'], chapter: '10',
+    answer: 'セラミクス工具 (Al₂O₃ / Si₃N₄ / ウイスカ強化) が Inconel / 鋳鉄の高速加工で使われるのは、高温硬度 (1000 ℃ でも HV 1500+) と化学安定性。欠点は靱性不足 (K_IC 4-7 MPa·√m、超硬の 1/3)。割れ防止に大きなノーズ半径 + 高い剛性 + 連続切削が条件。断続切削には不向き。' },
+];
+
+function findFallback(question, chapterId) {
+  const q = question.toLowerCase();
+  // 現在章の FAQ を優先
+  const matches = FALLBACK_BANK.filter(entry =>
+    entry.keys.every(k => q.includes(k.toLowerCase()))
+  );
+  if (matches.length === 0) return null;
+  return matches.find(m => m.chapter === chapterId) || matches[0];
+}
+
+// 定型 assistant 応答を出す (user メッセージは呼び出し側で既に入っている前提)
+function emitFallbackReply(question, reason) {
+  const ctx = currentContext();
+  const hit = findFallback(question, ctx.chapterId);
+  const body = hit
+    ? hit.answer
+    : `申し訳ありません、AI バックエンドに接続できないためテンプレート外の質問にはお答えできません。\n\n代わりに:\n・左上 [ロードマップ] で関連章を開く\n・${isMacUA ? 'Cmd' : 'Ctrl'}+P で横断検索 (用語 / 本文)\n・右下 [設定] から BYOK キーを登録すると本来の AI 応答が使えます`;
+  const suffix = hit?.chapter
+    ? `\n\n— テンプレート応答 (AI 未接続 / ${reason})・詳細: 第${hit.chapter}章`
+    : `\n\n— テンプレート応答 (AI 未接続 / ${reason})`;
+  const assistantMsg = { role: 'assistant', content: body + suffix };
+  chatState.history.push(assistantMsg);
+  const el = appendMessage(assistantMsg);
+  el.classList.add('chat-fallback');
+  persistHistory();
+  showStatus('フォールバック応答 (AI 未接続)', 4000);
+}
+
+// 入口 (proxyUrl 未設定時): user メッセージ + 定型応答をまとめて描画
+function sendFallback(question, reason) {
+  if (els.messages.querySelector('.chat-empty')) clearMessagesContainer();
+  const userMsg = { role: 'user', content: question };
+  chatState.history.push(userMsg);
+  appendMessage(userMsg);
+  els.input.value = '';
+  els.input.style.height = 'auto';
+  emitFallbackReply(question, reason);
+}
+
+// 二重構造 tier 1: 用意済回答を即時表示 + "AI で深掘り" ボタン。suggestion クリック経路で使う。
+function sendSuggestion(question) {
+  if (els.messages.querySelector('.chat-empty')) clearMessagesContainer();
+  const userMsg = { role: 'user', content: question };
+  chatState.history.push(userMsg);
+  appendMessage(userMsg);
+  els.input.value = '';
+  els.input.style.height = 'auto';
+
+  const ctx = currentContext();
+  const hit = findFallback(question, ctx.chapterId);
+  const body = hit
+    ? hit.answer + (hit.chapter ? `\n\n関連章: 第${hit.chapter}章` : '')
+    : 'このトピックの用意済回答はまだありません。下の [AI で深掘り] で AI に尋ねてください。';
+  const assistantMsg = { role: 'assistant', content: body };
+  chatState.history.push(assistantMsg);
+  const el = appendMessage(assistantMsg);
+  el.classList.add('chat-cached');
+
+  // Tier 2 への誘導ボタン (proxy 未接続時は disabled + ヒント変更)
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'deep-dive-btn';
+  btn.textContent = '▾ AI で深掘り';
   if (!chatCfg.proxyUrl) {
-    showError('プロキシ URL が未設定です。歯車ボタンから設定してください。');
+    btn.disabled = true;
+    btn.title = 'AI 未接続 (歯車 [設定] からプロキシ URL 登録、または BYOK キー登録で有効化)';
+  } else {
+    btn.title = '具体的な数値・事例を交えた詳細解説を AI に依頼';
+    btn.addEventListener('click', () => {
+      btn.disabled = true;
+      btn.textContent = '問い合わせ中...';
+      // 履歴に canned 回答が残っているので、AI にはそれを前提に深掘りしてもらう。
+      // 二次プロンプトは画面に出さず (skipUserBubble)、AI 応答だけが canned の下に続くようにする
+      sendMessage(
+        `上記の「${question}」について、数値や具体例を交えてさらに詳しく解説してください。`,
+        { skipUserBubble: true }
+      );
+    });
+  }
+  el.appendChild(btn);
+  persistHistory();
+}
+
+async function sendMessage(text, opts = {}) {
+  if (!chatCfg.proxyUrl) {
+    // Proxy 未設定 → エラー表示でなく定型応答でフォールバック (教材として最低限機能させる)
+    sendFallback(text, 'proxy URL 未設定');
     return;
   }
 
@@ -12555,7 +12716,8 @@ async function sendMessage(text) {
 
   const userMsg = { role: 'user', content: text };
   chatState.history.push(userMsg);
-  const userEl = appendMessage(userMsg);
+  // opts.skipUserBubble: 深掘りボタン経由の二次プロンプトは画面に出さない (既に canned 回答の下に AI 応答が続くだけで十分)
+  const userEl = opts.skipUserBubble ? null : appendMessage(userMsg);
   els.input.value = '';
   els.input.style.height = 'auto';
 
@@ -12603,6 +12765,13 @@ async function sendMessage(text) {
         showQuotaExceeded();
         return;
       }
+      // 5xx (proxy / upstream 障害): 定型応答でフォールバック (user は画面に残す)
+      if (res.status >= 500) {
+        chatState.history.pop();     // 空の assistant を取り下げ (user メッセージは残す)
+        assistantEl.remove();
+        emitFallbackReply(text, `proxy ${res.status}`);
+        return;
+      }
       let errMsg = `エラー ${res.status}`;
       try {
         const err = await res.json();
@@ -12646,10 +12815,10 @@ async function sendMessage(text) {
       assistantMsg.content += '\n[中断されました]';
       contentEl.textContent = assistantMsg.content;
     } else {
-      const msg = `通信エラー: ${e.message}`;
-      assistantMsg.content = msg;
-      contentEl.textContent = msg;
-      assistantEl.classList.add('chat-error');
+      // 通信エラー (fetch 失敗 / DNS / CORS 等): 定型応答でフォールバック
+      chatState.history.pop();
+      assistantEl.remove();
+      emitFallbackReply(text, `network: ${e.message}`);
     }
   } finally {
     assistantEl.classList.remove('streaming');
