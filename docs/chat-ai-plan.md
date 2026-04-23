@@ -1,4 +1,26 @@
-# Chat AI 機能 実装計画 (草案 v2.2 — Phase 0 着手 Ready)
+# Chat AI 機能 実装計画 (v2.3 — Phase 0 接続テスト完了)
+
+## v2.3 変更 (2026-04-23)
+
+owner 提供の実 API キーで接続テスト実施 (`scripts/chat-conn-test.sh`)、以下の重要発見:
+
+| 項目 | v2.2 想定 | v2.3 実測 |
+|---|---|---|
+| OpenAI gpt-5.4-nano | 動作前提 | ✓ 動作確認、**ただし `max_tokens` は廃止、`max_completion_tokens` に変更必要** |
+| OpenAI 日本語品質 | 高品質想定 | ✓ 確認済 (VB の説明 100 字を自然な日本語で生成) |
+| Gemini 3 Flash | API 提供想定 | ✗ **API 未提供** (Web AI Studio のみ preview)。`gemini-2.5-flash` に切替 |
+| Gemini OpenAI 互換 endpoint | adapter 流用想定 | ✗ **不安定** (error は `[{...}]` array 形式、SSE は未確認)、ネイティブ endpoint 採用 |
+| Gemini reasoning tokens | 未考慮 | ⚠ 2.5 系は thinking tokens を消費、出力 budget +1200 推奨 |
+| Gemini 価格 | TBD | $0.075/1M input, $0.30/1M output (OpenAI nano の 1/3 程度) |
+
+実装反映済 (commit pending):
+- `worker-proxy.js`: `PROVIDERS.openai.buildBody` で gpt-5.x 系列のみ `max_completion_tokens` 使用
+- `worker-proxy.js`: `PROVIDERS.gemini` を OpenAI 互換 → ネイティブ `streamGenerateContent?alt=sse` に変更、`buildEndpoint` / `parseChunk` カスタム関数で SSE 対応
+- `worker-proxy.js`: Gemini 用に maxOutputTokens に +1200 buffer (thinking tokens 対策)
+- `index.html`: model dropdown を `gemini-2.5-flash` (default selectable) と `gemini-2.5-pro` (BYOK) に変更
+- `scripts/chat-conn-test.sh`: `max_completion_tokens` 統一、Gemini token budget 拡大
+
+# (旧) Chat AI 機能 実装計画 (草案 v2.2 — Phase 0 着手 Ready)
 
 **ステータス**: Approved (owner 5 判断確定、Invited 値のみ暫定 100)
 **最終更新**: 2026-04-23

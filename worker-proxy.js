@@ -247,36 +247,66 @@ async function handleXaiProxy(request, env, allowedOrigin) {
 const PROVIDERS = {
   openai: {
     endpoint: OPENAI_API_BASE,
-    buildBody: (model, systemPrompt, messages, opts) => ({
-      model,
-      messages: [
-        { role: "system", content: systemPrompt },
-        ...messages,
-      ],
-      max_tokens: opts.maxOutputTokens,
-      temperature: opts.temperature,
-      stream: true,
-    }),
+    buildBody: (model, systemPrompt, messages, opts) => {
+      // GPT-5.x 系列は max_tokens 廃止、max_completion_tokens のみ受付
+      // GPT-4 系列など旧モデルは max_tokens のみ
+      const isNewSeries = /^gpt-5/.test(model);
+      const tokenField = isNewSeries
+        ? { max_completion_tokens: opts.maxOutputTokens }
+        : { max_tokens: opts.maxOutputTokens };
+      return {
+        model,
+        messages: [
+          { role: "system", content: systemPrompt },
+          ...messages,
+        ],
+        ...tokenField,
+        temperature: opts.temperature,
+        stream: true,
+      };
+    },
   },
+  // Gemini はネイティブ endpoint を直接使用 (Phase 0 検証で OpenAI 互換は不安定:
+  //   error response が array `[{error:{...}}]` 形式で返ることがあり、SSE は未確認)。
+  // ネイティブ generateContent + SSE 専用 parser で安定動作。
   gemini: {
-    endpoint: GEMINI_API_BASE,
-    buildBody: (model, systemPrompt, messages, opts) => ({
-      model,
-      messages: [
-        { role: "system", content: systemPrompt },
-        ...messages,
-      ],
-      max_tokens: opts.maxOutputTokens,
-      temperature: opts.temperature,
-      stream: true,
-    }),
+    endpoint: null,  // 動的 (model 名を URL に埋め込む)
+    isNative: true,
+    buildEndpoint: (model, apiKey, stream) => {
+      const action = stream ? "streamGenerateContent" : "generateContent";
+      return `https://generativelanguage.googleapis.com/v1beta/models/${model}:${action}?alt=sse&key=${apiKey}`;
+    },
+    buildBody: (model, systemPrompt, messages, opts) => {
+      // Gemini ネイティブ形式に変換: messages -> contents
+      // system は systemInstruction、user/assistant は role + parts に変換
+      const contents = [];
+      for (const m of messages) {
+        const role = m.role === "assistant" ? "model" : "user";
+        contents.push({ role, parts: [{ text: m.content || "" }] });
+      }
+      return {
+        systemInstruction: { parts: [{ text: systemPrompt }] },
+        contents,
+        generationConfig: {
+          maxOutputTokens: opts.maxOutputTokens,
+          temperature: opts.temperature,
+        },
+      };
+    },
+    // ネイティブ SSE: data: {"candidates":[{"content":{"parts":[{"text":"..."}]}}]}
+    parseChunk: (chunk) => {
+      const cand = chunk?.candidates?.[0];
+      if (!cand) return { delta: "" };
+      const text = cand.content?.parts?.map((p) => p.text || "").join("") || "";
+      return { delta: text, finishReason: cand.finishReason || null };
+    },
   },
 };
 
 function pickProvider(model) {
   if (!model) return null;
   if (model.startsWith("gpt-")) return { name: "openai", cfg: PROVIDERS.openai };
-  if (model.startsWith("gemini-")) return { name: "gemini", cfg: PROVIDERS.gemini };
+  if (model.startsWith("gemini-") || model.startsWith("gemma-")) return { name: "gemini", cfg: PROVIDERS.gemini };
   return null;
 }
 
@@ -535,20 +565,35 @@ async function handleChat(request, env, ctx, allowedOrigin) {
   }
 
   // Upstream 呼び出し
-  const maxOutput = parseInt(env.CHAT_MAX_OUTPUT_TOKENS) || CHAT_DEFAULTS.maxOutputTokens;
+  // Gemini 2.5+ は thinking tokens を消費するため maxOutputTokens にバッファを足す
+  const maxOutputBase = parseInt(env.CHAT_MAX_OUTPUT_TOKENS) || CHAT_DEFAULTS.maxOutputTokens;
+  const maxOutput = provider.name === "gemini" ? maxOutputBase + 1200 : maxOutputBase;
   const reqBody = provider.cfg.buildBody(model, systemPrompt, messages, {
     maxOutputTokens: maxOutput,
     temperature: CHAT_DEFAULTS.defaultTemperature,
   });
 
+  // ネイティブ Gemini か OpenAI 互換かで endpoint と auth を切替
+  let endpointUrl, headers;
+  if (provider.cfg.isNative) {
+    // Gemini ネイティブ: API キーは URL クエリ、Bearer ではない
+    // BYOK の場合 upstreamAuth から "Bearer AIza..." の AIza 部分を抜く
+    const apiKey = upstreamAuth.replace(/^Bearer\s+/, "");
+    endpointUrl = provider.cfg.buildEndpoint(model, apiKey, true);
+    headers = { "Content-Type": "application/json" };
+  } else {
+    endpointUrl = provider.cfg.endpoint;
+    headers = {
+      Authorization: upstreamAuth,
+      "Content-Type": "application/json",
+    };
+  }
+
   let upstream;
   try {
-    upstream = await fetch(provider.cfg.endpoint, {
+    upstream = await fetch(endpointUrl, {
       method: "POST",
-      headers: {
-        Authorization: upstreamAuth,
-        "Content-Type": "application/json",
-      },
+      headers,
       body: JSON.stringify(reqBody),
     });
   } catch (e) {
@@ -587,20 +632,22 @@ async function handleChat(request, env, ctx, allowedOrigin) {
   }
 
   const tokKey = rlResult && rlResult.tokKey;
-  ctx.waitUntil(pipeSseToClient(upstream.body, writable, env, tokKey));
+  ctx.waitUntil(pipeSseToClient(upstream.body, writable, env, tokKey, provider));
 
   return new Response(readable, { status: 200, headers: responseHeaders });
 }
 
 // upstream SSE を normalized `data: {"delta":"..."}` 形式でフロントに流す。
 // 完了時に出力 token を KV カウンタに加算。
-async function pipeSseToClient(upstreamBody, writable, env, tokKey) {
+// provider.cfg.parseChunk があればそれを使い (Gemini ネイティブ等)、無ければ OpenAI 互換 parse。
+async function pipeSseToClient(upstreamBody, writable, env, tokKey, provider) {
   const reader = upstreamBody.getReader();
   const writer = writable.getWriter();
   const decoder = new TextDecoder();
   const encoder = new TextEncoder();
   let buffer = "";
   let outputTokens = 0;
+  const customParse = provider?.cfg?.parseChunk;
 
   try {
     while (true) {
@@ -620,8 +667,16 @@ async function pipeSseToClient(upstreamBody, writable, env, tokKey) {
         }
         try {
           const chunk = JSON.parse(payload);
-          const delta = chunk.choices?.[0]?.delta?.content ?? "";
-          const finishReason = chunk.choices?.[0]?.finish_reason;
+          let delta = "", finishReason = null;
+          if (customParse) {
+            const parsed = customParse(chunk);
+            delta = parsed.delta || "";
+            finishReason = parsed.finishReason;
+          } else {
+            // OpenAI 互換 SSE
+            delta = chunk.choices?.[0]?.delta?.content ?? "";
+            finishReason = chunk.choices?.[0]?.finish_reason;
+          }
           if (delta) outputTokens += estimateTokens(delta);
           const forward = {
             delta,
