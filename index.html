@@ -4456,11 +4456,36 @@ const CHAPTERS = [
         heading: '一般的な切削材料',
         html: `
           <ul>
-            <li><strong>炭素鋼・合金鋼</strong>（S45C、SCM440等）：もっとも広く使われる鋼。加工性は良好。</li>
-            <li><strong>アルミ合金</strong>（A5052、A7075等）：軽量で削りやすい。航空機構造材の中心。</li>
-            <li><strong>ステンレス鋼</strong>（SUS304、SUS316等）：耐食性が高いが、加工硬化で削りにくい。</li>
-            <li><strong>鋳鉄</strong>（FC、FCD）：切りくずが粉状で、機械の摺動面に入ると良くない。</li>
+            <li><strong>炭素鋼・合金鋼</strong>（S45C、SCM440等）：もっとも広く使われる鋼。加工性は良好。Kc ≈ 2100 N/mm²、フェライト + パーライト組織 (第A5章)</li>
+            <li><strong>アルミ合金</strong>（A5052、A7075等）：軽量で削りやすい。航空機構造材の中心。Kc ≈ 700-1000 N/mm²、PCD で超高速切削可</li>
+            <li><strong>ステンレス鋼</strong>（SUS304、SUS316等）：耐食性が高いが、FCC + Cr/Ni 固溶 (A5章) で加工硬化激しく、Hollomon n ≈ 0.45 で BUE 多発</li>
+            <li><strong>鋳鉄</strong>（FC、FCD）：切りくずが粉状、黒鉛片による自己潤滑で乾式切削可。粉塵対策が必要</li>
           </ul>
+        `,
+      },
+      {
+        heading: 'ISO 513 被削材グループ分類',
+        html: `
+          <p>国際規格 ISO 513 では、被削材を 6 グループに分類しています。工具メーカーのカタログでは「P-25」「M-30」のような工具グレード番号が付いていて、グループ × 用途 (荒/仕上げ) で工具を選ぶのが基本です。</p>
+          <table style="width:100%;border-collapse:collapse;font-size:12px;margin:12px 0;">
+            <thead>
+              <tr style="background:var(--bg-3);">
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">グループ</th>
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">識別色</th>
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">対象材料</th>
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">代表工具</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding:6px;border:1px solid var(--line);"><strong>P</strong></td><td style="padding:6px;border:1px solid var(--line);">青</td><td style="padding:6px;border:1px solid var(--line);">鋼 (炭素鋼、合金鋼、フェライト系SUS)</td><td style="padding:6px;border:1px solid var(--line);">P10〜P50 超硬</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);"><strong>M</strong></td><td style="padding:6px;border:1px solid var(--line);">黄</td><td style="padding:6px;border:1px solid var(--line);">ステンレス (オーステナイト系、二相系)</td><td style="padding:6px;border:1px solid var(--line);">M20〜M40 超硬</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);"><strong>K</strong></td><td style="padding:6px;border:1px solid var(--line);">赤</td><td style="padding:6px;border:1px solid var(--line);">鋳鉄 (灰鋳鉄 FC、ダクタイル FCD)</td><td style="padding:6px;border:1px solid var(--line);">K10〜K30 超硬、セラミクス</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);"><strong>N</strong></td><td style="padding:6px;border:1px solid var(--line);">緑</td><td style="padding:6px;border:1px solid var(--line);">非鉄 (AL、Cu、樹脂、複合材)</td><td style="padding:6px;border:1px solid var(--line);">PCD、DLC コーティング超硬</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);"><strong>S</strong></td><td style="padding:6px;border:1px solid var(--line);">茶</td><td style="padding:6px;border:1px solid var(--line);">耐熱合金 (Ti、Ni 基超合金、Co 基)</td><td style="padding:6px;border:1px solid var(--line);">S20〜S30 超硬、SiAlON、CBN</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);"><strong>H</strong></td><td style="padding:6px;border:1px solid var(--line);">灰</td><td style="padding:6px;border:1px solid var(--line);">硬化鋼 (HRC 45+)</td><td style="padding:6px;border:1px solid var(--line);">CBN、セラミクス</td></tr>
+            </tbody>
+          </table>
+          <p>工具メーカーカタログで「ISO M30 推奨」と書かれていれば、SUS304 のような材料に最適化されたグレードという意味になります。</p>
         `,
       },
       {
