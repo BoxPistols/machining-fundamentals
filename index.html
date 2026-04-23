@@ -999,6 +999,81 @@ body.voice-enabled.voice-mode-summary .voice-summary-note {
 .quiz-review-item button:hover { color: var(--accent); border-color: var(--accent); }
 .quiz-review-actions { display: flex; gap: 10px; margin-top: 24px; justify-content: center; }
 
+/* === WhyNowBox / InfoBox 構造化マークアップ (peer dev-album パターン) === */
+.why-now, .info-box {
+  display: grid; grid-template-columns: 28px 1fr; gap: 12px;
+  padding: 14px 16px; border-radius: 6px;
+  margin: 18px 0;
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+}
+.why-now { border-left: 3px solid var(--accent); }
+.why-now__icon, .info-box__icon { width: 20px; height: 20px; color: var(--accent); margin-top: 2px; }
+.why-now__title, .info-box h3 {
+  margin: 0 0 4px 0; font-size: 13px; font-weight: 700; color: var(--text-0);
+  font-family: 'JetBrains Mono', monospace; letter-spacing: 0.04em;
+}
+.why-now__body, .info-box p, .info-box ul {
+  margin: 0; font-size: 13px; color: var(--text-1); line-height: 1.7;
+}
+.info-box ul { padding-left: 18px; }
+.info-box--warn { border-left: 3px solid var(--ylw, #f59e0b); }
+.info-box--warn .info-box__icon, .info-box--warn h3 { color: var(--ylw, #f59e0b); }
+.info-box--tip { border-left: 3px solid var(--ok, #4ec9a8); }
+.info-box--tip .info-box__icon, .info-box--tip h3 { color: var(--ok, #4ec9a8); }
+
+/* === 検索ダイアログ === */
+.search-trigger {
+  background: transparent; border: 1px solid var(--line); color: var(--text-2);
+  padding: 6px 10px; border-radius: 6px; font-size: 12px;
+  cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.search-trigger:hover { color: var(--text-0); border-color: var(--line-hi); }
+.search-trigger kbd {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  padding: 1px 4px; background: var(--bg-3); border-radius: 2px; color: var(--text-2);
+}
+.search-overlay {
+  position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6);
+  z-index: 10000; display: flex; align-items: flex-start; justify-content: center;
+  padding-top: 80px;
+}
+.search-overlay[hidden] { display: none; }
+.search-modal {
+  width: min(640px, calc(100vw - 32px));
+  background: var(--bg-1); border: 1px solid var(--line-hi); border-radius: 8px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  display: flex; flex-direction: column; max-height: 70vh; overflow: hidden;
+}
+.search-modal input {
+  padding: 16px 18px; font-size: 16px; background: transparent; border: 0;
+  color: var(--text-0); border-bottom: 1px solid var(--line);
+  font-family: inherit; outline: none;
+}
+.search-results { overflow-y: auto; flex: 1; }
+.search-result {
+  display: block; padding: 12px 18px; border-bottom: 1px solid var(--line);
+  color: var(--text-1); text-decoration: none; cursor: pointer;
+}
+.search-result:hover, .search-result.active {
+  background: var(--bg-2); color: var(--text-0);
+}
+.search-result .type {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  color: var(--text-2); margin-right: 8px;
+  padding: 2px 6px; border-radius: 3px; background: var(--bg-3);
+  text-transform: uppercase;
+}
+.search-result .title { font-weight: 700; font-size: 14px; }
+.search-result .body { font-size: 11px; color: var(--text-2); margin-top: 4px; line-height: 1.5; }
+.search-modal .empty { padding: 40px 20px; text-align: center; color: var(--text-2); font-size: 13px; }
+.search-modal .footer {
+  padding: 8px 18px; font-size: 10px; color: var(--text-2);
+  border-top: 1px solid var(--line); font-family: 'JetBrains Mono', monospace;
+  display: flex; gap: 14px;
+}
+
 .quiz-cta-card {
   background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 14%, transparent), color-mix(in srgb, var(--accent) 4%, transparent));
   border: 1px solid var(--accent); border-radius: 8px;
@@ -1904,6 +1979,11 @@ body.chat-sidebar-open { padding-right: 380px; transition: padding-right 0.2s ea
     <button data-view="home" class="active" data-i18n="nav.roadmap">ロードマップ</button>
     <button data-view="quiz" data-i18n="nav.quiz">確認テスト</button>
     <button data-view="about" data-i18n="nav.about">このアプリについて</button>
+    <button id="search-trigger" class="search-trigger" type="button" aria-label="検索 (Cmd/Ctrl+P)">
+      <svg class="icon"><use href="#i-search"/></svg>
+      <span data-i18n="nav.search">検索</span>
+      <kbd>⌘P</kbd>
+    </button>
     <button id="voice-toggle" class="voice-toggle" title="音声読み上げモード" aria-label="音声モード切替">
       <span class="voice-icon-off"><svg class="icon icon-lg"><use href="#i-volume-off"/></svg></span>
       <span class="voice-icon-on"><svg class="icon icon-lg"><use href="#i-volume-on"/></svg></span>
@@ -6019,6 +6099,102 @@ function escapeHtml(s) {
 }
 
 // =============================================================================
+// progress.js — 章完了マーク永続 + CustomEvent (peer dev-album パターン採用)
+// 既存 sessionStorage cfd-done と並行して localStorage cfd-progress も持つ
+// (sessionStorage はタブ閉じ消去、localStorage は永続)
+// =============================================================================
+const PROGRESS_KEY = 'cfd-progress';
+const progressState = (() => {
+  try {
+    const raw = localStorage.getItem(PROGRESS_KEY);
+    return raw ? JSON.parse(raw) : { chapters: {}, version: 1 };
+  } catch {
+    return { chapters: {}, version: 1 };
+  }
+})();
+function progressSave() {
+  try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(progressState)); } catch {}
+}
+function markChapterComplete(id) {
+  progressState.chapters[String(id)] = Date.now();
+  progressSave();
+  document.dispatchEvent(new CustomEvent('cfd:progress-updated', { detail: { id, state: progressState } }));
+}
+function unmarkChapterComplete(id) {
+  delete progressState.chapters[String(id)];
+  progressSave();
+  document.dispatchEvent(new CustomEvent('cfd:progress-updated', { detail: { id, state: progressState } }));
+}
+function isChapterComplete(id) {
+  return Boolean(progressState.chapters[String(id)]);
+}
+function getCompletedChapters() {
+  return Object.keys(progressState.chapters);
+}
+
+// =============================================================================
+// searchIndex — クライアント側 全章+用語横断検索 (Vanilla 実装、依存ゼロ)
+// peer dev-album の Fuse.js パターンを Vanilla で軽量化。tokenize + score で十分。
+// =============================================================================
+const _searchIndex = (() => {
+  const items = [];
+  for (const ch of CHAPTERS) {
+    items.push({
+      type: 'chapter',
+      id: String(ch.id),
+      url: `#/chapter/${ch.id}`,
+      title: ch.title,
+      label: `第${ch.num}章 ${ch.title}`,
+      body: (ch.lead || '') + ' ' + (ch.summary || ''),
+    });
+    for (const s of (ch.sections || [])) {
+      items.push({
+        type: 'section',
+        id: `${ch.id}::${s.heading}`,
+        url: `#/chapter/${ch.id}`,
+        title: s.heading,
+        label: `${s.heading} (第${ch.num}章)`,
+        body: stripTagsForSearch(s.html || ''),
+      });
+    }
+    for (const t of (ch.terms || [])) {
+      items.push({
+        type: 'term',
+        id: `${ch.id}::${t.name}`,
+        url: t.anchor ? `#/chapter/${ch.id}/${t.anchor}` : `#/chapter/${ch.id}`,
+        title: t.name,
+        label: `${t.name} (${t.en || ''})`,
+        body: t.def || '',
+        anchor: t.anchor || null,
+      });
+    }
+  }
+  return items;
+})();
+function stripTagsForSearch(html) {
+  return String(html).replace(/<[^>]+>/g, ' ').replace(/&[a-z]+;/gi, ' ').replace(/\s+/g, ' ').trim();
+}
+function searchAll(query) {
+  const q = String(query || '').trim().toLowerCase();
+  if (!q) return [];
+  const tokens = q.split(/\s+/).filter(Boolean);
+  const scored = [];
+  for (const item of _searchIndex) {
+    const hay = (item.title + ' ' + item.label + ' ' + item.body).toLowerCase();
+    let score = 0;
+    for (const tok of tokens) {
+      if (item.title.toLowerCase().includes(tok)) score += 10;
+      if (hay.includes(tok)) score += 1;
+    }
+    // term type に bias (用語直接ヒットは強い)
+    if (item.type === 'term' && score > 0) score += 3;
+    if (score > 0) scored.push({ item, score });
+  }
+  scored.sort((a, b) => b.score - a.score);
+  return scored.slice(0, 30).map(x => x.item);
+}
+
+// =============================================================================
 // レンダリング + ハッシュルーティング
 // =============================================================================
 //
@@ -6370,8 +6546,13 @@ function renderChapter() {
   });
   mainEl.querySelector('[data-mark]').addEventListener('click', () => {
     const i = state.doneChapters.indexOf(ch.id);
-    if (i >= 0) state.doneChapters.splice(i, 1);
-    else state.doneChapters.push(ch.id);
+    if (i >= 0) {
+      state.doneChapters.splice(i, 1);
+      unmarkChapterComplete(ch.id);   // localStorage 永続側も同期
+    } else {
+      state.doneChapters.push(ch.id);
+      markChapterComplete(ch.id);      // CustomEvent 発火 (purpose: バッジ表示等)
+    }
     saveDone();
     render();
   });
@@ -6881,6 +7062,7 @@ const I18N = {
     'nav.roadmap': 'ロードマップ',
     'nav.quiz': '確認テスト',
     'nav.about': 'このアプリについて',
+    'nav.search': '検索',
     'tooltip.voice': '音声で読み上げ',
     'tooltip.settings': '設定（APIキー等）',
     'tooltip.theme': 'テーマを切り替え',
@@ -6915,6 +7097,7 @@ const I18N = {
     'nav.roadmap': 'Roadmap',
     'nav.quiz': 'Quiz',
     'nav.about': 'About',
+    'nav.search': 'Search',
     'tooltip.voice': 'Read aloud',
     'tooltip.settings': 'Settings (API keys, etc.)',
     'tooltip.theme': 'Toggle theme',
@@ -9012,6 +9195,106 @@ document.addEventListener('click', (e) => {
     return;
   }
 });
+
+// =============================================================================
+// 横断検索 dialog (Cmd/Ctrl+P で起動)
+// =============================================================================
+(function setupSearch() {
+  const overlay = document.getElementById('search-overlay');
+  const input = document.getElementById('search-input');
+  const results = document.getElementById('search-results');
+  const trigger = document.getElementById('search-trigger');
+  let activeIndex = 0;
+  let currentResults = [];
+
+  function open() {
+    overlay.hidden = false;
+    input.value = '';
+    renderResults([]);
+    setTimeout(() => input.focus(), 30);
+  }
+  function close() {
+    overlay.hidden = true;
+    activeIndex = 0;
+  }
+  function renderResults(items) {
+    currentResults = items;
+    while (results.firstChild) results.removeChild(results.firstChild);
+    if (items.length === 0) {
+      const div = document.createElement('div');
+      div.className = 'empty';
+      div.textContent = input.value.trim()
+        ? '結果なし。別キーワードで試してください。'
+        : '章タイトル / 用語 / 本文 を横断検索。例: Vc, 転位, クライオ';
+      results.appendChild(div);
+      return;
+    }
+    items.forEach((it, i) => {
+      const a = document.createElement('a');
+      a.className = 'search-result' + (i === activeIndex ? ' active' : '');
+      a.href = it.url;
+      a.dataset.idx = String(i);
+      const typeLabel = { chapter: '章', section: 'セクション', term: '用語' }[it.type] || it.type;
+      const t = document.createElement('span'); t.className = 'type'; t.textContent = typeLabel;
+      const ti = document.createElement('span'); ti.className = 'title'; ti.textContent = it.label;
+      const wrap = document.createElement('div');
+      wrap.appendChild(t); wrap.appendChild(ti);
+      a.appendChild(wrap);
+      if (it.body) {
+        const b = document.createElement('div'); b.className = 'body';
+        b.textContent = it.body.length > 120 ? it.body.slice(0, 120) + '…' : it.body;
+        a.appendChild(b);
+      }
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        location.hash = it.url.replace(/^#/, '');
+        close();
+      });
+      results.appendChild(a);
+    });
+  }
+  function updateActive() {
+    [...results.querySelectorAll('.search-result')].forEach((el, i) => {
+      el.classList.toggle('active', i === activeIndex);
+      if (i === activeIndex) el.scrollIntoView({ block: 'nearest' });
+    });
+  }
+  input.addEventListener('input', () => {
+    activeIndex = 0;
+    renderResults(searchAll(input.value));
+  });
+  input.addEventListener('keydown', (e) => {
+    if (e.isComposing) return;
+    if (e.key === 'Escape') { e.preventDefault(); close(); }
+    else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      activeIndex = Math.min(activeIndex + 1, currentResults.length - 1);
+      updateActive();
+    }
+    else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      activeIndex = Math.max(activeIndex - 1, 0);
+      updateActive();
+    }
+    else if (e.key === 'Enter') {
+      e.preventDefault();
+      const it = currentResults[activeIndex];
+      if (it) { location.hash = it.url.replace(/^#/, ''); close(); }
+    }
+  });
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+  trigger.addEventListener('click', open);
+  // Cmd/Ctrl+P でも開く (グローバル)
+  document.addEventListener('keydown', (e) => {
+    if (e.isComposing) return;
+    const isMac = navigator.platform.toUpperCase().includes('MAC');
+    const mod = isMac ? e.metaKey : e.ctrlKey;
+    if (mod && (e.key === 'p' || e.key === 'P')) {
+      e.preventDefault();
+      if (overlay.hidden) open(); else close();
+    }
+  });
+})();
 
 // 初期描画 (URL ハッシュから初期 state を復元 → 外部からの deep link 対応)
 {
@@ -11345,6 +11628,19 @@ document.querySelectorAll('.learn-step').forEach(el => {
   });
 });
 <\/script>
+
+<!-- =============================================================================
+     検索ダイアログ (横断検索、Cmd/Ctrl+P で起動)
+     ============================================================================= -->
+<div id="search-overlay" class="search-overlay" hidden role="dialog" aria-modal="true" aria-label="横断検索">
+  <div class="search-modal">
+    <input type="text" id="search-input" placeholder="章 / セクション / 用語を検索 (例: Vc, 転位, クライオ)" autocomplete="off" spellcheck="false">
+    <div id="search-results" class="search-results" role="listbox"></div>
+    <div class="footer">
+      <span>↑↓ 選択</span><span>↵ 開く</span><span>Esc 閉じる</span>
+    </div>
+  </div>
+</div>
 
 <!-- =============================================================================
      Chat AI Widget (Phase 1 MVP)
