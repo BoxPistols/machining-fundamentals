@@ -4447,6 +4447,108 @@ const CHAPTERS = [
           <p>工具が金属に食い込むと、材料の一部が<strong>せん断変形</strong>を起こして切りくずになります。このせん断が起きる面を<strong>せん断面</strong>と呼びます。</p>
           <p>切りくずは連続的な帯状（<strong>連続型切りくず</strong>、多くの鋼）になったり、細かく砕ける（<strong>不連続型切りくず</strong>、鋳鉄）したりします。連続型の場合は切りくず処理が問題になります（絡みつく、工具を傷つける等）。</p>
         `,
+        svg: `<svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .ttl-cm { fill: var(--text-0); font-family: 'Noto Sans JP', sans-serif; font-size: 13px; font-weight: 700; }
+    .lbl-cm { fill: var(--text-1); font-family: 'Noto Sans JP', sans-serif; font-size: 11px; }
+    .lbl-acc { fill: var(--accent); font-family: 'Noto Sans JP', sans-serif; font-size: 11px; font-weight: 700; }
+    .lbl-mono { fill: var(--text-2); font-family: 'JetBrains Mono', monospace; font-size: 10px; }
+    .work-cm { fill: var(--text-2); opacity: 0.6; stroke: var(--line-hi); stroke-width: 1; }
+    .tool-cm { fill: var(--accent); opacity: 0.85; stroke: var(--accent); stroke-width: 1; }
+    .chip-cm { fill: var(--text-2); opacity: 0.4; stroke: var(--line-hi); stroke-width: 1; }
+    .vec { stroke-width: 2; fill: none; }
+    .vec.R { stroke: var(--accent); marker-end: url(#cm-arr); }
+    .vec.Fc { stroke: var(--cyn, #4ec0e9); stroke-dasharray: 4 3; marker-end: url(#cm-arr-cyn); }
+    .vec.Ft { stroke: var(--cyn, #4ec0e9); stroke-dasharray: 4 3; marker-end: url(#cm-arr-cyn); }
+    .vec.Fs { stroke: var(--ylw, #f59e0b); stroke-dasharray: 4 3; marker-end: url(#cm-arr-ylw); }
+    .vec.Fn { stroke: var(--ylw, #f59e0b); stroke-dasharray: 4 3; marker-end: url(#cm-arr-ylw); }
+    .axis-cm { stroke: var(--line); stroke-dasharray: 2 3; }
+    .arc-ang { fill: none; stroke: var(--text-2); stroke-width: 1; }
+    .circle-merchant { fill: none; stroke: var(--line); stroke-dasharray: 3 3; opacity: 0.5; }
+  </style>
+  <defs>
+    <marker id="cm-arr" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="var(--accent)"/>
+    </marker>
+    <marker id="cm-arr-cyn" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="var(--cyn, #4ec0e9)"/>
+    </marker>
+    <marker id="cm-arr-ylw" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="var(--ylw, #f59e0b)"/>
+    </marker>
+  </defs>
+
+  <text class="ttl-cm" x="20" y="22">Merchant 円 — 切削抵抗の幾何分解</text>
+
+  <!-- ===== 左パネル: 切削幾何 ===== -->
+  <g transform="translate(40, 110)">
+    <!-- 被削材 -->
+    <rect class="work-cm" x="0" y="80" width="280" height="60"/>
+    <text class="lbl-cm" x="6" y="160" style="font-size:10px;">被削材 (workpiece)</text>
+
+    <!-- 切屑 -->
+    <polygon class="chip-cm" points="0,80 250,80 280,30 30,30"/>
+    <text class="lbl-cm" x="60" y="60">切屑 (chip)</text>
+
+    <!-- 工具 (rake = 10°) -->
+    <polygon class="tool-cm" points="248,30 320,30 320,90 280,80"/>
+    <text class="lbl-acc" x="285" y="50" style="font-size:10px;">工具</text>
+
+    <!-- せん断面 (φ ≈ 30°) -->
+    <line x1="250" y1="80" x2="200" y2="35" stroke="var(--ylw, #f59e0b)" stroke-width="2"/>
+    <text class="lbl-acc" x="172" y="40" style="fill:var(--ylw, #f59e0b);">せん断面 φ</text>
+
+    <!-- φ 角度弧 -->
+    <path class="arc-ang" d="M 268 80 A 18 18 0 0 0 256 65"/>
+    <text class="lbl-mono" x="263" y="76">φ</text>
+
+    <!-- すくい角 α -->
+    <path class="arc-ang" d="M 273 50 A 14 14 0 0 1 287 55"/>
+    <text class="lbl-mono" x="288" y="48">α</text>
+
+    <!-- 切削方向矢印 -->
+    <line x1="-10" y1="100" x2="-10" y2="125" stroke="var(--text-1)" stroke-width="1" marker-end="url(#cm-arr-cyn)"/>
+    <text class="lbl-mono" x="-5" y="140">Vc</text>
+  </g>
+
+  <!-- ===== 右パネル: Merchant 円ベクトル分解 ===== -->
+  <g transform="translate(420, 180)">
+    <text class="ttl-cm" x="-20" y="-110">力ベクトル分解 (合力 R を基準)</text>
+
+    <!-- Merchant の円 (R を直径とする) -->
+    <circle class="circle-merchant" cx="60" cy="0" r="100"/>
+
+    <!-- 水平軸 (Fc 方向) と垂直軸 (Ft 方向) -->
+    <line class="axis-cm" x1="-50" y1="0" x2="180" y2="0"/>
+    <line class="axis-cm" x1="60" y1="-110" x2="60" y2="110"/>
+
+    <!-- 合力 R (右上方向) -->
+    <line class="vec R" x1="60" y1="0" x2="160" y2="-60"/>
+    <text class="lbl-acc" x="165" y="-58">R</text>
+    <text class="lbl-mono" x="165" y="-46">合力</text>
+
+    <!-- Fc (主分力、水平成分) -->
+    <line class="vec Fc" x1="60" y1="0" x2="160" y2="0"/>
+    <text class="lbl-cm" x="100" y="14" style="fill:var(--cyn, #4ec0e9);">Fc (主分力)</text>
+
+    <!-- Ft (送り分力、垂直成分) -->
+    <line class="vec Ft" x1="160" y1="0" x2="160" y2="-60"/>
+    <text class="lbl-cm" x="165" y="-30" style="fill:var(--cyn, #4ec0e9);">Ft</text>
+
+    <!-- Fs (せん断面方向) と Fn (せん断面法線) -->
+    <line class="vec Fs" x1="60" y1="0" x2="40" y2="-78"/>
+    <text class="lbl-cm" x="14" y="-78" style="fill:var(--ylw, #f59e0b);">Fs (せん断力)</text>
+
+    <line class="vec Fn" x1="40" y1="-78" x2="160" y2="-60"/>
+    <text class="lbl-cm" x="80" y="-86" style="fill:var(--ylw, #f59e0b);">Fn (せん断法線)</text>
+
+    <!-- Merchant 関係式 -->
+    <text class="lbl-mono" x="-20" y="135">Merchant の関係 (1945, 最小エネルギー):</text>
+    <text class="lbl-acc" x="-20" y="150" style="font-family: 'JetBrains Mono', monospace; font-size: 12px;">2φ + β − α = π/2</text>
+    <text class="lbl-mono" x="-20" y="165">  φ: せん断角 / α: すくい角 / β: 摩擦角</text>
+  </g>
+</svg>`,
+        caption: '<strong>Merchant 円</strong> — 合力 R を主分力 Fc と送り分力 Ft、せん断力 Fs と法線力 Fn に分解。せん断角 φ が決まればすべての成分が幾何的に導出可能。Merchant (1945) の関係 2φ + β − α = π/2 は最小エネルギー原理由来の一次近似。',
       },
       {
         heading: '切削熱の発生源',
@@ -4643,13 +4745,94 @@ const CHAPTERS = [
         html: `
           <p>工具摩耗は、発生する場所と形状で分類されます。代表的なものは以下です。</p>
           <ul>
-            <li><strong>逃げ面摩耗</strong>：刃の側面（逃げ面）が摩耗する。もっとも一般的で、寿命判定の基準になることが多い。</li>
-            <li><strong>クレータ摩耗</strong>：すくい面に凹み状の摩耗ができる。切りくずとの摩擦で発生。</li>
-            <li><strong>境界摩耗</strong>：刃先と非切削領域の境目に溝状の摩耗ができる。</li>
-            <li><strong>チッピング</strong>：刃先が小さく欠ける現象。切削抵抗の急変で発生。</li>
-            <li><strong>破損</strong>：刃先が大きく欠け落ちる。致命的な故障で、ワークも傷める。</li>
+            <li><strong>逃げ面摩耗 (VB, flank wear)</strong>：刃の側面（逃げ面）が摩耗する。もっとも一般的で、寿命判定の基準になることが多い。ISO 3685 規定。</li>
+            <li><strong>クレータ摩耗 (KT, crater wear)</strong>：すくい面に凹み状の摩耗ができる。切りくずとの摩擦・拡散で発生、高温・高速で顕著。</li>
+            <li><strong>境界摩耗 / ノッチ摩耗 (VN, notch wear)</strong>：刃先と非切削領域の境目に溝状の摩耗。Inconel 等の難削材で特徴的。</li>
+            <li><strong>チッピング (chipping)</strong>：刃先が小さく欠ける現象。切削抵抗の急変、断続切削で発生。</li>
+            <li><strong>熱亀裂 (thermal crack)</strong>：温度変動（断続切削）で刃先に直交方向のクラック。</li>
+            <li><strong>BUE (構成刃先)</strong>：被削材が刃先に凝着して「もう一つの刃先」を作る。剥離時に表面を荒らし、間接的な摩耗加速要因。</li>
+            <li><strong>破損 (breakage)</strong>：刃先が大きく欠け落ちる致命的故障。</li>
           </ul>
         `,
+        svg: `<svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .ttl-w { fill: var(--text-0); font-family: 'Noto Sans JP', sans-serif; font-size: 13px; font-weight: 700; }
+    .lbl-w { fill: var(--text-1); font-family: 'Noto Sans JP', sans-serif; font-size: 11px; }
+    .lbl-acc-w { fill: var(--accent); font-family: 'Noto Sans JP', sans-serif; font-size: 11px; font-weight: 700; }
+    .lbl-mono-w { fill: var(--text-2); font-family: 'JetBrains Mono', monospace; font-size: 10px; }
+    .tool-w { fill: var(--bg-3); stroke: var(--line-hi); stroke-width: 1.5; }
+    .work-w { fill: var(--text-2); opacity: 0.4; stroke: var(--line); stroke-width: 1; }
+    .chip-w { fill: var(--text-2); opacity: 0.25; stroke: var(--line); stroke-width: 1; }
+    .marker-vb { fill: var(--accent); }
+    .marker-kt { fill: var(--ylw, #f59e0b); }
+    .marker-vn { fill: var(--cyn, #4ec0e9); }
+    .marker-chip { fill: #e87878; }
+    .marker-tc { fill: #d6a8e8; }
+    .marker-bue { fill: #82d59a; }
+    .lead-line { stroke: var(--line-hi); stroke-width: 1; opacity: 0.6; }
+  </style>
+
+  <text class="ttl-w" x="20" y="22">工具摩耗形態マップ — 刃先まわりで発生する 6 種を一目で</text>
+  <text class="lbl-w" x="20" y="38" style="font-size:10px;">代表条件: 旋削、超硬コーティングインサート断面</text>
+
+  <!-- 工具インサート (台形断面、すくい面が上) -->
+  <polygon class="tool-w" points="200,80 460,80 480,200 180,200"/>
+
+  <!-- 被削材 (右下) -->
+  <rect class="work-w" x="460" y="200" width="200" height="80"/>
+  <text class="lbl-w" x="466" y="270" style="font-size:10px;">被削材</text>
+
+  <!-- 切りくず (右上、すくい面に沿って流出) -->
+  <polygon class="chip-w" points="460,80 600,80 580,40 440,40"/>
+  <text class="lbl-w" x="490" y="65" style="font-size:10px;">切りくず</text>
+
+  <!-- ===== 摩耗マーカー (刃先周辺) ===== -->
+  <!-- VB 逃げ面摩耗 (右下、刃先逃げ面) -->
+  <polygon class="marker-vb" points="460,200 480,200 478,210 462,210"/>
+  <line class="lead-line" x1="475" y1="207" x2="560" y2="225"/>
+  <text class="lbl-acc-w" x="565" y="220">VB 逃げ面摩耗</text>
+  <text class="lbl-mono-w" x="565" y="234">flank wear · ISO 3685</text>
+
+  <!-- KT クレータ摩耗 (すくい面、切屑接触位置) -->
+  <ellipse class="marker-kt" cx="430" cy="78" rx="28" ry="3"/>
+  <line class="lead-line" x1="430" y1="76" x2="380" y2="38"/>
+  <text class="lbl-mono-w" x="280" y="33" style="fill:var(--ylw, #f59e0b);">KT クレータ摩耗</text>
+  <text class="lbl-mono-w" x="280" y="46">crater wear · 高温拡散</text>
+
+  <!-- VN ノッチ摩耗 (切削幅端) -->
+  <circle class="marker-vn" cx="460" cy="80" r="5"/>
+  <line class="lead-line" x1="464" y1="82" x2="540" y2="100"/>
+  <text class="lbl-mono-w" x="545" y="98" style="fill:var(--cyn, #4ec0e9);">VN ノッチ摩耗</text>
+  <text class="lbl-mono-w" x="545" y="112">notch wear · Inconel 特有</text>
+
+  <!-- チッピング (刃先) -->
+  <polygon class="marker-chip" points="455,200 462,195 458,200 470,205"/>
+  <line class="lead-line" x1="465" y1="198" x2="120" y2="180"/>
+  <text class="lbl-mono-w" x="22" y="178" style="fill:#e87878;">チッピング (chipping)</text>
+  <text class="lbl-mono-w" x="22" y="192">刃先欠け · 断続切削で発生</text>
+
+  <!-- 熱亀裂 (すくい面に直交) -->
+  <line class="marker-tc" x1="350" y1="80" x2="350" y2="92" stroke="#d6a8e8" stroke-width="2"/>
+  <line class="marker-tc" x1="370" y1="80" x2="370" y2="92" stroke="#d6a8e8" stroke-width="2"/>
+  <line class="marker-tc" x1="390" y1="80" x2="390" y2="92" stroke="#d6a8e8" stroke-width="2"/>
+  <line class="lead-line" x1="350" y1="92" x2="280" y2="120"/>
+  <text class="lbl-mono-w" x="22" y="118" style="fill:#d6a8e8;">熱亀裂 (thermal crack)</text>
+  <text class="lbl-mono-w" x="22" y="132">温度変動 · 断続切削</text>
+
+  <!-- BUE 構成刃先 (刃先上に小山) -->
+  <ellipse class="marker-bue" cx="465" cy="200" rx="6" ry="4"/>
+  <line class="lead-line" x1="471" y1="200" x2="540" y2="265"/>
+  <text class="lbl-mono-w" x="545" y="262" style="fill:#82d59a;">BUE 構成刃先</text>
+  <text class="lbl-mono-w" x="545" y="276">build-up · 中速・延性材</text>
+
+  <!-- 凡例: 寿命判定 -->
+  <g transform="translate(20, 280)">
+    <text class="lbl-mono-w" x="0" y="0">ISO 3685 寿命判定 (代表値):</text>
+    <text class="lbl-mono-w" x="0" y="14">  仕上げ加工: VB &lt; 0.3 mm</text>
+    <text class="lbl-mono-w" x="0" y="28">  荒加工:   VB &lt; 0.6 mm</text>
+  </g>
+</svg>`,
+        caption: '工具摩耗形態マップ — 刃先まわりで発生する代表 6 種 (VB 逃げ面 / KT クレータ / VN ノッチ / チッピング / 熱亀裂 / BUE)。実際は複数が同時進行することが多く、支配的な形態が材料・条件で変わる。寿命判定の主要指標は VB (ISO 3685)。',
       },
       {
         heading: 'テイラーの工具寿命式',
