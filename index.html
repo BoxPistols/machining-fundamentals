@@ -4303,15 +4303,68 @@ const CHAPTERS = [
           <p>ただし航空機用の材料（<strong>チタン合金、インコネル、高強度アルミ合金</strong>など）は削りにくい<strong>難削材</strong>が多く、切削条件の設計が難しいという課題があります。以降の章で、このテーマが繰り返し登場します。</p>
         `,
       },
+      {
+        heading: '切削加工の歴史 — 産業革命から現代まで',
+        html: `
+          <aside class="why-now" role="note" aria-labelledby="why-now-h-history">
+            <svg class="why-now__icon" aria-hidden="true"><use href="#i-pencil"/></svg>
+            <div>
+              <h3 class="why-now__title" id="why-now-h-history">なぜ歴史を学ぶか</h3>
+              <p class="why-now__body">技術の発展経緯を知ると、現代工具の「なぜそうなっているか」が腑に落ちる。例えば「なぜコーティングが標準なのか」は、超硬合金登場 → 高速化要求 → 表面処理 という連鎖の結果。</p>
+            </div>
+          </aside>
+          <p>切削加工の体系化は産業革命以降の機械化と並走してきました。主要マイルストーン:</p>
+          <ul style="font-family:'JetBrains Mono', monospace; font-size: 12px; line-height: 2;">
+            <li><strong>1797</strong>: Henry Maudslay が現代旋盤の原型 (送り台付き) を製作 — ネジの規格化を可能に</li>
+            <li><strong>1862</strong>: Frederick W. Howe が万能フライス盤 (Brown & Sharpe) — 平面加工の機械化</li>
+            <li><strong>1898</strong>: Frederick W. Taylor + Maunsel White がハイス (高速度鋼) を発明 — 切削速度を 4 倍に</li>
+            <li><strong>1907</strong>: Taylor が「On the Art of Cutting Metals」発表、Vc·T<sup>n</sup>=C の経験式を確立</li>
+            <li><strong>1923</strong>: Krupp 社が WC-Co 超硬合金 (商品名 Widia) を商品化 — 切削速度を更に 5 倍に</li>
+            <li><strong>1945</strong>: Eugene Merchant が切削力学の幾何モデル (Merchant 円) を発表</li>
+            <li><strong>1958</strong>: Tlusty が再生型びびり理論を発表 — Stability Lobe の祖</li>
+            <li><strong>1969</strong>: 日本の MITSUBISHI 等が CVD コーティング (TiC) を商品化</li>
+            <li><strong>1980 年代</strong>: NC → CNC 化、CAD/CAM の普及、PVD コーティング多層化</li>
+            <li><strong>2000 年代</strong>: 5 軸同時制御の標準化、AlTiN/AlCrN 高耐熱コーティング、PCD/CBN の本格普及</li>
+            <li><strong>2010 年代〜</strong>: 機械学習による工具寿命予測、クライオ加工、UAM (超音波援用) の研究加速</li>
+          </ul>
+          <p>「Vc·T<sup>n</sup>=C」が 100 年以上現役なのは、Taylor の経験則が物理的に的を射ていたから。第8章「工具摩耗と工具寿命」で詳述します。</p>
+        `,
+      },
+      {
+        heading: '加工方法の選択基準',
+        html: `
+          <p>同じ部品でも複数の加工方法で作れる場合、選択基準は次の 4 軸です:</p>
+          <table style="width:100%;border-collapse:collapse;font-size:12px;margin:12px 0;">
+            <thead>
+              <tr style="background:var(--bg-3);">
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">軸</th>
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">切削が有利</th>
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">他方式が有利</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding:6px;border:1px solid var(--line);">数量</td><td style="padding:6px;border:1px solid var(--line);">少量〜中量 (1-10000 個)</td><td style="padding:6px;border:1px solid var(--line);">超大量 → プレス・鋳造</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);">精度</td><td style="padding:6px;border:1px solid var(--line);">μm 級 (IT5-IT7)</td><td style="padding:6px;border:1px solid var(--line);">サブ μm → 研削・ラッピング</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);">材料</td><td style="padding:6px;border:1px solid var(--line);">金属・延性樹脂</td><td style="padding:6px;border:1px solid var(--line);">セラミクス → 研削、超硬 → 放電</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);">形状</td><td style="padding:6px;border:1px solid var(--line);">複雑 3D / 内部空洞は限定的</td><td style="padding:6px;border:1px solid var(--line);">完全密閉空洞 → 鋳造、極微細 → 3D プリント</td></tr>
+            </tbody>
+          </table>
+          <p>近年は<strong>ハイブリッド製造</strong>も普及: 3D プリントで近形状を作り、最後の精度を切削で出す。航空エンジンの燃料ノズル等で実用化されています。</p>
+        `,
+      },
     ],
     terms: [
       { name: '切削加工', en: 'Machining / Cutting', def: '刃物（工具）を使って金属を削り、目的の形にする加工方法。' },
       { name: '除去加工', en: 'Subtractive Processing', def: '材料を削り取ることで形を作る加工の総称。切削・研削・放電加工などを含む。' },
       { name: '難削材', en: 'Difficult-to-cut Materials', def: '工具摩耗が激しい・熱が発生しやすいなど、切削が難しい材料。チタン・インコネル・高強度ステンレスなど。' },
+      { name: '成形加工', en: 'Forming', def: '材料を変形させて形を作る加工の総称。鍛造・圧延・プレス・絞りなど。' },
+      { name: '付加加工', en: 'Additive Processing', def: '材料を足して形を作る加工の総称。鋳造・溶射・3D プリンティング (LMD/PBF) など。' },
+      { name: 'ハイブリッド製造', en: 'Hybrid Manufacturing', def: '3D プリント等で近形状を作り、切削で精度を出す複合工法。航空エンジン部品で実用化。' },
     ],
     further: [
       '教科書：<strong>機械工作法（朝倉書店、コロナ社などの標準教科書）</strong>の冒頭章',
-      'Webサイト：<strong>Sandvik Coromant「切削加工入門」</strong>（工具メーカーの公開教育資料）',
+      '<strong>Trent & Wright「Metal Cutting」(4th ed.)</strong> 第1章 — 英語標準教科書、歴史も詳しい',
+      'Webサイト：<strong>Sandvik Coromant「Machining Application Guide」</strong>（無料 PDF）',
       'JIS規格：<strong>JIS B 0170 工作機械—切削及び研削用語</strong>',
     ],
   },
@@ -4359,10 +4412,47 @@ const CHAPTERS = [
         `,
       },
       {
-        heading: '方式の選び方',
+        heading: '方式の選び方 + 加工順序の原則',
         html: `
           <p>実際の部品加工では、<strong>1つの部品を作るために複数の方式を組み合わせる</strong>のが普通です。例えばエンジンブロックは、穴あけ＋転削＋ネジ切りなど複数工程を経ます。</p>
           <p>近年は<strong>マシニングセンタ</strong>（転削・穴あけが1台でできる）や<strong>複合加工機</strong>（旋削＋転削）が普及し、1台で複数方式を行う機械が増えています。</p>
+          <aside class="info-box info-box--tip" role="note">
+            <svg class="info-box__icon" aria-hidden="true"><use href="#i-check"/></svg>
+            <div>
+              <h3>加工順序の原則</h3>
+              <ul>
+                <li>荒加工 → 仕上げ加工: 一気に精度は出さない、二段階で歪み除去</li>
+                <li>大きい面 → 小さい面: 基準面を先に確保</li>
+                <li>外形 → 内部: クランプ位置を残す</li>
+                <li>切削 → 熱処理 → 仕上げ: 熱処理による寸法変化に備える</li>
+                <li>穴あけ → タップ: ドリル後にネジ切り</li>
+              </ul>
+            </div>
+          </aside>
+        `,
+      },
+      {
+        heading: 'その他の特殊加工方式',
+        html: `
+          <p>旋削・転削・穴あけが基本3方式ですが、用途に応じて以下の派生・特殊方式も使われます:</p>
+          <table style="width:100%;border-collapse:collapse;font-size:12px;margin:12px 0;">
+            <thead>
+              <tr style="background:var(--bg-3);">
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">方式</th>
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">特徴</th>
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">主用途</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding:6px;border:1px solid var(--line);"><strong>研削</strong> (Grinding)</td><td style="padding:6px;border:1px solid var(--line);">砥粒で削る、超精密</td><td style="padding:6px;border:1px solid var(--line);">焼入れ鋼の仕上げ、Ra 0.1 μm 以下</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);"><strong>放電加工</strong> (EDM)</td><td style="padding:6px;border:1px solid var(--line);">電気火花で除去、非接触</td><td style="padding:6px;border:1px solid var(--line);">超硬・耐熱合金の複雑形状、金型</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);"><strong>レーザー加工</strong></td><td style="padding:6px;border:1px solid var(--line);">高エネルギーレーザー、非接触</td><td style="padding:6px;border:1px solid var(--line);">薄板切断、微細穴、CFRP</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);"><strong>ウォータージェット</strong></td><td style="padding:6px;border:1px solid var(--line);">高圧水 + 砥粒、非熱影響</td><td style="padding:6px;border:1px solid var(--line);">CFRP、Ti、ガスケット</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);"><strong>ホブ加工</strong> (Hobbing)</td><td style="padding:6px;border:1px solid var(--line);">歯車専用、特殊な転削</td><td style="padding:6px;border:1px solid var(--line);">平歯車・はすば歯車</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);"><strong>ブローチ加工</strong></td><td style="padding:6px;border:1px solid var(--line);">細長い刃を引き抜く</td><td style="padding:6px;border:1px solid var(--line);">タービンディスクのブレード溝</td></tr>
+            </tbody>
+          </table>
+          <p>本教材では基本 3 方式 (旋削・転削・穴あけ) に絞って学びます。研削や EDM は「切削の代替」というより「切削が苦手な領域」をカバーする補完技術として理解してください。</p>
         `,
       },
     ],
@@ -4371,10 +4461,13 @@ const CHAPTERS = [
       { name: '転削', en: 'Milling', def: '回転する刃物（エンドミル等）でワークを削る方式。フライス盤・マシニングセンタで行う。' },
       { name: '穴あけ', en: 'Drilling', def: '回転するドリルで穴を開ける方式。' },
       { name: 'マシニングセンタ', en: 'Machining Center', def: '工具を自動交換できる多機能な転削機械。MC（エムシー）と略されることも。' },
+      { name: '研削', en: 'Grinding', def: '砥石 (砥粒) でわずかずつ削る加工。超精密 (Ra 0.1 μm 以下) や焼入れ鋼の仕上げに使う。' },
+      { name: 'EDM (放電加工)', en: 'Electrical Discharge Machining', def: '電気火花による非接触除去加工。超硬・耐熱合金の金型加工に使われる。' },
     ],
     further: [
       '機械工作法の教科書で、章ごとに各方式が詳しく解説されています',
       '工具メーカーのカタログ（Sandvik、Mitsubishi Materials、OSG、Tungaloy等）は無料で入手でき、方式別の工具と用途が整理されています',
+      '<strong>JIS B 0105 工作機械の名称・型式表示方法</strong> — 機械分類の規格',
     ],
   },
   {
@@ -5175,6 +5268,25 @@ const CHAPTERS = [
         `,
       },
       {
+        heading: '冷却の物理 — 熱はどこを通って移動するか',
+        html: `
+          <p>冷却液が「冷やす」とき、熱は次の3経路で移動します:</p>
+          <ol>
+            <li><strong>伝導 (conduction)</strong>: 工具・ワーク → 冷却液への直接熱伝達。Fourier の法則 q = -k·∇T。k (熱伝導率) が大きいほど速い</li>
+            <li><strong>対流 (convection)</strong>: 加熱された冷却液が動いて熱を運ぶ。Newton の冷却則 q = h·A·(T_w − T_∞)。h (熱伝達係数) が大きいほど効率的</li>
+            <li><strong>蒸発潜熱</strong>: 冷却液が沸騰する際に大量の熱を吸収 (水 2257 kJ/kg、LN₂ 199 kJ/kg)。クライオ加工はこれを意図的に利用</li>
+          </ol>
+          <aside class="info-box info-box--warn" role="note">
+            <svg class="info-box__icon" aria-hidden="true"><use href="#i-warning"/></svg>
+            <div>
+              <h3>Leidenfrost 効果に注意</h3>
+              <p>切削点温度が 200°C を超えると、水滴が触れた瞬間に沸騰して<strong>蒸気膜</strong>を作り、冷却液が刃先まで届かなくなる現象 (フライパンの水滴と同じ)。低圧クーラントは無力化、これを破るのが <strong>高圧クーラント (HPC, 70-300 bar)</strong> の存在意義です。</p>
+            </div>
+          </aside>
+          <p>第A2章「金属結合と自由電子」で見た熱伝導率 k が、この式の k そのもの。冷却の効率は「材料の k × 冷却液の h × ΔT」の積で決まり、Ti/Inconel が冷却困難なのは k が小さいからです。</p>
+        `,
+      },
+      {
         heading: 'シミュレーターで確かめる',
         html: `<p>下のボタンから、エンドミルによる溝切削で冷却液がどう流れるか、3Dで体験できます。回転速度・冷却液の速さ・粘度を変えて、流れがどう変わるか観察してみてください。</p>`,
       },
@@ -5314,6 +5426,43 @@ const CHAPTERS = [
           <p>下のスライダーで切削速度 Vc と工具材種を切り替えると、工具寿命 T と両対数プロット上の点位置がリアルタイムで更新されます。Taylor 指数 n の違いが「速度を上げた時の寿命減衰の急さ」をどう変えるかを体感できます。</p>
         `,
         interactive: 'taylor-life',
+      },
+      {
+        heading: 'Taylor 式の数値例 — 速度を 2 倍にすると寿命は何分の 1 か',
+        html: `
+          <p>Taylor 式 V·T<sup>n</sup> = C を実数値で展開すると、速度上昇による寿命激減の威力がわかります。S45C を超硬で削る想定 (n=0.22, C=200):</p>
+          <table style="width:100%;border-collapse:collapse;font-size:12px;margin:12px 0;">
+            <thead>
+              <tr style="background:var(--bg-3);">
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">Vc [m/min]</th>
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">T [min]</th>
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">基準比 (Vc=100 を 1)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding:6px;border:1px solid var(--line);">100</td><td style="padding:6px;border:1px solid var(--line);">36 min</td><td style="padding:6px;border:1px solid var(--line);">基準</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);">150</td><td style="padding:6px;border:1px solid var(--line);">5.5 min</td><td style="padding:6px;border:1px solid var(--line);">寿命 1/6.5</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);">200</td><td style="padding:6px;border:1px solid var(--line);">1.3 min</td><td style="padding:6px;border:1px solid var(--line);">寿命 1/28</td></tr>
+              <tr style="color:var(--ylw);"><td style="padding:6px;border:1px solid var(--line);">250</td><td style="padding:6px;border:1px solid var(--line);">0.43 min</td><td style="padding:6px;border:1px solid var(--line);">寿命 1/84</td></tr>
+            </tbody>
+          </table>
+          <p>速度を 2 倍 (100 → 200) にすると、寿命は約 28 分の 1。これが「速いほど良い、ではない」の物理的根拠です。生産性 (MRR) と工具コスト (寿命) のバランスを考えると、最適 Vc は<strong>カタログ推奨範囲の中央付近</strong>に落ち着くのが普通。</p>
+          <p>難削材 (Ti, Inconel) では n が小さく ~0.2 のままなので、寿命減衰がさらに急。だから Vc を低く保つ必要があります。第3章 ch3 ビジュアライザーで Vc を動かしてみてください。</p>
+        `,
+      },
+      {
+        heading: '摩耗のメカニズム別分類',
+        html: `
+          <p>摩耗の「形」(VB / KT / VN / etc) は前のセクションで見ましたが、原因 (メカニズム) で分類するとさらに対策が見えます:</p>
+          <ul>
+            <li><strong>アブレッシブ摩耗</strong>: 硬い粒子 (鋳鉄の Fe₃C、Inconel の γ' 析出物等) が刃先を機械的に削る → 工具材種を硬く / コーティング厚く</li>
+            <li><strong>アドヒッシブ摩耗 (凝着)</strong>: 被削材が刃先に凝着して引き剥がされる際に工具材も持ち去る → BUE 抑制 / 潤滑性の高いコーティング (DLC)</li>
+            <li><strong>拡散摩耗</strong>: 工具材と被削材が高温で相互拡散 → 化学的に不活性な工具材種を選択 (例: 鉄に対して PCD 不可、CBN 可)</li>
+            <li><strong>酸化摩耗</strong>: 高温で工具表面が酸化 → 耐酸化コーティング (AlTiN/AlCrN)</li>
+            <li><strong>熱亀裂</strong>: 温度サイクル (断続切削) でクラック → 安定した連続切削、温度急変回避</li>
+          </ul>
+          <p>実際は複数メカニズムが同時進行。支配的なものを見極めるには、摩耗した刃先の SEM 観察 + 元素分析が王道です。</p>
+        `,
       },
       {
         heading: '寿命判定の基準',
