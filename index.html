@@ -12167,7 +12167,8 @@ document.querySelectorAll('.learn-step').forEach(el => {
 const DEFAULT_CHAT_PROXY_URL = 'https://machining-chat.ito-atsu-mail.workers.dev';
 
 const chatCfg = {
-  proxyUrl: localStorage.getItem('chat-proxy-url') || (window.apiConfig?.grokProxyUrl || '') || DEFAULT_CHAT_PROXY_URL,
+  // TTS の grokProxyUrl 継承は廃止。チャットは別 Worker のため独立した DEFAULT で初期化する
+  proxyUrl: localStorage.getItem('chat-proxy-url') || DEFAULT_CHAT_PROXY_URL,
   inviteCode: localStorage.getItem('chat-invite-code') || '',
   byokKey: localStorage.getItem('chat-byok-key') || '',
   model: localStorage.getItem('chat-model') || 'gpt-5.4-nano',
