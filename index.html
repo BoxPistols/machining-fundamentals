@@ -5111,15 +5111,65 @@ const CHAPTERS = [
         `,
       },
       {
-        heading: '表面粗さ',
+        heading: '表面粗さの基本指標 (ISO 4287)',
         html: `
-          <p>表面は完全な平面にはなりません。刃先が残す痕跡（<strong>工具マーク</strong>）や微小な凹凸があります。これを数値化したものが<strong>表面粗さ</strong>です。</p>
-          <p>代表的な指標：</p>
-          <ul>
-            <li><strong>Ra（算術平均粗さ）</strong>：表面の凹凸の平均的な大きさ。もっともよく使われる。</li>
-            <li><strong>Rz（最大高さ）</strong>：凹凸の最大値。</li>
+          <p>表面は完全な平面にはなりません。刃先が残す痕跡 (<strong>工具マーク</strong>) や微小な凹凸があります。これを数値化したものが<strong>表面粗さ</strong>で、国際規格 ISO 4287 (JIS B 0601) で定義されています。</p>
+          <table style="width:100%;border-collapse:collapse;font-size:12px;margin:12px 0;">
+            <thead>
+              <tr style="background:var(--bg-3);">
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">指標</th>
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">定義</th>
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">用途</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding:6px;border:1px solid var(--line);"><strong>Ra</strong> 算術平均粗さ</td><td style="padding:6px;border:1px solid var(--line);">基準長さ内の凹凸の絶対値の平均</td><td style="padding:6px;border:1px solid var(--line);"><strong>最も一般的</strong>、汎用部品で標準</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);"><strong>Rz</strong> 最大高さ</td><td style="padding:6px;border:1px solid var(--line);">基準長さ内の最大山高 + 最大谷深</td><td style="padding:6px;border:1px solid var(--line);">疲労起点の評価、シール面</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);"><strong>Rsm</strong> 平均間隔</td><td style="padding:6px;border:1px solid var(--line);">凹凸の山-谷間隔の平均</td><td style="padding:6px;border:1px solid var(--line);">工具送り痕の周期評価</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);"><strong>Rq</strong> 二乗平均平方根</td><td style="padding:6px;border:1px solid var(--line);">統計的な std (RMS)</td><td style="padding:6px;border:1px solid var(--line);">光学・電気特性の予測</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);"><strong>Rp / Rv</strong></td><td style="padding:6px;border:1px solid var(--line);">最大山高 / 最大谷深</td><td style="padding:6px;border:1px solid var(--line);">摩擦・摩耗の解析</td></tr>
+            </tbody>
+          </table>
+          <p>図面では <strong>「Ra 1.6」</strong> のように指定し、その面が Ra 1.6 μm 以下であれば合格、を意味します。指定値の目安:</p>
+          <ul style="font-family:'JetBrains Mono', monospace; font-size: 12px; line-height: 1.8;">
+            <li>Ra 25 μm: 鋳放し / フライス荒加工</li>
+            <li>Ra 6.3 μm: フライス標準 / 旋削荒加工</li>
+            <li>Ra 1.6 μm: 旋削標準 / フライス仕上げ</li>
+            <li>Ra 0.8 μm: 旋削仕上げ / 摺動面標準</li>
+            <li>Ra 0.4 μm: 精密旋削 / シール面</li>
+            <li>Ra 0.1 μm: 鏡面研削 / ラッピング領域</li>
+            <li>Ra 0.025 μm: 超精密研磨 (光学・半導体)</li>
           </ul>
-          <p>旋削・転削では、<strong>送りが大きいと粗さは大きく、送りが小さいと粗さは小さく</strong>なります。また、仕上げ加工用の刃先（丸みを帯びたRノーズ）を使うと、滑らかな面が得られます。</p>
+        `,
+      },
+      {
+        heading: '理論 Ra 式 — 旋削の表面粗さは送りで決まる',
+        html: `
+          <p>旋削において、表面粗さは主に <strong>送り f</strong> と <strong>工具コーナ R 半径 r_ε</strong> で決まります。理論的には次の式で予測できます (peak-to-valley 近似):</p>
+          <p style="text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 16px; background: var(--bg-2); padding: 12px; margin: 12px 0;">
+            R_z (theoretical) ≈ f² / (8 · r_ε)<br>
+            R_a (theoretical) ≈ f² / (32 · r_ε)
+          </p>
+          <p>つまり、送りを半分にすれば理論粗さは <strong>1/4</strong> になります。実際は塑性流れ・BUE・振動などで理論値より悪化しますが、設計指針としては:</p>
+          <ul>
+            <li><strong>Ra 1.6 μm 狙い</strong> (rε = 0.8 mm 工具): f ≤ 0.2 mm/rev</li>
+            <li><strong>Ra 0.8 μm 狙い</strong> (rε = 0.8 mm 工具): f ≤ 0.14 mm/rev</li>
+            <li><strong>Ra 0.4 μm 狙い</strong> (rε = 1.2 mm 工具): f ≤ 0.12 mm/rev、加えて切削条件最適化必要</li>
+          </ul>
+          <p>コーナ R を大きくすると粗さは良くなりますが、切削力 (径方向) が増えてびびりが出やすくなります。第10章 SLD で見たように、機械剛性とのバランスが必要です。</p>
+        `,
+      },
+      {
+        heading: 'フライス・ドリルの粗さ',
+        html: `
+          <p>フライス加工の表面粗さは旋削より複雑で、以下の要素が絡みます:</p>
+          <ul>
+            <li><strong>1 刃あたり送り fz</strong>: 旋削の f に相当、小さいほど粗さ良好</li>
+            <li><strong>切削速度 Vc</strong>: 高速で BUE が消えると改善、ただし振動誘発可能性あり</li>
+            <li><strong>工具のフレ (run-out)</strong>: 1 枚の刃だけが多く削ると周期的な凹凸が出る</li>
+            <li><strong>びびり</strong>: SLD の不安定領域では Ra 数倍に悪化</li>
+          </ul>
+          <p>ドリルは穴の<strong>真円度・直角度・直進度</strong>が品質指標で、Ra は二の次です。L/D > 5 では穴が曲がる「shift」が出やすく、リーマ仕上げで補正します。</p>
         `,
       },
       {
@@ -5149,13 +5199,20 @@ const CHAPTERS = [
     ],
     terms: [
       { name: '公差', en: 'Tolerance', def: '寸法や形状に許される誤差の範囲。図面で指定される。' },
+      { name: 'IT 等級', en: 'IT Grade (ISO 286)', def: 'ISO 286 で定められた寸法公差等級。IT01 (最高精度) 〜 IT18。一般機械 IT7-IT10、航空宇宙 IT4-IT6。' },
       { name: '表面粗さ', anchor: 'Ra', en: 'Surface Roughness (Ra / Rz)', def: '表面の微小な凹凸の大きさ。ISO 4287 に基づき Ra（算術平均粗さ）や Rz（最大高さ）で数値化。旋削の理論式: Ra ≈ f² / (32·r_ε)。' },
       { name: '算術平均粗さ (Ra)', en: 'Arithmetic Mean Roughness', def: '表面の凹凸を平均化した指標。もっとも一般的に使われる。単位は μm。' },
+      { name: '最大高さ (Rz)', en: 'Maximum Height', def: '基準長さ内の最大山高+最大谷深。疲労起点評価で重要、Ra より厳しめに反応。' },
+      { name: '理論粗さ式', en: 'Theoretical Roughness', def: '旋削: Ra ≈ f²/(32·r_ε)。送り f を半分にすると理論粗さは 1/4。' },
       { name: '仕上げ加工', en: 'Finishing', def: '精度と表面を出すための最終切削工程。荒加工の後に行う。' },
+      { name: 'コーナ R', en: 'Corner Radius', def: '工具刃先の角丸半径。大きいほど表面粗さは良くなるが切削力 (特に径方向) が増えて振動誘発可能性。' },
     ],
     further: [
-      'JIS B 0601（表面性状の測定）が基礎規格',
-      '精密工学会の論文・書籍に詳しい解析あり',
+      '<strong>JIS B 0601 / ISO 4287</strong>（表面性状の測定）— 規格の基礎',
+      '<strong>JIS B 0610 / ISO 12085</strong>（モチーフパラメータ）',
+      '<strong>JIS B 0671 / ISO 13565</strong>（プラトー構造解析、摺動面評価）',
+      '<strong>ISO 286</strong>（IT 等級）',
+      '精密工学会論文集・「表面・界面工学」教科書 (荻原・高崎、共立出版)',
     ],
   },
   {
