@@ -12164,7 +12164,7 @@ document.querySelectorAll('.learn-step').forEach(el => {
 // =============================================================================
 // 本番 Worker の URL。owner が埋めると設定 UI 不要で Anonymous tier が即動く
 // (Worker 側の CHAT_LIMIT_ANON_REQ=50/day で自動レート制限)
-const DEFAULT_CHAT_PROXY_URL = '';  // TODO(owner): 'https://<your-worker>.workers.dev'
+const DEFAULT_CHAT_PROXY_URL = 'https://grok-tts-proxy.ito-atsu-mail.workers.dev';
 
 const chatCfg = {
   proxyUrl: localStorage.getItem('chat-proxy-url') || (window.apiConfig?.grokProxyUrl || '') || DEFAULT_CHAT_PROXY_URL,
