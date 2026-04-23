@@ -12150,14 +12150,23 @@ document.querySelectorAll('.learn-step').forEach(el => {
 // Chat AI Widget logic
 // 注: DOM 操作は textContent / createElement のみ。innerHTML は使わない (XSS 対策)。
 // =============================================================================
+// 本番 Worker の URL。owner が埋めると設定 UI 不要で Anonymous tier が即動く
+// (Worker 側の CHAT_LIMIT_ANON_REQ=50/day で自動レート制限)
+const DEFAULT_CHAT_PROXY_URL = '';  // TODO(owner): 'https://<your-worker>.workers.dev'
+
 const chatCfg = {
-  proxyUrl: localStorage.getItem('chat-proxy-url') || (window.apiConfig?.grokProxyUrl || ''),
+  proxyUrl: localStorage.getItem('chat-proxy-url') || (window.apiConfig?.grokProxyUrl || '') || DEFAULT_CHAT_PROXY_URL,
   inviteCode: localStorage.getItem('chat-invite-code') || '',
   byokKey: localStorage.getItem('chat-byok-key') || '',
   model: localStorage.getItem('chat-model') || 'gpt-5.4-nano',
   level: localStorage.getItem('chat-level') || 'intermediate',
   uiMode: localStorage.getItem('chat-ui-mode') || 'floating', // 'floating' | 'sidebar'
   levelAuto: localStorage.getItem('chat-level-auto') !== 'false', // true: 章から自動推定 / false: 手動固定
+  // ピル常時表示用キャッシュ。送信なしでも前回の残量が見える
+  lastRateLimit: (() => {
+    try { return JSON.parse(localStorage.getItem('chat-rate-limit') || 'null'); }
+    catch { return null; }
+  })(),
 };
 const isMacUA = navigator.platform.toUpperCase().includes('MAC');
 const modKey = isMacUA ? 'Cmd' : 'Ctrl';
@@ -12209,8 +12218,21 @@ function updateTierPill() {
   let tier = 'anonymous';
   if (chatCfg.byokKey) tier = 'byok';
   else if (chatCfg.inviteCode) tier = 'invited';
-  els.tierPill.textContent = tier;
+  const rl = chatCfg.lastRateLimit;
+  // BYOK は無制限なので tier 名のみ。anon / invited は残量付き (直近の Worker レスポンスから)
+  let label = tier;
+  if (tier !== 'byok' && rl && Number.isFinite(rl.remaining) && Number.isFinite(rl.limit)) {
+    label = `${tier} · ${rl.remaining}/${rl.limit}`;
+  }
+  els.tierPill.textContent = label;
   els.tierPill.className = 'tier-pill ' + tier;
+  // ツールチップで JST リセット時刻を案内
+  if (rl?.resetAt) {
+    const d = new Date(rl.resetAt * 1000);
+    els.tierPill.title = `今日残り ${rl.remaining}/${rl.limit}・${d.toLocaleString('ja-JP', { hour: '2-digit', minute: '2-digit' })} リセット`;
+  } else {
+    els.tierPill.title = '1 リクエスト送ると今日の残量が表示されます';
+  }
 }
 
 function updateModelDropdownState() {
@@ -12389,6 +12411,46 @@ function showStatus(msg, autoHideMs) {
   els.status.textContent = msg || '';
   if (autoHideMs) setTimeout(() => { els.status.textContent = ''; }, autoHideMs);
 }
+
+// Worker レスポンスから tier/remaining/limit/resetAt を抽出して chatCfg + localStorage に保存
+function persistRateLimit(res) {
+  const tier = res.headers.get('X-Chat-Tier') || 'anonymous';
+  const limit = parseInt(res.headers.get('X-RateLimit-Limit'), 10);
+  const remaining = parseInt(res.headers.get('X-RateLimit-Remaining'), 10);
+  const resetAt = parseInt(res.headers.get('X-RateLimit-Reset'), 10);
+  if (!Number.isFinite(limit) || !Number.isFinite(remaining)) return;
+  chatCfg.lastRateLimit = { tier, limit, remaining, resetAt: Number.isFinite(resetAt) ? resetAt : 0 };
+  try { localStorage.setItem('chat-rate-limit', JSON.stringify(chatCfg.lastRateLimit)); } catch {}
+}
+
+// 429 到達時のバナー。BYOK 誘導 + 設定パネルを開く CTA 付き
+function showQuotaExceeded() {
+  const rl = chatCfg.lastRateLimit;
+  const el = document.createElement('div');
+  el.className = 'chat-msg chat-msg-system chat-error';
+  const resetStr = rl?.resetAt
+    ? new Date(rl.resetAt * 1000).toLocaleString('ja-JP', { hour: '2-digit', minute: '2-digit' })
+    : '明日 0:00 UTC';
+  const tierLabel = rl?.tier === 'invited' ? 'Invited (100/日)' : 'Anonymous (50/日)';
+  const text = document.createElement('div');
+  text.textContent = `${tierLabel} の 1 日の上限に達しました。${resetStr} にリセットされます。`;
+  const hint = document.createElement('div');
+  hint.style.marginTop = '6px';
+  const prefix = document.createTextNode('すぐ続ける場合は ');
+  const btn = document.createElement('button');
+  btn.className = 'link';
+  btn.type = 'button';
+  btn.textContent = '設定から BYOK キー登録';
+  btn.addEventListener('click', () => {
+    if (els.settingsPane.hidden) els.settingsPane.hidden = false;
+    els.byokKeyInput.focus();
+  });
+  const suffix = document.createTextNode(' で無制限利用。');
+  hint.append(prefix, btn, suffix);
+  el.append(text, hint);
+  els.messages.appendChild(el);
+  scrollIfAtBottom();
+}
 function persistHistory() {
   try { sessionStorage.setItem('chat-history', JSON.stringify(chatState.history)); } catch {}
 }
@@ -12493,7 +12555,7 @@ async function sendMessage(text) {
 
   const userMsg = { role: 'user', content: text };
   chatState.history.push(userMsg);
-  appendMessage(userMsg);
+  const userEl = appendMessage(userMsg);
   els.input.value = '';
   els.input.style.height = 'auto';
 
@@ -12524,16 +12586,23 @@ async function sendMessage(text) {
       method: 'POST', headers, body, signal: chatState.abortController.signal,
     });
 
-    const tier = res.headers.get('X-Chat-Tier');
-    const remaining = res.headers.get('X-RateLimit-Remaining');
-    const limit = res.headers.get('X-RateLimit-Limit');
-    if (tier) {
-      els.tierPill.textContent = tier;
-      els.tierPill.className = 'tier-pill ' + tier;
+    persistRateLimit(res);
+    updateTierPill();
+    if (chatCfg.lastRateLimit) {
+      const rl = chatCfg.lastRateLimit;
+      showStatus(`残り ${rl.remaining}/${rl.limit} (${rl.tier || '?'})`);
     }
-    if (remaining && limit) showStatus(`残り ${remaining}/${limit} (${tier || '?'})`);
 
     if (!res.ok) {
+      // 429: 専用バナー (BYOK 誘導)。user ごと取り下げ、履歴にゴースト turn を残さない
+      if (res.status === 429) {
+        chatState.history.pop();  // 空 assistant
+        chatState.history.pop();  // user
+        assistantEl.remove();
+        if (userEl) userEl.remove();
+        showQuotaExceeded();
+        return;
+      }
       let errMsg = `エラー ${res.status}`;
       try {
         const err = await res.json();
