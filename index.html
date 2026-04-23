@@ -1421,6 +1421,36 @@ figure.fig figcaption strong {
 .svg-ylw { fill: var(--ylw); }
 
 /* 対話型ビジュアライザー */
+/* === 対話型ビジュアライザー (slider + 計算値 + SVG bar) === */
+.viz-mrr {
+  background: var(--bg-2); border: 1px solid var(--line); border-radius: 6px;
+  padding: 18px; margin: 16px 0;
+}
+.viz-mrr h4 { margin: 0 0 12px 0; font-size: 13px; color: var(--text-1); }
+.viz-mrr .sliders { display: grid; grid-template-columns: 1fr; gap: 14px; }
+.viz-mrr .row { display: grid; grid-template-columns: 80px 1fr 110px; gap: 10px; align-items: center; }
+.viz-mrr .row label { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-1); }
+.viz-mrr .row input[type="range"] { width: 100%; accent-color: var(--accent); }
+.viz-mrr .row .value {
+  font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  color: var(--accent); text-align: right; font-weight: 700;
+}
+.viz-mrr .results {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line);
+}
+.viz-mrr .result-card {
+  background: var(--bg-1); padding: 10px; border-radius: 4px;
+  text-align: center;
+}
+.viz-mrr .result-card .label { font-size: 10px; color: var(--text-2); font-family: 'JetBrains Mono', monospace; }
+.viz-mrr .result-card .num {
+  font-family: 'JetBrains Mono', monospace; font-size: 18px; color: var(--accent);
+  font-weight: 700; margin: 4px 0 0 0;
+}
+.viz-mrr .result-card .unit { font-size: 10px; color: var(--text-2); margin-left: 2px; }
+.viz-mrr .bar-svg { width: 100%; height: 110px; margin-top: 12px; }
+
 .interactive-container {
   margin: 24px 0;
   background: var(--bg-1);
@@ -4105,6 +4135,13 @@ const CHAPTERS = [
         `,
       },
       {
+        heading: '対話型ビジュアライザー — Vc・f・ap を動かして MRR と動力を体感',
+        html: `
+          <p>下のスライダーで切削速度 Vc・送り f・切込み ap を変えると、主軸回転数 n、材料除去率 MRR、概算切削動力 Pc がリアルタイムで計算されます。S45C 中炭素鋼を超硬で削る前提（工具径 D=50mm、Kc=2100 N/mm²）。</p>
+        `,
+        interactive: 'mrr-sliders',
+      },
+      {
         heading: 'フライス加工の追加要素 — fz・ae・Vf',
         html: `
           <p>これまで <strong>送り f</strong> は「1回転あたりの進み量 [mm/rev]」として説明しました。これは旋削では工具が1本だから自然ですが、フライスでは工具に<strong>複数の刃</strong>（z 枚）が並んでいるため、1刃あたりの送りで考える方が便利です。</p>
@@ -5438,6 +5475,12 @@ function renderChapter() {
     }
   });
 
+  // 対話型ビジュアライザーを wire up
+  mainEl.querySelectorAll('[data-interactive]').forEach((el) => {
+    const kind = el.dataset.interactive;
+    if (kind === 'mrr-sliders') buildMrrVisualizer(el);
+  });
+
   mainEl.querySelector('[data-back]').addEventListener('click', () => {
     state.view = 'home'; render();
   });
@@ -6192,6 +6235,160 @@ function playQueue() {
   if (voice.queue.length === 0) return;
   voice.currentIdx++;
   speakCurrent();
+}
+
+// 対話型ビジュアライザー: ch3 切削3要素 → MRR + Pc + n のリアルタイム表示
+// XSS 回避のため innerHTML は使わず createElement のみ
+function buildMrrVisualizer(container) {
+  // 既存内容を破棄
+  while (container.firstChild) container.removeChild(container.firstChild);
+
+  const root = document.createElement('div');
+  root.className = 'viz-mrr';
+
+  const heading = document.createElement('h4');
+  heading.textContent = '切削3要素 → MRR / 切削動力 / 主軸回転数';
+  root.appendChild(heading);
+
+  // sliders
+  const sliders = document.createElement('div');
+  sliders.className = 'sliders';
+  const params = [
+    { id: 'vc',  label: 'Vc',  min: 50,   max: 400, step: 10,   def: 200, unit: 'm/min' },
+    { id: 'f',   label: 'f',   min: 0.05, max: 0.6, step: 0.01, def: 0.3, unit: 'mm/rev', precision: 2 },
+    { id: 'ap',  label: 'ap',  min: 0.5,  max: 6.0, step: 0.1,  def: 2.0, unit: 'mm', precision: 1 },
+  ];
+  const inputs = {};
+  const valueEls = {};
+  for (const p of params) {
+    const row = document.createElement('div');
+    row.className = 'row';
+    const lbl = document.createElement('label');
+    lbl.textContent = p.label;
+    const input = document.createElement('input');
+    input.type = 'range';
+    input.min = p.min; input.max = p.max; input.step = p.step; input.value = p.def;
+    const val = document.createElement('div');
+    val.className = 'value';
+    inputs[p.id] = input;
+    valueEls[p.id] = { el: val, p };
+    row.appendChild(lbl); row.appendChild(input); row.appendChild(val);
+    sliders.appendChild(row);
+  }
+  root.appendChild(sliders);
+
+  // results
+  const results = document.createElement('div');
+  results.className = 'results';
+  const resultDefs = [
+    { id: 'n',   label: 'n (主軸回転数)', unit: 'rpm' },
+    { id: 'mrr', label: 'MRR',           unit: 'cm³/min' },
+    { id: 'pc',  label: 'Pc (概算動力)',  unit: 'kW' },
+  ];
+  const resultEls = {};
+  for (const r of resultDefs) {
+    const card = document.createElement('div');
+    card.className = 'result-card';
+    const lbl = document.createElement('div');
+    lbl.className = 'label';
+    lbl.textContent = r.label;
+    const num = document.createElement('div');
+    num.className = 'num';
+    const numVal = document.createTextNode('—');
+    const unit = document.createElement('span');
+    unit.className = 'unit';
+    unit.textContent = ' ' + r.unit;
+    num.appendChild(numVal);
+    num.appendChild(unit);
+    card.appendChild(lbl);
+    card.appendChild(num);
+    resultEls[r.id] = numVal;
+    results.appendChild(card);
+  }
+  root.appendChild(results);
+
+  // SVG bar chart (Vc/f/ap/MRR の相対比、最大値を 100% で正規化)
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgNS, 'svg');
+  svg.setAttribute('viewBox', '0 0 400 100');
+  svg.setAttribute('class', 'bar-svg');
+  svg.setAttribute('aria-label', 'パラメータ相対比較バー');
+  const barLabels = ['Vc', 'f', 'ap', 'MRR'];
+  const bars = {};
+  const labels = {};
+  for (let i = 0; i < barLabels.length; i++) {
+    const yBase = 20 + i * 20;
+    const lblText = document.createElementNS(svgNS, 'text');
+    lblText.setAttribute('x', '0'); lblText.setAttribute('y', yBase + 4);
+    lblText.setAttribute('font-family', 'JetBrains Mono, monospace');
+    lblText.setAttribute('font-size', '10');
+    lblText.setAttribute('fill', 'var(--text-2)');
+    lblText.textContent = barLabels[i];
+    svg.appendChild(lblText);
+
+    const trk = document.createElementNS(svgNS, 'rect');
+    trk.setAttribute('x', '40'); trk.setAttribute('y', yBase - 6);
+    trk.setAttribute('width', '320'); trk.setAttribute('height', '12');
+    trk.setAttribute('fill', 'var(--bg-1)'); trk.setAttribute('rx', '2');
+    svg.appendChild(trk);
+
+    const bar = document.createElementNS(svgNS, 'rect');
+    bar.setAttribute('x', '40'); bar.setAttribute('y', yBase - 6);
+    bar.setAttribute('width', '0'); bar.setAttribute('height', '12');
+    bar.setAttribute('fill', 'var(--accent)'); bar.setAttribute('rx', '2');
+    svg.appendChild(bar);
+    bars[barLabels[i]] = bar;
+
+    const valLbl = document.createElementNS(svgNS, 'text');
+    valLbl.setAttribute('x', '370'); valLbl.setAttribute('y', yBase + 4);
+    valLbl.setAttribute('font-family', 'JetBrains Mono, monospace');
+    valLbl.setAttribute('font-size', '10');
+    valLbl.setAttribute('fill', 'var(--text-1)');
+    valLbl.setAttribute('text-anchor', 'end');
+    valLbl.textContent = '0';
+    svg.appendChild(valLbl);
+    labels[barLabels[i]] = valLbl;
+  }
+  root.appendChild(svg);
+
+  container.appendChild(root);
+
+  // 計算式
+  // n   = 1000·Vc / (π·D)        [rpm]   D=50 mm 固定
+  // MRR = Vc·f·ap                [cm³/min]  (mm·mm/rev·m/min → /1000 で cm³/min)
+  // Pc  = Kc·f·ap·Vc / 60000     [kW]    Kc=2100 N/mm² (S45C 想定)
+  const D = 50;       // 工具径 mm (固定)
+  const Kc = 2100;    // N/mm² (S45C)
+  function recompute() {
+    const Vc = parseFloat(inputs.vc.value);
+    const f  = parseFloat(inputs.f.value);
+    const ap = parseFloat(inputs.ap.value);
+    // value 表示
+    valueEls.vc.el.textContent = `${Vc.toFixed(0)} ${valueEls.vc.p.unit}`;
+    valueEls.f.el.textContent  = `${f.toFixed(2)} ${valueEls.f.p.unit}`;
+    valueEls.ap.el.textContent = `${ap.toFixed(1)} ${valueEls.ap.p.unit}`;
+    // results
+    const n   = 1000 * Vc / (Math.PI * D);
+    const mrr = Vc * f * ap;       // m/min × mm × mm = cm³/min (∵ 1 m × 1 mm² = 1 cm³)
+    const pc  = (Kc * f * ap * Vc) / 60000;
+    resultEls.n.nodeValue   = n.toFixed(0);
+    resultEls.mrr.nodeValue = mrr.toFixed(1);
+    resultEls.pc.nodeValue  = pc.toFixed(2);
+    // bars (各最大値で 0-100% 正規化)
+    const maxes = { Vc: 400, f: 0.6, ap: 6.0, MRR: 1500 };
+    const vals  = { Vc, f, ap, MRR: mrr };
+    for (const k of Object.keys(maxes)) {
+      const w = Math.min(320, (vals[k] / maxes[k]) * 320);
+      bars[k].setAttribute('width', String(w));
+      labels[k].textContent = (k === 'f') ? vals[k].toFixed(2) :
+                              (k === 'ap') ? vals[k].toFixed(1) :
+                              vals[k].toFixed(k === 'MRR' ? 1 : 0);
+    }
+  }
+  for (const id of Object.keys(inputs)) {
+    inputs[id].addEventListener('input', recompute);
+  }
+  recompute();
 }
 
 // セクション + ブロック単位 highlight + スクロール
