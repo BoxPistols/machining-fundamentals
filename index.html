@@ -6300,18 +6300,27 @@ function renderHome() {
   const total = CHAPTERS.length;
   const pct = Math.round((done / total) * 100);
 
+  // Part 別グルーピング (3 セクション)
+  const partA = CHAPTERS.filter(c => String(c.id).startsWith('a'));
+  const partB = CHAPTERS.filter(c => /^\d+$/.test(String(c.id)));
+  const partC = CHAPTERS.filter(c => String(c.id).startsWith('c'));
+
+  // Quiz の進捗算出
+  const quizAnswered = Object.keys(quizState.answers).length;
+  const quizCorrect = Object.values(quizState.answers).filter(a => a.correct).length;
+  const quizTotal = QUIZ_BANK.length;
+
   let html = `
     <section class="hero">
       <h1>切削加工を<span class="accent">はじめて学ぶ</span>人のための<br>学習ロードマップ</h1>
       <p class="lead">
-        航空機やエンジンなど、精密な金属部品を作る<strong>切削加工</strong>を、全10章で体系的に概観します。
-        各章は5〜8分で読めて、<strong>用語集</strong>と<strong>さらに学ぶための参考資料</strong>が付いています。
-        一部の章にはインタラクティブなシミュレーターもあります。
+        航空機やエンジンなど、精密な金属部品を作る<strong>切削加工</strong>を、原子レベルの材料科学から研究実例まで <strong>17 章</strong> で体系的に学べる教材です。
+        各章は <strong>SVG 図解 + 対話型ビジュアライザー</strong>で、用語集と参考資料を完備。確認テストで知識の定着を確認できます。
       </p>
       <div class="meta">
         <div class="meta-pill"><span class="label">対象</span><span>切削加工の初学者</span></div>
-        <div class="meta-pill"><span class="label">範囲</span><span>総論のみ（全体像）</span></div>
-        <div class="meta-pill"><span class="label">分量</span><span class="value">全10章 / 約65分</span></div>
+        <div class="meta-pill"><span class="label">構成</span><span>Part A 材料科学 / Part B 切削基礎 / Part C 研究実例</span></div>
+        <div class="meta-pill"><span class="label">分量</span><span class="value">全 17 章 / 約 2 時間</span></div>
       </div>
     </section>
 
@@ -6321,36 +6330,56 @@ function renderHome() {
       <span class="progress-num">${done} / ${total}</span>
     </div>
 
+    <!-- Quick Action: クイズ + AI Chat -->
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 24px 0;">
+      <div class="quiz-cta-card" data-go-quiz>
+        <svg class="icon"><use href="#i-check"/></svg>
+        <div>
+          <h3 class="title">確認テスト</h3>
+          <p class="desc">${quizTotal} 問の 4 択 + 穴埋め${quizAnswered > 0 ? ` (${quizCorrect}/${quizAnswered} 解答済)` : ''}</p>
+        </div>
+        <span class="arrow">→</span>
+      </div>
+      <div class="quiz-cta-card" data-open-search>
+        <svg class="icon"><use href="#i-search"/></svg>
+        <div>
+          <h3 class="title">横断検索</h3>
+          <p class="desc">用語・章を一発で発見 (Cmd/Ctrl + P)</p>
+        </div>
+        <span class="arrow">→</span>
+      </div>
+    </div>
+
+    <!-- Part A: 材料科学 -->
     <div class="section-label">
-      全10章
-      <button class="export-btn header-style" data-export-all="true" style="margin-left:auto;" title="全10章のテキストをまとめて書き出し">
-        <svg class="icon icon-lg"><use href="#i-doc"/></svg> 全章まとめて書き出し
+      Part A — 材料科学（${partA.length} 章 / 原子から切削の物理まで）
+      <button class="export-btn header-style" data-export-all="true" style="margin-left:auto;" title="全章のテキストをまとめて書き出し">
+        <svg class="icon icon-lg"><use href="#i-doc"/></svg> 全章書き出し
       </button>
     </div>
     <div class="chapter-grid">
-  `;
+      ${partA.map(ch => renderChapterCard(ch)).join('')}
+    </div>
 
-  for (const ch of CHAPTERS) {
-    const done = state.doneChapters.includes(ch.id);
-    html += `
-      <article class="chapter-card ${done ? 'done' : ''}" data-chapter="${ch.id}">
-        <div class="ch-num">CHAPTER ${ch.num}</div>
-        <div class="ch-title">${ch.title}</div>
-        <div class="ch-summary">${ch.summary}</div>
-        <div class="ch-footer">
-          ${ch.hasSim ? '<span class="ch-tag has-sim">シミュレーター有</span>' : ''}
-          <span class="ch-read-time">${ch.readTime}</span>
-        </div>
-      </article>
-    `;
-  }
-  html += '</div>';
+    <!-- Part B: 切削加工 -->
+    <div class="section-label" style="margin-top: 40px;">
+      Part B — 切削加工の基礎（${partB.length} 章 / 実務に直結）
+    </div>
+    <div class="chapter-grid">
+      ${partB.map(ch => renderChapterCard(ch)).join('')}
+    </div>
 
-  html += `
-    <div class="disclaimer">
+    <!-- Part C: 研究実例 -->
+    <div class="section-label" style="margin-top: 40px;">
+      Part C — 研究の最前線（${partC.length} 章 / 一次資料への導線）
+    </div>
+    <div class="chapter-grid">
+      ${partC.map(ch => renderChapterCard(ch)).join('')}
+    </div>
+
+    <div class="disclaimer" style="margin-top: 40px;">
       <strong>この教材について</strong>
-      本教材は初学者向けの概説です。実務に適用する際は、教科書・工具メーカーの技術資料・専門家の監修に基づいて判断してください。
-      各章の末尾に「さらに学ぶには」として、信頼できる情報源を紹介しています。
+      本教材は AI (Claude) が初学者向けに執筆した概説です。実務適用時は、各章末「さらに学ぶには」で紹介する教科書・JIS/ISO 規格・工具メーカー技術資料で裏取りしてください。AI チャット (右下) で疑問をその場で解消できます。
     </div>
   `;
 
@@ -6363,6 +6392,30 @@ function renderHome() {
       render();
     });
   });
+  const goQuiz = mainEl.querySelector('[data-go-quiz]');
+  if (goQuiz) goQuiz.addEventListener('click', () => { state.view = 'quiz'; render(); });
+  const openSearch = mainEl.querySelector('[data-open-search]');
+  if (openSearch) openSearch.addEventListener('click', () => {
+    const trigger = document.getElementById('search-trigger');
+    if (trigger) trigger.click();
+  });
+}
+
+function renderChapterCard(ch) {
+  const isDone = state.doneChapters.includes(ch.id);
+  const hasViz = (ch.sections || []).some(s => s.interactive);
+  return `
+    <article class="chapter-card ${isDone ? 'done' : ''}" data-chapter="${ch.id}">
+      <div class="ch-num">CHAPTER ${ch.num}</div>
+      <div class="ch-title">${escapeHtml(ch.title)}</div>
+      <div class="ch-summary">${escapeHtml(ch.summary)}</div>
+      <div class="ch-footer">
+        ${ch.hasSim ? '<span class="ch-tag has-sim">シミュ</span>' : ''}
+        ${hasViz ? '<span class="ch-tag has-sim" style="background:color-mix(in srgb, var(--accent) 20%, transparent); color:var(--accent);">対話型</span>' : ''}
+        <span class="ch-read-time">${ch.readTime}</span>
+      </div>
+    </article>
+  `;
 }
 
 function renderChapter() {
