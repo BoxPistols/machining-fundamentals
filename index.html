@@ -4598,6 +4598,13 @@ const CHAPTERS = [
         `,
       },
       {
+        heading: '対話型ビジュアライザー — Kienzle 式で主分力 Fc を計算',
+        html: `
+          <p>下のスライダーで送り f と切込み ap、被削材を切り替えると、Kienzle 式 <code>Fc = Kc · h^(1−mc) · b</code> による主分力 Fc と概算切削動力 Pc がリアルタイムで計算されます (Vc=200 m/min 固定、κ=90° で h=f, b=ap)。同じ条件でも被削材で Kc が大きく変わることを体感できます。</p>
+        `,
+        interactive: 'kienzle-fc',
+      },
+      {
         heading: 'なぜ工具は摩耗するか',
         html: `
           <p>切削中の工具は、複数のメカニズムで摩耗します。</p>
@@ -4878,6 +4885,13 @@ const CHAPTERS = [
         `,
       },
       {
+        heading: '対話型ビジュアライザー — Vc を変えると工具寿命 T はどう変わるか',
+        html: `
+          <p>下のスライダーで切削速度 Vc と工具材種を切り替えると、工具寿命 T と両対数プロット上の点位置がリアルタイムで更新されます。Taylor 指数 n の違いが「速度を上げた時の寿命減衰の急さ」をどう変えるかを体感できます。</p>
+        `,
+        interactive: 'taylor-life',
+      },
+      {
         heading: '寿命判定の基準',
         html: `
           <p>現場では、次のような基準で工具交換を判断します。</p>
@@ -5014,6 +5028,13 @@ const CHAPTERS = [
           <p>航空機部品の複雑形状（タービンブレード、翼面、インペラなど）を加工するには、<strong>5軸制御</strong>の加工が不可欠です。5軸とは、X・Y・Z の3方向の並進に加え、A軸・B軸（またはC軸）の回転2軸を同時制御する機能です。</p>
           <p>5軸同時制御により、複雑な3D曲面を工具角度を変えながら削れます。工具の傾きを制御できるので、深いポケットや逆テーパー形状も加工可能です。</p>
         `,
+      },
+      {
+        heading: '対話型ビジュアライザー — Stability Lobe で安定回転数を探す',
+        html: `
+          <p>下のスライダーで主軸回転数 n と機械剛性ランクを切り替えると、概念的な Stability Lobe Diagram (SLD) と現条件 (n, ap) が安定領域に入っているかリアルタイムで判定されます。Altintas (2012) の単一 DOF モデルの簡易近似で、刃数 z·Kc·blim の関係から blim(n) を計算しています。実機の SLD は modal 同定が必要ですが、概念学習にはこの簡易版で十分。</p>
+        `,
+        interactive: 'sld-explorer',
       },
       {
         heading: '代表的な部品と加工条件',
@@ -5696,7 +5717,10 @@ function renderChapter() {
   // 対話型ビジュアライザーを wire up
   mainEl.querySelectorAll('[data-interactive]').forEach((el) => {
     const kind = el.dataset.interactive;
-    if (kind === 'mrr-sliders') buildMrrVisualizer(el);
+    if (kind === 'mrr-sliders')   buildMrrVisualizer(el);
+    if (kind === 'kienzle-fc')    buildKienzleVisualizer(el);
+    if (kind === 'taylor-life')   buildTaylorVisualizer(el);
+    if (kind === 'sld-explorer')  buildSldVisualizer(el);
   });
 
   mainEl.querySelector('[data-back]').addEventListener('click', () => {
@@ -6605,6 +6629,378 @@ function buildMrrVisualizer(container) {
   }
   for (const id of Object.keys(inputs)) {
     inputs[id].addEventListener('input', recompute);
+  }
+  recompute();
+}
+
+// === ビジュアライザー共通ユーティリティ ===
+const SVG_NS = 'http://www.w3.org/2000/svg';
+function vizFrame(title) {
+  const root = document.createElement('div');
+  root.className = 'viz-mrr';
+  const heading = document.createElement('h4');
+  heading.textContent = title;
+  root.appendChild(heading);
+  return root;
+}
+function vizSliders(specs, onChange) {
+  const sliders = document.createElement('div');
+  sliders.className = 'sliders';
+  const inputs = {};
+  const valueEls = {};
+  for (const p of specs) {
+    const row = document.createElement('div');
+    row.className = 'row';
+    const lbl = document.createElement('label');
+    lbl.textContent = p.label;
+    let input;
+    if (p.options) {
+      // select 入力
+      input = document.createElement('select');
+      input.style.background = 'var(--bg-1)';
+      input.style.border = '1px solid var(--line)';
+      input.style.color = 'var(--text-0)';
+      input.style.padding = '4px';
+      input.style.borderRadius = '4px';
+      for (const opt of p.options) {
+        const o = document.createElement('option');
+        o.value = opt.value; o.textContent = opt.label;
+        input.appendChild(o);
+      }
+      input.value = p.def;
+    } else {
+      input = document.createElement('input');
+      input.type = 'range';
+      input.min = p.min; input.max = p.max; input.step = p.step; input.value = p.def;
+    }
+    const val = document.createElement('div');
+    val.className = 'value';
+    inputs[p.id] = input;
+    valueEls[p.id] = { el: val, p };
+    row.appendChild(lbl); row.appendChild(input); row.appendChild(val);
+    sliders.appendChild(row);
+    input.addEventListener(p.options ? 'change' : 'input', onChange);
+  }
+  return { el: sliders, inputs, valueEls };
+}
+function vizResults(defs) {
+  const results = document.createElement('div');
+  results.className = 'results';
+  const els = {};
+  for (const r of defs) {
+    const card = document.createElement('div');
+    card.className = 'result-card';
+    const lbl = document.createElement('div');
+    lbl.className = 'label';
+    lbl.textContent = r.label;
+    const num = document.createElement('div');
+    num.className = 'num';
+    const numVal = document.createTextNode('—');
+    const unit = document.createElement('span');
+    unit.className = 'unit';
+    unit.textContent = ' ' + r.unit;
+    num.appendChild(numVal);
+    num.appendChild(unit);
+    card.appendChild(lbl);
+    card.appendChild(num);
+    els[r.id] = numVal;
+    results.appendChild(card);
+  }
+  return { el: results, els };
+}
+
+// === ch6: Kienzle 主分力 Fc + 概算動力 Pc ===
+// Fc = Kc · h^(1−mc) · b、 Pc = Fc·Vc / 60000  (Vc=200 m/min 固定)
+function buildKienzleVisualizer(container) {
+  while (container.firstChild) container.removeChild(container.firstChild);
+  const root = vizFrame('Kienzle 式 → 主分力 Fc / 切削動力 Pc');
+  const materials = {
+    'AL7075':   { Kc:  700, mc: 0.18, label: 'AL7075-T6' },
+    'S45C':     { Kc: 2100, mc: 0.17, label: 'S45C 中炭素鋼' },
+    'SUS304':   { Kc: 2600, mc: 0.21, label: 'SUS304 ステンレス' },
+    'Ti-6Al-4V':{ Kc: 2000, mc: 0.21, label: 'Ti-6Al-4V チタン合金' },
+    'Inconel':  { Kc: 2900, mc: 0.25, label: 'Inconel 718' },
+  };
+  const { el: sliders, inputs, valueEls } = vizSliders([
+    { id: 'mat', label: '材料', def: 'S45C', options: Object.keys(materials).map(k => ({ value: k, label: materials[k].label })) },
+    { id: 'f',   label: 'f (h)', min: 0.05, max: 0.6, step: 0.01, def: 0.3 },
+    { id: 'ap',  label: 'ap (b)', min: 0.5, max: 6.0, step: 0.1, def: 2.0 },
+  ], () => recompute());
+  root.appendChild(sliders);
+  const { el: results, els: resultEls } = vizResults([
+    { id: 'kc',  label: 'Kc (材料)',     unit: 'N/mm²' },
+    { id: 'fc',  label: 'Fc (主分力)',  unit: 'N' },
+    { id: 'pc',  label: 'Pc (Vc=200)', unit: 'kW' },
+  ]);
+  root.appendChild(results);
+  // SVG bar: Fc 相対比 (材料切替で大きく動くのが見えるよう)
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 400 60');
+  svg.setAttribute('class', 'bar-svg');
+  const trk = document.createElementNS(SVG_NS, 'rect');
+  trk.setAttribute('x', '60'); trk.setAttribute('y', '20');
+  trk.setAttribute('width', '320'); trk.setAttribute('height', '20');
+  trk.setAttribute('fill', 'var(--bg-1)'); trk.setAttribute('rx', '2');
+  svg.appendChild(trk);
+  const bar = document.createElementNS(SVG_NS, 'rect');
+  bar.setAttribute('x', '60'); bar.setAttribute('y', '20');
+  bar.setAttribute('width', '0'); bar.setAttribute('height', '20');
+  bar.setAttribute('fill', 'var(--accent)'); bar.setAttribute('rx', '2');
+  svg.appendChild(bar);
+  const lbl = document.createElementNS(SVG_NS, 'text');
+  lbl.setAttribute('x', '0'); lbl.setAttribute('y', '34');
+  lbl.setAttribute('font-family', 'JetBrains Mono, monospace');
+  lbl.setAttribute('font-size', '10'); lbl.setAttribute('fill', 'var(--text-2)');
+  lbl.textContent = 'Fc';
+  svg.appendChild(lbl);
+  root.appendChild(svg);
+  container.appendChild(root);
+
+  function recompute() {
+    const matKey = inputs.mat.value;
+    const m = materials[matKey];
+    const f = parseFloat(inputs.f.value);
+    const ap = parseFloat(inputs.ap.value);
+    const Vc = 200;
+    const h = f, b = ap;
+    const Fc = m.Kc * Math.pow(h, 1 - m.mc) * b;
+    const Pc = Fc * Vc / 60000;
+    valueEls.mat.el.textContent = m.label;
+    valueEls.f.el.textContent = `${f.toFixed(2)} mm`;
+    valueEls.ap.el.textContent = `${ap.toFixed(1)} mm`;
+    resultEls.kc.nodeValue = m.Kc;
+    resultEls.fc.nodeValue = Fc.toFixed(0);
+    resultEls.pc.nodeValue = Pc.toFixed(2);
+    // bar 0-6000N で正規化
+    const w = Math.min(320, (Fc / 6000) * 320);
+    bar.setAttribute('width', String(w));
+  }
+  recompute();
+}
+
+// === ch8: Taylor 工具寿命 V·T^n = C, T = (C/V)^(1/n) ===
+function buildTaylorVisualizer(container) {
+  while (container.firstChild) container.removeChild(container.firstChild);
+  const root = vizFrame('Taylor 工具寿命式 → V を変えて T を見る (両対数)');
+  const tools = {
+    HSS:       { n: 0.125, C: 80,  label: 'HSS' },
+    Carbide:   { n: 0.22,  C: 200, label: '超硬' },
+    Coated:    { n: 0.25,  C: 250, label: 'コーティング超硬' },
+    Ceramic:   { n: 0.45,  C: 400, label: 'セラミクス' },
+    CBN:       { n: 0.50,  C: 500, label: 'CBN' },
+    PCD:       { n: 0.60,  C: 1500,label: 'PCD (AL用)' },
+  };
+  const { el: sliders, inputs, valueEls } = vizSliders([
+    { id: 'tool', label: '工具', def: 'Carbide', options: Object.keys(tools).map(k => ({ value: k, label: tools[k].label })) },
+    { id: 'vc',   label: 'Vc',  min: 30, max: 800, step: 5, def: 200 },
+  ], () => recompute());
+  root.appendChild(sliders);
+  const { el: results, els: resultEls } = vizResults([
+    { id: 'n', label: 'n (Taylor 指数)', unit: '' },
+    { id: 'c', label: 'C (Taylor 定数)', unit: '' },
+    { id: 't', label: 'T (工具寿命)',    unit: 'min' },
+  ]);
+  root.appendChild(results);
+  // log-log plot
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 400 220');
+  svg.setAttribute('class', 'bar-svg');
+  svg.style.height = '220px';
+  // 軸
+  const axisX = document.createElementNS(SVG_NS, 'line');
+  axisX.setAttribute('x1', '50'); axisX.setAttribute('y1', '180');
+  axisX.setAttribute('x2', '380'); axisX.setAttribute('y2', '180');
+  axisX.setAttribute('stroke', 'var(--line-hi)');
+  svg.appendChild(axisX);
+  const axisY = document.createElementNS(SVG_NS, 'line');
+  axisY.setAttribute('x1', '50'); axisY.setAttribute('y1', '20');
+  axisY.setAttribute('x2', '50'); axisY.setAttribute('y2', '180');
+  axisY.setAttribute('stroke', 'var(--line-hi)');
+  svg.appendChild(axisY);
+  // 軸ラベル
+  const lblX = document.createElementNS(SVG_NS, 'text');
+  lblX.setAttribute('x', '215'); lblX.setAttribute('y', '210');
+  lblX.setAttribute('font-family', 'JetBrains Mono, monospace');
+  lblX.setAttribute('font-size', '10'); lblX.setAttribute('fill', 'var(--text-2)');
+  lblX.setAttribute('text-anchor', 'middle');
+  lblX.textContent = 'log Vc [m/min]';
+  svg.appendChild(lblX);
+  const lblY = document.createElementNS(SVG_NS, 'text');
+  lblY.setAttribute('x', '12'); lblY.setAttribute('y', '100');
+  lblY.setAttribute('font-family', 'JetBrains Mono, monospace');
+  lblY.setAttribute('font-size', '10'); lblY.setAttribute('fill', 'var(--text-2)');
+  lblY.setAttribute('transform', 'rotate(-90 12 100)');
+  lblX.setAttribute('text-anchor', 'middle');
+  lblY.textContent = 'log T [min]';
+  svg.appendChild(lblY);
+  // 直線 (Taylor 線): log T = (log C - log V) / n  →  両対数で傾き -1/n の直線
+  const line = document.createElementNS(SVG_NS, 'line');
+  line.setAttribute('stroke', 'var(--accent)'); line.setAttribute('stroke-width', '2');
+  svg.appendChild(line);
+  // 現条件マーカー
+  const dot = document.createElementNS(SVG_NS, 'circle');
+  dot.setAttribute('r', '6'); dot.setAttribute('fill', 'var(--ylw, #f59e0b)');
+  dot.setAttribute('stroke', 'var(--bg-1)'); dot.setAttribute('stroke-width', '2');
+  svg.appendChild(dot);
+  const dotLbl = document.createElementNS(SVG_NS, 'text');
+  dotLbl.setAttribute('font-family', 'JetBrains Mono, monospace');
+  dotLbl.setAttribute('font-size', '10');
+  dotLbl.setAttribute('fill', 'var(--ylw, #f59e0b)');
+  svg.appendChild(dotLbl);
+  root.appendChild(svg);
+  container.appendChild(root);
+
+  // 軸範囲 (両対数): Vc 30-800 → log10 1.477-2.903、T 1-10000 → log10 0-4
+  const Vmin = 30, Vmax = 800;
+  const Tmin = 1, Tmax = 10000;
+  function xOf(V) {
+    const f = (Math.log10(V) - Math.log10(Vmin)) / (Math.log10(Vmax) - Math.log10(Vmin));
+    return 50 + f * 330;
+  }
+  function yOf(T) {
+    const f = (Math.log10(T) - Math.log10(Tmin)) / (Math.log10(Tmax) - Math.log10(Tmin));
+    return 180 - f * 160;
+  }
+
+  function recompute() {
+    const tk = inputs.tool.value;
+    const t = tools[tk];
+    const Vc = parseFloat(inputs.vc.value);
+    const T = Math.pow(t.C / Vc, 1 / t.n);
+    valueEls.tool.el.textContent = t.label;
+    valueEls.vc.el.textContent = `${Vc.toFixed(0)} m/min`;
+    resultEls.n.nodeValue = t.n.toFixed(3);
+    resultEls.c.nodeValue = t.C;
+    resultEls.t.nodeValue = T.toFixed(T < 10 ? 2 : 0);
+    // Taylor 直線: 2点 (V=Vmin, T=(C/Vmin)^(1/n)) と (V=Vmax, T=(C/Vmax)^(1/n))
+    const T1 = Math.pow(t.C / Vmin, 1 / t.n);
+    const T2 = Math.pow(t.C / Vmax, 1 / t.n);
+    line.setAttribute('x1', xOf(Vmin));
+    line.setAttribute('y1', yOf(Math.max(Tmin, Math.min(Tmax, T1))));
+    line.setAttribute('x2', xOf(Vmax));
+    line.setAttribute('y2', yOf(Math.max(Tmin, Math.min(Tmax, T2))));
+    // 現条件 dot
+    const dx = xOf(Vc), dy = yOf(Math.max(Tmin, Math.min(Tmax, T)));
+    dot.setAttribute('cx', dx); dot.setAttribute('cy', dy);
+    dotLbl.setAttribute('x', dx + 10); dotLbl.setAttribute('y', dy + 4);
+    dotLbl.textContent = `T=${T.toFixed(T < 10 ? 1 : 0)} min`;
+  }
+  recompute();
+}
+
+// === ch10: Stability Lobe Diagram (簡易概念) ===
+// Altintas 2012 の単一 DOF SLD: blim = -1 / (2·Kc·z·Re{Φ(ω_c)})
+// 厳密モーダル同定なしで「概念曲線」を描画 — modal rank で振幅を変えるだけ。
+function buildSldVisualizer(container) {
+  while (container.firstChild) container.removeChild(container.firstChild);
+  const root = vizFrame('Stability Lobe Diagram (概念) — 安定領域に入っているか判定');
+  const modalRanks = {
+    rigid: { kStiff: 8e7, fn: 1200, label: '高剛性 (大型機械)' },
+    med:   { kStiff: 3e7, fn: 900,  label: '中剛性 (汎用機械)' },
+    flex:  { kStiff: 1e7, fn: 600,  label: '低剛性 (薄物治具・長突出)' },
+  };
+  const { el: sliders, inputs, valueEls } = vizSliders([
+    { id: 'machine', label: '機械剛性', def: 'med', options: Object.keys(modalRanks).map(k => ({ value: k, label: modalRanks[k].label })) },
+    { id: 'rpm',     label: 'n (rpm)',  min: 500, max: 30000, step: 50, def: 8000 },
+    { id: 'ap',      label: 'ap (mm)',  min: 0.2, max: 6.0,   step: 0.1, def: 2.0 },
+  ], () => recompute());
+  root.appendChild(sliders);
+  const { el: results, els: resultEls } = vizResults([
+    { id: 'blim', label: 'blim @ 現 rpm',     unit: 'mm' },
+    { id: 'stat', label: '判定',                unit: '' },
+    { id: 'fc',   label: 'チャタリング周波数', unit: 'Hz' },
+  ]);
+  root.appendChild(results);
+  // SLD 曲線 SVG
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 400 220');
+  svg.setAttribute('class', 'bar-svg');
+  svg.style.height = '220px';
+  // 軸
+  const axisX = document.createElementNS(SVG_NS, 'line');
+  axisX.setAttribute('x1', '50'); axisX.setAttribute('y1', '180');
+  axisX.setAttribute('x2', '390'); axisX.setAttribute('y2', '180');
+  axisX.setAttribute('stroke', 'var(--line-hi)');
+  svg.appendChild(axisX);
+  const axisY = document.createElementNS(SVG_NS, 'line');
+  axisY.setAttribute('x1', '50'); axisY.setAttribute('y1', '20');
+  axisY.setAttribute('x2', '50'); axisY.setAttribute('y2', '180');
+  axisY.setAttribute('stroke', 'var(--line-hi)');
+  svg.appendChild(axisY);
+  const lblX = document.createElementNS(SVG_NS, 'text');
+  lblX.setAttribute('x', '220'); lblX.setAttribute('y', '210');
+  lblX.setAttribute('font-family', 'JetBrains Mono, monospace');
+  lblX.setAttribute('font-size', '10'); lblX.setAttribute('fill', 'var(--text-2)');
+  lblX.setAttribute('text-anchor', 'middle');
+  lblX.textContent = 'spindle speed n [rpm]';
+  svg.appendChild(lblX);
+  const lblY = document.createElementNS(SVG_NS, 'text');
+  lblY.setAttribute('x', '12'); lblY.setAttribute('y', '100');
+  lblY.setAttribute('font-family', 'JetBrains Mono, monospace');
+  lblY.setAttribute('font-size', '10'); lblY.setAttribute('fill', 'var(--text-2)');
+  lblY.setAttribute('transform', 'rotate(-90 12 100)');
+  lblY.textContent = 'blim [mm]';
+  svg.appendChild(lblY);
+  // SLD 曲線 (path)
+  const sldPath = document.createElementNS(SVG_NS, 'path');
+  sldPath.setAttribute('fill', 'none');
+  sldPath.setAttribute('stroke', 'var(--accent)');
+  sldPath.setAttribute('stroke-width', '1.8');
+  svg.appendChild(sldPath);
+  // 現条件マーカー
+  const dot = document.createElementNS(SVG_NS, 'circle');
+  dot.setAttribute('r', '6');
+  dot.setAttribute('stroke', 'var(--bg-1)'); dot.setAttribute('stroke-width', '2');
+  svg.appendChild(dot);
+  root.appendChild(svg);
+  container.appendChild(root);
+
+  const Kc = 2100; // S45C 想定固定
+  const z = 4;     // 4枚刃想定
+  const RPM_MIN = 500, RPM_MAX = 30000;
+  function xOf(rpm) {
+    const f = (Math.log10(rpm) - Math.log10(RPM_MIN)) / (Math.log10(RPM_MAX) - Math.log10(RPM_MIN));
+    return 50 + f * 340;
+  }
+  function yOf(b) {
+    return 180 - Math.min(160, (b / 6) * 160);
+  }
+  // 概念 SLD: blim(n) = base + amplitude·sin(2π·n·k/fn) のような周期的近似
+  // 真面目な Altintas 計算は複素 FRF が必要なので、教育用の概念曲線で代替
+  function blimAt(n, modalKey) {
+    const m = modalRanks[modalKey];
+    const base = m.kStiff / (2 * Kc * z * 1e6); // 単位整合は教育用近似、blim 0.5-3 範囲に収まるよう
+    // tooth passing freq f_tp = n·z/60、これと fn の比でローブを生成
+    const ftp = n * z / 60;
+    const ratio = ftp / m.fn;
+    const lobe = 0.6 + 1.4 * Math.abs(Math.sin(Math.PI * ratio));
+    return base * lobe;
+  }
+  function recompute() {
+    const machine = inputs.machine.value;
+    const rpm = parseFloat(inputs.rpm.value);
+    const ap = parseFloat(inputs.ap.value);
+    valueEls.machine.el.textContent = modalRanks[machine].label;
+    valueEls.rpm.el.textContent = `${rpm.toFixed(0)} rpm`;
+    valueEls.ap.el.textContent = `${ap.toFixed(1)} mm`;
+    // SLD 曲線: 50 サンプル
+    const N = 80;
+    const pts = [];
+    for (let i = 0; i <= N; i++) {
+      const r = RPM_MIN * Math.pow(RPM_MAX / RPM_MIN, i / N);
+      const b = blimAt(r, machine);
+      pts.push(`${xOf(r).toFixed(1)},${yOf(b).toFixed(1)}`);
+    }
+    sldPath.setAttribute('d', 'M' + pts.join(' L'));
+    // 現条件
+    const blim = blimAt(rpm, machine);
+    const stable = ap < blim;
+    resultEls.blim.nodeValue = blim.toFixed(2);
+    resultEls.stat.nodeValue = stable ? '安定' : 'びびり領域';
+    resultEls.fc.nodeValue = (rpm * z / 60).toFixed(0);
+    dot.setAttribute('cx', xOf(rpm));
+    dot.setAttribute('cy', yOf(ap));
+    dot.setAttribute('fill', stable ? 'var(--grn, #2ade7a)' : 'var(--ylw, #f59e0b)');
   }
   recompute();
 }
