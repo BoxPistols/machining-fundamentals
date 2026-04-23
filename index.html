@@ -1535,6 +1535,41 @@ figure.fig figcaption strong {
    Chat AI Widget (Phase 1 MVP, vanilla JS)
    ============================================================================= */
 .chat-widget { position: fixed; right: 16px; bottom: 16px; z-index: 9999; font-family: inherit; }
+
+/* === サイドバーモード (画面幅 1200+ で opt-in) === */
+.chat-widget.mode-sidebar { right: 0; bottom: 0; top: 56px; }
+.chat-widget.mode-sidebar.open { width: 380px; }
+.chat-widget.mode-sidebar.open .chat-panel {
+  width: 100%; height: 100%; border-radius: 0;
+  border-top: 1px solid var(--line-hi); border-right: 0; border-bottom: 0;
+  box-shadow: -8px 0 24px rgba(0,0,0,0.30);
+}
+.chat-widget.mode-sidebar.open ~ * { /* 隣接セレクタは動かないので、body padding は JS 側で */ }
+@media (max-width: 1200px) {
+  /* 狭い画面ではサイドバーモードを強制的にフローティングへ降格 */
+  .chat-widget.mode-sidebar { right: 16px; bottom: 16px; top: auto; }
+  .chat-widget.mode-sidebar.open { width: auto; }
+  .chat-widget.mode-sidebar.open .chat-panel {
+    width: min(420px, calc(100vw - 32px));
+    height: min(600px, calc(100vh - 100px));
+    border-radius: 12px; border: 1px solid var(--line-hi);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.40);
+  }
+}
+body.chat-sidebar-open { padding-right: 380px; transition: padding-right 0.2s ease; }
+@media (max-width: 1200px) { body.chat-sidebar-open { padding-right: 0; } }
+
+.chat-mode-toggle {
+  background: transparent; border: 0; cursor: pointer; color: var(--text-1);
+  font-size: 14px; padding: 4px 8px; border-radius: 4px;
+}
+.chat-mode-toggle:hover { background: var(--bg-3); color: var(--text-0); }
+
+.chat-shortcut-hint {
+  font-size: 10px; color: var(--text-2); font-family: 'JetBrains Mono', monospace;
+  margin-left: 8px;
+}
+
 .chat-fab {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 12px 18px; border-radius: 28px; border: 0; cursor: pointer;
@@ -10028,9 +10063,12 @@ document.querySelectorAll('.learn-step').forEach(el => {
         <span id="chat-tier-pill" class="tier-pill">…</span>
       </div>
       <div class="actions">
+        <button id="chat-mode-btn" class="chat-mode-toggle" type="button" aria-label="UI モード切替" title="フローティング ⇄ サイドバー (画面幅 1200+ で有効)">
+          <svg class="icon" id="chat-mode-icon"><use href="#i-doc"/></svg>
+        </button>
         <button id="chat-settings-btn" type="button" aria-label="設定" title="設定"><svg class="icon"><use href="#i-cog"/></svg></button>
-        <button id="chat-clear-btn" type="button" aria-label="会話をクリア" title="会話をクリア"><svg class="icon"><use href="#i-trash"/></svg></button>
-        <button id="chat-close-btn" type="button" aria-label="閉じる" title="閉じる"><svg class="icon"><use href="#i-close"/></svg></button>
+        <button id="chat-clear-btn" type="button" aria-label="会話をクリア (Cmd/Ctrl+Shift+L)" title="会話をクリア"><svg class="icon"><use href="#i-trash"/></svg></button>
+        <button id="chat-close-btn" type="button" aria-label="閉じる (Esc)" title="閉じる (Esc)"><svg class="icon"><use href="#i-close"/></svg></button>
       </div>
     </header>
     <div id="chat-messages" class="chat-messages" role="log" aria-live="polite" aria-atomic="false"></div>
@@ -10091,7 +10129,11 @@ const chatCfg = {
   byokKey: localStorage.getItem('chat-byok-key') || '',
   model: localStorage.getItem('chat-model') || 'gpt-5.4-nano',
   level: localStorage.getItem('chat-level') || 'intermediate',
+  uiMode: localStorage.getItem('chat-ui-mode') || 'floating', // 'floating' | 'sidebar'
+  levelAuto: localStorage.getItem('chat-level-auto') !== 'false', // true: 章から自動推定 / false: 手動固定
 };
+const isMacUA = navigator.platform.toUpperCase().includes('MAC');
+const modKey = isMacUA ? 'Cmd' : 'Ctrl';
 
 const chatState = {
   history: (() => {
@@ -10110,6 +10152,7 @@ const els = {
   closeBtn: $('chat-close-btn'),
   settingsBtn: $('chat-settings-btn'),
   clearBtn: $('chat-clear-btn'),
+  modeBtn: $('chat-mode-btn'),
   messages: $('chat-messages'),
   settingsPane: $('chat-settings-pane'),
   proxyUrlInput: $('chat-proxy-url'),
@@ -10124,6 +10167,7 @@ const els = {
   status: $('chat-status'),
   tierPill: $('chat-tier-pill'),
 };
+applyUiMode();
 
 els.proxyUrlInput.value = chatCfg.proxyUrl;
 els.inviteCodeInput.value = chatCfg.inviteCode;
@@ -10158,13 +10202,54 @@ function openPanel() {
   els.widget.classList.replace('closed', 'open');
   els.panel.hidden = false;
   els.fab.setAttribute('aria-expanded', 'true');
+  // sidebar モードかつ広い画面なら body にも class 付けて main を縮める
+  if (chatCfg.uiMode === 'sidebar' && window.innerWidth >= 1200) {
+    document.body.classList.add('chat-sidebar-open');
+  }
+  // ペルソナ自動検出 (auto モード時のみ章から推定)
+  maybeAutoDetectLevel();
   setTimeout(() => els.input.focus(), 50);
 }
 function closePanel() {
   els.widget.classList.replace('open', 'closed');
   els.panel.hidden = true;
   els.fab.setAttribute('aria-expanded', 'false');
+  document.body.classList.remove('chat-sidebar-open');
   els.fab.focus();
+}
+function applyUiMode() {
+  els.widget.classList.toggle('mode-sidebar', chatCfg.uiMode === 'sidebar');
+  els.widget.classList.toggle('mode-floating', chatCfg.uiMode !== 'sidebar');
+  if (els.widget.classList.contains('open') && chatCfg.uiMode === 'sidebar' && window.innerWidth >= 1200) {
+    document.body.classList.add('chat-sidebar-open');
+  } else {
+    document.body.classList.remove('chat-sidebar-open');
+  }
+}
+function toggleUiMode() {
+  chatCfg.uiMode = (chatCfg.uiMode === 'sidebar') ? 'floating' : 'sidebar';
+  localStorage.setItem('chat-ui-mode', chatCfg.uiMode);
+  applyUiMode();
+  showStatus(chatCfg.uiMode === 'sidebar' ? 'サイドバーモード' : 'フローティングモード', 1500);
+}
+els.modeBtn.addEventListener('click', toggleUiMode);
+
+// 学習レベル自動推定 (章 ID から). 章を開いていない時 + auto モード時のみ
+// a1-a3: beginner / a4-a5: intermediate / a6/c1/Part B 上位 (8-10): advanced
+function maybeAutoDetectLevel() {
+  if (!chatCfg.levelAuto) return;
+  const ctx = currentContext();
+  const id = ctx.chapterId;
+  if (!id) return;
+  let detected;
+  if (id === 'a1' || id === 'a2' || id === 'a3' || id === '1' || id === '2') detected = 'beginner';
+  else if (id === 'a4' || id === 'a5' || id === '3' || id === '4' || id === '5' || id === '6') detected = 'intermediate';
+  else if (id === 'a6' || id === 'c1' || id === '7' || id === '8' || id === '9' || id === '10') detected = 'advanced';
+  if (detected && detected !== chatCfg.level) {
+    chatCfg.level = detected;
+    els.levelSel.value = detected;
+    localStorage.setItem('chat-level', detected);
+  }
 }
 function toggleSettings() {
   els.settingsPane.hidden = !els.settingsPane.hidden;
@@ -10204,6 +10289,54 @@ els.modelSel.addEventListener('change', () => {
 els.levelSel.addEventListener('change', () => {
   chatCfg.level = els.levelSel.value;
   localStorage.setItem('chat-level', chatCfg.level);
+  // ユーザーが手動で変更したら auto モードを OFF (二重制御回避)
+  chatCfg.levelAuto = false;
+  localStorage.setItem('chat-level-auto', 'false');
+});
+
+// === キーボードショートカット (グローバル捕捉) ===
+// IME 入力中は発火させない (e.isComposing / keyCode 229 ガード)
+document.addEventListener('keydown', (e) => {
+  if (e.isComposing || e.keyCode === 229) return;
+  const mod = isMacUA ? e.metaKey : e.ctrlKey;
+
+  // Cmd/Ctrl + K : Chat 開閉
+  if (mod && !e.shiftKey && !e.altKey && (e.key === 'k' || e.key === 'K')) {
+    e.preventDefault();
+    if (els.widget.classList.contains('open')) closePanel();
+    else openPanel();
+    return;
+  }
+  // Esc : 閉じる (パネル開いている時のみ、他のモーダル干渉回避は最低限)
+  if (e.key === 'Escape' && els.widget.classList.contains('open') && !chatState.streaming) {
+    // チャット入力フォーカス時は閉じる、それ以外も閉じる (シンプル)
+    closePanel();
+    return;
+  }
+  // Cmd/Ctrl + Shift + L : 履歴クリア (パネル開いている時のみ)
+  if (mod && e.shiftKey && (e.key === 'l' || e.key === 'L') && els.widget.classList.contains('open')) {
+    e.preventDefault();
+    if (chatState.history.length > 0 && confirm(prefs.lang === 'en'
+      ? 'Clear conversation history?'
+      : '会話履歴をクリアします。よろしいですか？')) {
+      chatState.history = [];
+      sessionStorage.removeItem('chat-history');
+      renderHistory();
+    }
+    return;
+  }
+  // Cmd/Ctrl + Shift + M : UI モード切替 (フローティング ⇄ サイドバー)
+  if (mod && e.shiftKey && (e.key === 'm' || e.key === 'M') && els.widget.classList.contains('open')) {
+    e.preventDefault();
+    toggleUiMode();
+    return;
+  }
+  // Cmd/Ctrl + / : 設定パネル開閉 (パネル開いている時のみ)
+  if (mod && (e.key === '/' || e.key === '?') && els.widget.classList.contains('open')) {
+    e.preventDefault();
+    toggleSettings();
+    return;
+  }
 });
 
 els.input.addEventListener('keydown', (e) => {
