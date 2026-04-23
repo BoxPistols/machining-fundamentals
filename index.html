@@ -738,9 +738,12 @@ body.voice-enabled.voice-mode-summary .voice-summary-note {
   padding: 10px 18px;
   font-family: inherit;
   font-size: 12px;
+  line-height: 1.4;        /* mark-done と高さ揃え */
+  min-height: 40px;        /* SVG の有無で高さがブレないよう固定 */
   cursor: pointer;
   margin-left: 10px;
 }
+.export-btn .icon { width: 14px; height: 14px; }
 .export-btn:hover {
   background: var(--bg-3);
   color: var(--text-0);
@@ -1248,9 +1251,12 @@ body.voice-enabled.voice-mode-summary .voice-summary-note {
   padding: 10px 18px;
   font-family: inherit;
   font-size: 12px;
+  line-height: 1.4;        /* export-btn と高さ揃え */
+  min-height: 40px;
   cursor: pointer;
-  margin-top: 24px;
 }
+/* ch-actions 内では mark-done の margin-top をリセット (export-btn と並ぶため) */
+.ch-actions .mark-done { margin-top: 0; }
 .mark-done:hover {
   background: var(--bg-3);
   color: var(--text-0);
