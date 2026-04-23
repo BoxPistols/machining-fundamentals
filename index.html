@@ -4345,17 +4345,43 @@ const CHAPTERS = [
     lead: '切削で使う「刃物」である工具は、材質と形状で無数のバリエーションがあります。まず基本となる分類を押さえます。',
     sections: [
       {
-        heading: '工具材質の階層',
+        heading: '工具材質の階層 — 硬さ vs 靭性のトレードオフ',
         html: `
-          <p>工具材質は、<strong>硬さ・耐熱性・靭性（粘り強さ）</strong>のバランスで分類されます。一般に硬い材質ほど熱に強く速く削れますが、欠けやすくもなります。</p>
+          <p>工具材質は<strong>硬さ・耐熱性・靭性（粘り強さ）</strong>のバランスで決まります。一般に硬い材質ほど熱に強く速く削れますが、欠けやすくもなります。Taylor 式の指数 <code>n</code>（第8章）が工具材質によって変わるのは、この物性差が直接効いているためです。</p>
+          <table style="width:100%;border-collapse:collapse;font-size:12px;margin:12px 0;">
+            <thead>
+              <tr style="background:var(--bg-3);">
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">工具材種</th>
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">硬度 HV</th>
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">耐熱温度</th>
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">靭性</th>
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">Taylor n</th>
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">主用途</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding:6px;border:1px solid var(--line);"><strong>HSS</strong> (高速度鋼)</td><td style="padding:6px;border:1px solid var(--line);">800〜900</td><td style="padding:6px;border:1px solid var(--line);">~ 600°C</td><td style="padding:6px;border:1px solid var(--line);">高</td><td style="padding:6px;border:1px solid var(--line);">0.10〜0.125</td><td style="padding:6px;border:1px solid var(--line);">タップ、ドリル、複雑形状エンドミル</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);"><strong>超硬</strong> (Carbide, WC-Co)</td><td style="padding:6px;border:1px solid var(--line);">1500〜1800</td><td style="padding:6px;border:1px solid var(--line);">~ 900°C</td><td style="padding:6px;border:1px solid var(--line);">中</td><td style="padding:6px;border:1px solid var(--line);">0.20〜0.25</td><td style="padding:6px;border:1px solid var(--line);">現代切削の主力 (鋼・SUS・Ti)</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);"><strong>コーティング超硬</strong></td><td style="padding:6px;border:1px solid var(--line);">2200〜3000 (表面)</td><td style="padding:6px;border:1px solid var(--line);">~ 1100°C</td><td style="padding:6px;border:1px solid var(--line);">中</td><td style="padding:6px;border:1px solid var(--line);">0.25</td><td style="padding:6px;border:1px solid var(--line);">高速・高能率加工の標準</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);"><strong>サーメット</strong> (TiCN-Ni)</td><td style="padding:6px;border:1px solid var(--line);">1500〜1700</td><td style="padding:6px;border:1px solid var(--line);">~ 1000°C</td><td style="padding:6px;border:1px solid var(--line);">中</td><td style="padding:6px;border:1px solid var(--line);">0.30</td><td style="padding:6px;border:1px solid var(--line);">鋼の仕上げ、高速・高品質</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);"><strong>セラミクス</strong> (Al₂O₃, SiAlON)</td><td style="padding:6px;border:1px solid var(--line);">2000〜2500</td><td style="padding:6px;border:1px solid var(--line);">~ 1400°C</td><td style="padding:6px;border:1px solid var(--line);">低 (脆い)</td><td style="padding:6px;border:1px solid var(--line);">0.40〜0.50</td><td style="padding:6px;border:1px solid var(--line);">鋳鉄高速、Inconel 高速 (連続切削)</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);"><strong>CBN</strong> (立方晶窒化ホウ素)</td><td style="padding:6px;border:1px solid var(--line);">3500〜4000</td><td style="padding:6px;border:1px solid var(--line);">~ 1300°C</td><td style="padding:6px;border:1px solid var(--line);">低</td><td style="padding:6px;border:1px solid var(--line);">0.50</td><td style="padding:6px;border:1px solid var(--line);">焼入れ鋼 (硬旋削)、Ni 基超合金</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);"><strong>PCD</strong> (多結晶ダイヤ)</td><td style="padding:6px;border:1px solid var(--line);">8000+</td><td style="padding:6px;border:1px solid var(--line);">~ 700°C (鉄と化学反応)</td><td style="padding:6px;border:1px solid var(--line);">中</td><td style="padding:6px;border:1px solid var(--line);">0.60</td><td style="padding:6px;border:1px solid var(--line);">非鉄 (AL, Cu)、CFRP、樹脂</td></tr>
+            </tbody>
+          </table>
+          <p>Taylor 指数 n が大きいほど「速度を上げても寿命減衰がゆるやか」を意味します。第8章「対話型ビジュアライザー」で工具材種を切り替えて Vc を動かすと、両対数プロットでの傾き <code>−1/n</code> がどれだけ違うか体感できます。</p>
+        `,
+      },
+      {
+        heading: 'なぜ PCD は鉄に使えないか',
+        html: `
+          <p>PCD は史上最硬の工具材で、AL や Cu の超高速切削 (Vc 1500-4000 m/min) では他の追随を許しませんが、<strong>鉄系材料には使えません</strong>。理由は化学的なもので、鉄に含まれる炭素と PCD のダイヤモンド (純粋な炭素結晶) が高温で反応してしまうためです。</p>
           <ul>
-            <li><strong>高速度鋼（ハイス、HSS）</strong>：鋼を熱処理した工具材。安価で粘り強いが、高速切削には不向き。タップやドリルなどに使用。</li>
-            <li><strong>超硬合金（超硬、Carbide）</strong>：タングステンカーバイド（WC）を主成分とする焼結材。硬くて熱に強い。現代切削の主力。</li>
-            <li><strong>サーメット</strong>：超硬よりさらに高速向き。鋼の仕上げに使われる。</li>
-            <li><strong>セラミック</strong>：非常に硬く高温に強いが脆い。鋳鉄や耐熱合金の高速切削に使用。</li>
-            <li><strong>CBN（立方晶窒化ホウ素）</strong>：ダイヤモンドに次ぐ硬さ。焼入れ鋼の切削に使用。</li>
-            <li><strong>ダイヤモンド（PCD）</strong>：最も硬い。アルミ・非鉄金属・樹脂向け（鉄には化学反応で不向き）。</li>
+            <li>切削温度が ~ 700°C を超えると、ダイヤモンドが鉄中に拡散・固溶し、急速に摩耗</li>
+            <li>具体的にはダイヤモンド構造が黒鉛化 (graphitization) し、刃先の機械的性質が崩壊</li>
+            <li>鉄系には CBN を使う (立方晶窒化ホウ素は鉄と反応しない)</li>
           </ul>
+          <p>これは Part A 第A1章の「化学結合と元素間の反応性」から自然に予想できる現象で、工具選定における化学的相性の重要性を示しています。</p>
         `,
       },
       {
@@ -4363,36 +4389,57 @@ const CHAPTERS = [
         html: `
           <p>工具には形状に関する重要なパラメータがあります。</p>
           <ul>
-            <li><strong>刃数</strong>：工具1本あたりの刃の数。多いほど1回転あたりの切削量は増えるが、切りくず排出が難しくなる。</li>
-            <li><strong>すくい角・逃げ角</strong>：刃先の角度。切削力や仕上げ面に影響。</li>
-            <li><strong>ねじれ角</strong>（エンドミル）：刃のらせんの角度。大きいほど切削が滑らかだが、軸方向の力が増える。</li>
-            <li><strong>直径・長さ</strong>：工具の基本寸法。長いほど振動しやすい。</li>
+            <li><strong>刃数 (z, teeth)</strong>：工具1本あたりの刃の数。エンドミル 2-6 枚、フェースミル 6-12 枚が典型。多いほど 1 回転あたりの切削量 (Vf = fz·z·n) は増えるが、切屑排出ポケットが狭くなる</li>
+            <li><strong>すくい角 (rake angle, α)</strong>：刃先の前傾角。正 (大きい) → 切削力小・切屑流出スムーズ、負 (小さい) → 刃先強度大・断続切削に強い</li>
+            <li><strong>逃げ角 (clearance angle)</strong>：刃先とワーク面の隙間角。大きすぎると刃先が弱く、小さすぎるとワークと擦れて発熱</li>
+            <li><strong>ねじれ角 (helix angle)</strong>：エンドミルの刃のらせん角度。30-45° が一般、大きいほど切削が滑らかで切屑排出良好だが軸方向力が増す</li>
+            <li><strong>コーナ R (nose radius)</strong>：刃先の角丸半径。大きいほど刃先強度・表面粗さ良好、小さいほど切削力小・精密形状可</li>
+            <li><strong>突き出し長 (overhang)</strong>：工具のホルダーから刃先までの長さ。長いほど振動 (びびり) しやすい (第10章 SLD 参照)</li>
           </ul>
+          <p>工具メーカーのカタログでは、これらの形状パラメータの組み合わせで数千の品番が用意されています。被削材・加工方式・要求精度に応じて適切な工具を選ぶのが、加工現場のコアスキルです。</p>
         `,
       },
       {
-        heading: 'コーティング',
+        heading: 'コーティング技術',
         html: `
-          <p>現代の超硬工具は、ほぼすべて<strong>表面コーティング</strong>が施されています。コーティングは薄い硬質膜で、工具の性能を大きく底上げします。</p>
-          <ul>
-            <li><strong>TiN（窒化チタン）</strong>：金色。基本的なコーティング。</li>
-            <li><strong>TiAlN / AlTiN</strong>：耐熱性が高く、高速切削向け。</li>
-            <li><strong>DLC（ダイヤモンドライクカーボン）</strong>：アルミなど非鉄金属の凝着防止。</li>
-            <li><strong>ダイヤモンドコーティング</strong>：CFRPなど難削材向け。</li>
-          </ul>
-          <p>航空機用のチタン・インコネル加工では、<strong>AlTiN系の耐熱コーティング</strong>がよく使われます。</p>
+          <p>現代の超硬工具はほぼすべて<strong>表面コーティング</strong>が施されています。コーティングは数 μm 厚の硬質膜で、母材の超硬合金の靭性を保ったまま表面の硬さ・耐熱性・潤滑性を底上げします。</p>
+          <table style="width:100%;border-collapse:collapse;font-size:12px;margin:12px 0;">
+            <thead>
+              <tr style="background:var(--bg-3);">
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">コーティング</th>
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">色</th>
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">特徴</th>
+                <th style="padding:6px;text-align:left;border:1px solid var(--line);">主用途</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding:6px;border:1px solid var(--line);"><strong>TiN</strong> (窒化チタン)</td><td style="padding:6px;border:1px solid var(--line);">金</td><td style="padding:6px;border:1px solid var(--line);">基本、安価、汎用</td><td style="padding:6px;border:1px solid var(--line);">鋼の中速切削</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);"><strong>TiCN</strong> (炭窒化チタン)</td><td style="padding:6px;border:1px solid var(--line);">青灰</td><td style="padding:6px;border:1px solid var(--line);">TiN より硬い、密着性良</td><td style="padding:6px;border:1px solid var(--line);">湿式切削、低-中速</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);"><strong>TiAlN / AlTiN</strong></td><td style="padding:6px;border:1px solid var(--line);">紫黒</td><td style="padding:6px;border:1px solid var(--line);">耐熱性 1100°C 級、酸化アルミ層形成で更に保護</td><td style="padding:6px;border:1px solid var(--line);">高速切削、Ti / Inconel</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);"><strong>AlCrN</strong></td><td style="padding:6px;border:1px solid var(--line);">青紫</td><td style="padding:6px;border:1px solid var(--line);">最高耐熱、最先端</td><td style="padding:6px;border:1px solid var(--line);">難削材高速 (Inconel, René)</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);"><strong>DLC</strong> (Diamond-Like Carbon)</td><td style="padding:6px;border:1px solid var(--line);">黒</td><td style="padding:6px;border:1px solid var(--line);">低摩擦・凝着防止</td><td style="padding:6px;border:1px solid var(--line);">AL, Cu 非鉄金属</td></tr>
+              <tr><td style="padding:6px;border:1px solid var(--line);"><strong>ダイヤモンド</strong> (CVD)</td><td style="padding:6px;border:1px solid var(--line);">透明〜灰</td><td style="padding:6px;border:1px solid var(--line);">超硬度、化学的に PCD 同等</td><td style="padding:6px;border:1px solid var(--line);">CFRP, グラファイト</td></tr>
+            </tbody>
+          </table>
+          <p>製膜法は <strong>PVD (物理蒸着, 500-700°C)</strong> と <strong>CVD (化学蒸着, 900-1100°C)</strong> の 2 系統があり、PVD は薄膜・低温で寸法精度を保ちやすく、CVD は厚膜・密着性で勝ります。航空機用の Ti / Inconel 加工では <strong>PVD-TiAlN または PVD-AlCrN</strong> が標準です。</p>
         `,
       },
     ],
     terms: [
-      { name: '超硬合金', en: 'Cemented Carbide', def: 'タングステンカーバイド（WC）を主成分とする焼結金属。現代切削工具の主力素材。' },
-      { name: 'ハイス', en: 'HSS (High Speed Steel)', def: '高速度鋼。鋼を熱処理した工具材。安価で靭性が高い。' },
-      { name: 'コーティング', en: 'Coating', def: '工具表面に施す硬質薄膜。耐摩耗性・耐熱性を向上させる。' },
-      { name: 'すくい角', en: 'Rake Angle', def: '刃先とワーク面の角度。切りくずの流れや切削抵抗に影響する。' },
+      { name: '超硬合金', en: 'Cemented Carbide', def: 'タングステンカーバイド（WC）を Co バインダで焼結した工具材。現代切削の主力。HV 1500-1800、耐熱 ~ 900°C。' },
+      { name: 'ハイス', en: 'HSS (High Speed Steel)', def: '高速度鋼。鋼を熱処理した工具材。安価で靭性が高いが耐熱 ~ 600°C。タップ、ドリル等の複雑形状で現役。' },
+      { name: 'サーメット', en: 'Cermet', def: 'TiCN を Ni バインダで焼結した工具材。超硬と セラミクスの中間、鋼の高速仕上げに有効。' },
+      { name: 'コーティング', en: 'Coating', def: '工具表面の硬質薄膜 (数μm)。TiN/TiAlN/AlCrN/DLC/ダイヤ等。製膜法は PVD/CVD。' },
+      { name: 'すくい角', en: 'Rake Angle (α)', def: '刃先の前傾角。正 → 切削力小、負 → 刃先強度大。切りくずの流れや切削抵抗に影響。' },
+      { name: '逃げ角', en: 'Clearance Angle', def: '刃先とワーク面の隙間角。摩擦と発熱を制御。' },
+      { name: 'ねじれ角', en: 'Helix Angle', def: 'エンドミル刃のらせん角。30-45° が標準、大きいほど切削滑らかだが軸方向力増。' },
+      { name: 'コーナ R', en: 'Nose Radius (r_ε)', def: '刃先の角丸半径。表面粗さ Ra ≈ f²/(32·r_ε) の理論式 (旋削) で効く。' },
     ],
     further: [
-      '工具メーカーのカタログは工具材質とコーティングの実務解説として最良の資料です（無料配布）',
-      '日本粉末冶金工業会 などの業界団体資料に超硬合金の基礎情報があります',
+      '<strong>Sandvik Coromant Catalogue</strong> / <strong>Kennametal Master Catalog</strong> / <strong>三菱マテリアル工具総合カタログ</strong> — 工具材質・コーティング・形状の実務情報',
+      '<strong>日本粉末冶金工業会</strong> 資料に超硬合金の WC-Co 焼結技術が体系化',
+      '<strong>Klocke「Manufacturing Processes 1: Cutting」</strong> (Springer) — 工具材料学の英語標準教科書',
+      '<strong>ISO 513</strong>: Tool material classification — 国際的な工具材分類規格 (P/M/K/N/S/H グループ)',
     ],
   },
   {
