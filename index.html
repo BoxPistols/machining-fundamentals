@@ -4586,6 +4586,93 @@ const CHAPTERS = [
         caption: '<strong>Merchant 円</strong> — 合力 R を主分力 Fc と送り分力 Ft、せん断力 Fs と法線力 Fn に分解。せん断角 φ が決まればすべての成分が幾何的に導出可能。Merchant (1945) の関係 2φ + β − α = π/2 は最小エネルギー原理由来の一次近似。',
       },
       {
+        heading: '切屑形態 4 種 — 材料応答の指紋',
+        html: `
+          <p>切屑の形は、材料・工具・切削条件の組み合わせの結果として決まり、加工現場では「指紋」のように扱われます。観察された切屑形態から、起きている物理現象を逆引きできます。第A6章「切削における材料応答」と合わせて読むと、各形態の物理的根拠が見えます。</p>
+        `,
+        svg: `<svg viewBox="0 0 720 220" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .ch-ttl { fill: var(--text-0); font-family: 'Noto Sans JP', sans-serif; font-size: 12px; font-weight: 700; }
+    .ch-sub { fill: var(--text-2); font-family: 'JetBrains Mono', monospace; font-size: 10px; }
+    .ch-tool { fill: var(--accent); opacity: 0.85; stroke: var(--accent); stroke-width: 1; }
+    .ch-work { fill: var(--text-2); opacity: 0.45; stroke: var(--line-hi); stroke-width: 1; }
+    .ch-chip { stroke: var(--text-1); stroke-width: 1.5; fill: none; }
+  </style>
+  <text class="ch-ttl" x="20" y="20">切屑形態 4 種 (左から順)</text>
+  <text class="ch-sub" x="20" y="34">条件: 旋削、断面右側 = 工具 (オレンジ) + 上方向に切屑流出</text>
+
+  <!-- パネル幅 170, 高さ 130, 4 列 -->
+  ${[
+    { x: 30,  title: '連続型 (continuous)', sub: '延性材 + 高速', mat: 'AL/Cu/軟鋼', path: 'M 0 0 q 30 -8 60 0 q 30 8 60 0 q 30 -8 60 0' },
+    { x: 200, title: 'BUE+連続', sub: 'BUE 付着あり', mat: 'SUS304/中速', path: 'M 0 0 q 30 -10 60 0 c 5 -2 10 -8 18 -2 q 32 8 62 0 q 30 -8 60 0' },
+    { x: 370, title: '鋸歯状 (segmented)', sub: '断熱せん断', mat: 'Ti/Inconel/高速', path: 'M 0 0 l 18 -16 l 12 16 l 18 -16 l 12 16 l 18 -16 l 12 16 l 18 -16 l 12 16 l 18 -16' },
+    { x: 540, title: '不連続 (discontinuous)', sub: '脆性破壊', mat: '鋳鉄/セラミクス', path: 'M 0 0 l 14 0 l 0 -14 l 24 0 l 0 14 l 14 0 l 0 -14 l 24 0 l 0 14 l 14 0 l 0 -14 l 24 0' },
+  ].map(p => `
+    <g transform="translate(${p.x}, 60)">
+      <text class="ch-ttl" x="80" y="0" text-anchor="middle">${p.title}</text>
+      <text class="ch-sub" x="80" y="14" text-anchor="middle">${p.sub}</text>
+      <text class="ch-sub" x="80" y="28" text-anchor="middle" style="fill:var(--accent);">${p.mat}</text>
+      <!-- 工具 -->
+      <polygon class="ch-tool" points="120,80 160,80 160,130 130,130"/>
+      <!-- ワーク -->
+      <rect class="ch-work" x="0" y="120" width="120" height="20"/>
+      <!-- 切屑経路 -->
+      <path class="ch-chip" d="M 130 80 l -10 -10 ${p.path.replace(/^M/, 'm')}"/>
+    </g>
+  `).join('')}
+</svg>`,
+        caption: '左から: 連続型 (延性材・高速)、BUE 付き (SUS304 中速で典型)、鋸歯状 (Ti/Inconel の断熱せん断、高周波振動を伴う)、不連続型 (鋳鉄・セラミクスの脆性破壊)。チップブレーカ形状や切削条件で意図的に形態を制御することも多い。',
+      },
+      {
+        heading: 'BUE (構成刃先) の形成と剥離サイクル',
+        html: `
+          <p><strong>BUE (Built-Up Edge, 構成刃先)</strong> は、被削材が刃先に凝着して「もう一つの刃先」を作る現象。中速度域 (Vc 50〜150 m/min, 鋼+超硬) で最も激しく、高速化または低速化で消失します。剥離時に表面を荒らすため、表面粗さ悪化・振動・工具摩耗加速の原因になります。</p>
+        `,
+        svg: `<svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .bue-ttl { fill: var(--text-0); font-family: 'Noto Sans JP', sans-serif; font-size: 11px; font-weight: 700; text-anchor: middle; }
+    .bue-sub { fill: var(--text-2); font-family: 'JetBrains Mono', monospace; font-size: 10px; text-anchor: middle; }
+    .bue-tool { fill: var(--bg-3); stroke: var(--line-hi); stroke-width: 1.5; }
+    .bue-work { fill: var(--text-2); opacity: 0.4; stroke: var(--line); stroke-width: 1; }
+    .bue-mat { fill: var(--ylw, #f59e0b); opacity: 0.85; }
+    .bue-arrow { stroke: var(--accent); stroke-width: 1; fill: var(--accent); }
+  </style>
+  <text class="bue-ttl" x="360" y="20" text-anchor="middle">BUE (構成刃先) サイクル — 凝着 → 成長 → 最大 → 剥離 (繰り返し)</text>
+
+  ${[
+    { x: 50,  title: '①凝着開始', sub: '微量被削材が付着', size: 4 },
+    { x: 220, title: '②成長', sub: '凝着層が積み上がる', size: 8 },
+    { x: 390, title: '③最大サイズ', sub: '実効刃先が変わる', size: 14 },
+    { x: 560, title: '④剥離・付着痕', sub: 'ワーク表面を荒らす', size: 0, flake: true },
+  ].map(p => `
+    <g transform="translate(${p.x}, 60)">
+      <text class="bue-ttl" x="60" y="0">${p.title}</text>
+      <text class="bue-sub" x="60" y="14">${p.sub}</text>
+      <!-- 工具 -->
+      <polygon class="bue-tool" points="80,40 120,40 120,90 90,90"/>
+      <!-- ワーク -->
+      <rect class="bue-work" x="0" y="80" width="120" height="20"/>
+      ${p.size > 0 ? `<circle class="bue-mat" cx="85" cy="${90 - p.size/2}" r="${p.size}"/>` : ''}
+      ${p.flake ? `
+        <path d="M 30 80 q 10 -8 25 -2 q 8 4 15 -2" fill="none" stroke="var(--ylw, #f59e0b)" stroke-width="1.5" opacity="0.7"/>
+        <text class="bue-sub" x="22" y="76" style="fill:var(--ylw, #f59e0b); text-anchor:start;">付着痕</text>
+      ` : ''}
+    </g>
+  `).join('')}
+
+  <!-- 矢印 (各パネル間) -->
+  <g stroke="var(--text-2)" stroke-width="1" fill="none" opacity="0.5">
+    <line x1="170" y1="120" x2="190" y2="120" marker-end="url(#bue-arr)"/>
+    <line x1="340" y1="120" x2="360" y2="120" marker-end="url(#bue-arr)"/>
+    <line x1="510" y1="120" x2="530" y2="120" marker-end="url(#bue-arr)"/>
+  </g>
+  <defs><marker id="bue-arr" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-2)"/></marker></defs>
+
+  <text class="bue-sub" x="360" y="180" text-anchor="middle">BUE 回避: Vc &gt; 200 m/min (高温で軟化) または Vc &lt; 30 m/min (塑性変形不足)、または冷却液による刃先冷却で凝着抑制</text>
+</svg>`,
+        caption: 'BUE の 4 ステージ — ①微量被削材凝着 → ②積層 → ③最大化 → ④周期的に剥離してワーク表面に付着痕を残す。SUS304 / 軟鋼の中速域で典型、Ti / Inconel では全速度域で凝着傾向あり。回避策: 速度を上げる/下げる、冷却液で刃先温度を下げる。',
+      },
+      {
         heading: '切削熱の発生源',
         html: `
           <p>切削で消費されたエネルギーの多くは<strong>熱</strong>に変わります。主な発熱源は3つ：</p>
