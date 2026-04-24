@@ -142,6 +142,19 @@ code, .mono { font-family: 'JetBrains Mono', monospace; }
   cursor: pointer;
   transition: all 0.12s;
   letter-spacing: 0.05em;
+  white-space: nowrap; /* ナビラベルが縦崩れしないよう固定 */
+}
+.brand { white-space: nowrap; }
+/* 狭いビューポートではサブタイトルと検索 kbd を畳み、ナビの占有幅を削る */
+@media (max-width: 1100px) {
+  .brand .sub { display: none; }
+  .search-trigger kbd { display: none; }
+}
+@media (max-width: 720px) {
+  .topbar { padding: 0 12px; gap: 12px; }
+  .nav { gap: 2px; }
+  .nav button { padding: 6px 10px; }
+  .search-trigger span[data-i18n] { display: none; }
 }
 .nav button:hover {
   background: var(--bg-2);
@@ -1795,19 +1808,19 @@ figure.fig figcaption strong {
    ============================================================================= */
 .chat-widget { position: fixed; right: 16px; bottom: 16px; z-index: 9999; font-family: inherit; }
 
-/* === サイドバーモード (画面幅 1200+ で opt-in) === */
-.chat-widget.mode-sidebar { right: 0; bottom: 0; top: 56px; }
-.chat-widget.mode-sidebar.open { width: 380px; }
+/* === サイドバーモード (画面幅 1200+ で opt-in) ===
+   注: 未 open 時は default (.chat-widget の right:16px / bottom:16px) を維持。
+   以前 .mode-sidebar 自体に top:56px を付与していたため、閉じている FAB が
+   右上に張り付くバグが発生していた。 */
+.chat-widget.mode-sidebar.open { right: 0; bottom: 0; top: 56px; width: 380px; }
 .chat-widget.mode-sidebar.open .chat-panel {
   width: 100%; height: 100%; border-radius: 0;
   border-top: 1px solid var(--line-hi); border-right: 0; border-bottom: 0;
   box-shadow: -8px 0 24px rgba(0,0,0,0.30);
 }
-.chat-widget.mode-sidebar.open ~ * { /* 隣接セレクタは動かないので、body padding は JS 側で */ }
 @media (max-width: 1200px) {
-  /* 狭い画面ではサイドバーモードを強制的にフローティングへ降格 */
-  .chat-widget.mode-sidebar { right: 16px; bottom: 16px; top: auto; }
-  .chat-widget.mode-sidebar.open { width: auto; }
+  /* 狭い画面ではサイドバー開いても浮き FAB + パネル形態に降格 */
+  .chat-widget.mode-sidebar.open { right: 16px; bottom: 16px; top: auto; width: auto; }
   .chat-widget.mode-sidebar.open .chat-panel {
     width: min(420px, calc(100vw - 32px));
     height: min(600px, calc(100vh - 100px));
