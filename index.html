@@ -7179,9 +7179,12 @@ document.getElementById('theme-toggle').addEventListener('click', () => {
 // API設定管理
 // =============================================================================
 
+// 既定の共有 TTS プロキシ (machining-tts Worker)。BYOK や別 Worker 利用時は [設定] で上書き
+const DEFAULT_TTS_PROXY_URL = 'https://machining-tts.ito-atsu-mail.workers.dev';
+
 const apiConfig = {
   grokKey: '',
-  grokProxyUrl: '',      // 例: https://grok-tts-proxy.username.workers.dev
+  grokProxyUrl: DEFAULT_TTS_PROXY_URL,
   grokProxySecret: '',   // プロキシに設定した合言葉（任意）
   lastRateLimit: null,   // 直近レスポンスの {limit, remaining, resetAt} | null
 };
@@ -7217,7 +7220,10 @@ function loadApiConfig() {
     if (saved) {
       const obj = JSON.parse(saved);
       if (typeof obj.grokKey === 'string') apiConfig.grokKey = obj.grokKey;
-      if (typeof obj.grokProxyUrl === 'string') apiConfig.grokProxyUrl = obj.grokProxyUrl;
+      // Access で塞がれた旧 grok-tts-proxy を保存していた既存ユーザは新 Worker に自動マイグレーション
+      if (typeof obj.grokProxyUrl === 'string' && obj.grokProxyUrl.trim()) {
+        apiConfig.grokProxyUrl = /grok-tts-proxy/.test(obj.grokProxyUrl) ? DEFAULT_TTS_PROXY_URL : obj.grokProxyUrl;
+      }
       if (typeof obj.grokProxySecret === 'string') apiConfig.grokProxySecret = obj.grokProxySecret;
     }
   } catch {}
@@ -9391,9 +9397,9 @@ async function openSettingsDialog() {
 
           <div class="settings-field">
             <label for="grok-proxy-url-input">プロキシ URL（必須）</label>
-            <input type="text" id="grok-proxy-url-input" placeholder="https://grok-tts-proxy.xxx.workers.dev" value="${apiConfig.grokProxyUrl || ''}" autocomplete="off" spellcheck="false">
+            <input type="text" id="grok-proxy-url-input" placeholder="https://machining-tts.xxx.workers.dev" value="${apiConfig.grokProxyUrl || ''}" autocomplete="off" spellcheck="false">
             <div class="field-hint">
-              例: <code style="font-family: 'JetBrains Mono', monospace; color: var(--cyan);">https://grok-tts-proxy.your-account.workers.dev</code>
+              既定: <code style="font-family: 'JetBrains Mono', monospace; color: var(--cyan);">https://machining-tts.ito-atsu-mail.workers.dev</code>（共有枠 30 req/日）。自前 Worker を立てるなら URL を上書き
             </div>
           </div>
 
