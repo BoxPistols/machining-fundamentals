@@ -97,6 +97,8 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 code, .mono { font-family: 'JetBrains Mono', monospace; }
 
@@ -154,8 +156,17 @@ code, .mono { font-family: 'JetBrains Mono', monospace; }
 }
 @media (max-width: 720px) {
   .topbar { padding: 0 12px; gap: 12px; }
-  .nav { gap: 2px; }
-  .nav button { padding: 6px 10px; }
+  .brand { flex-shrink: 0; }
+  .nav {
+    gap: 2px;
+    margin-left: auto;
+    min-width: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .nav::-webkit-scrollbar { display: none; }
+  .nav button { padding: 6px 10px; flex-shrink: 0; }
   .search-trigger span[data-i18n] { display: none; }
 }
 .nav button:hover {
@@ -1972,6 +1983,34 @@ body.chat-sidebar-open { padding-right: 380px; transition: padding-right 0.2s ea
 @media (max-width: 480px) {
   .chat-widget { right: 8px; bottom: 8px; }
   .chat-panel { width: calc(100vw - 16px); height: calc(100vh - 60px); }
+}
+
+/* === Mobile layout fixes (iOS Safari zoom + 狭いビューポートでのコンテンツ幅) === */
+@media (max-width: 720px) {
+  .main { padding: 20px 12px 60px; }
+}
+/* iOS Safari は font-size < 16px のフォームコントロールにフォーカスすると
+   ページを拡大する。タッチデバイスでは 16px を下限にして回避する。 */
+@media (hover: none) and (pointer: coarse) {
+  .chat-form textarea,
+  .chat-form .meta select,
+  .chat-settings input,
+  .settings-field input[type="text"],
+  .settings-field input[type="password"],
+  .prefs-row select,
+  .quiz-blank-input,
+  .dialog-textarea,
+  input[type="text"],
+  input[type="password"],
+  input[type="email"],
+  input[type="search"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="url"],
+  textarea,
+  select {
+    font-size: 16px;
+  }
 }
 </style>
 </head>
