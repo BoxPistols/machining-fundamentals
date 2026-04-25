@@ -17,7 +17,7 @@
 //     GEMINI_API_KEY         (Secret)  Chat Anonymous/Invited 用 Google AI Studio キー
 //     ALLOWED_ORIGIN         (Text)    "https://machining-fundamentals.vercel.app" 推奨
 //     PROXY_SHARED_SECRET    (Secret)  BYOK 利用時の追加認証 (任意)
-//     RATE_LIMIT_PER_DAY     (Text)    TTS 1日上限。省略時 30
+//     RATE_LIMIT_PER_DAY     (Text)    TTS 1日上限。省略時 70
 //     CHAT_LIMIT_ANON_REQ    (Text)    Chat Anon req/日。省略時 50
 //     CHAT_LIMIT_INVITED_REQ (Text)    Chat Invited req/日。省略時 100
 //     CHAT_LIMIT_TOKENS_ANON (Text)    Chat Anon token/日。省略時 150000
@@ -34,7 +34,10 @@
 // production で "*" のままだと、悪意サイトが visitor の IP/UA で 30 req/day 枠を
 // 消費する CSRF 的攻撃が成立する。env 必須化を recommend.
 const DEFAULT_ALLOWED_ORIGIN = "*";
-const DEFAULT_RATE_LIMIT = 30;
+// 70 ≒ 1ユーザー1日あたり3〜5ページ相当 (180文字/chunk × 70 ≒ 12,600字)
+// 5人 × 7日 想定で月約 $1 以下に収まる ($4.20/1M chars)。
+// Cloudflare Workers の env `RATE_LIMIT_PER_DAY` で上書き可能。
+const DEFAULT_RATE_LIMIT = 70;
 // BYOK key 形式検証 (audit + 早期拒否)
 const BYOK_OPENAI_RE = /^Bearer sk-[A-Za-z0-9_-]{20,}$/;
 const BYOK_GEMINI_RE = /^Bearer AIza[A-Za-z0-9_-]{20,}$/;

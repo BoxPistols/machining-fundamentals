@@ -339,6 +339,16 @@ body.voice-enabled .voice-panel {
   cursor: pointer;
   max-width: 200px;
 }
+.voice-seek-section { flex: 1 1 200px; min-width: 180px; }
+.voice-seek-section label { width: 100%; gap: 8px; }
+.voice-seek-section input[type=range] { flex: 1; min-width: 120px; width: auto; }
+.voice-seek-pos {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent);
+  font-size: 11px;
+  min-width: 56px;
+  text-align: right;
+}
 .voice-status {
   font-size: 12px;
   color: var(--text-2);
@@ -6732,9 +6742,17 @@ function renderChapter() {
 
       <div class="voice-panel" id="voice-panel">
         <div class="voice-panel-section">
+          <button class="voice-btn" id="vc-prev" title="前の文へ" disabled>◀◀</button>
           <button class="voice-btn primary" id="vc-play" title="再生">▶ 再生</button>
           <button class="voice-btn" id="vc-pause" title="一時停止" disabled>⏸</button>
+          <button class="voice-btn" id="vc-next" title="次の文へ" disabled>▶▶</button>
           <button class="voice-btn" id="vc-stop" title="停止" disabled>■</button>
+        </div>
+        <div class="voice-panel-section voice-seek-section">
+          <label class="voice-seek-label">
+            位置 <span id="vc-seek-pos" class="voice-seek-pos">0 / 0</span>
+            <input type="range" id="vc-seek" min="0" max="0" step="1" value="0" disabled>
+          </label>
         </div>
         <div class="voice-panel-section">
           <div class="voice-mode-toggle" role="group" aria-label="読み上げモード">
@@ -8789,19 +8807,61 @@ function restartCurrentIfPlaying() {
   }, 100);
 }
 
+// chunk index へジャンプ (前/次/シーク共通)。queue は維持。
+// IndexedDB cache に既に Blob があれば API は再消費されない。
+// autoPlay=true の場合は再生を継続/開始、false の場合は currentIdx だけ移動。
+function jumpToChunk(targetIdx, autoPlay = true) {
+  if (voice.queue.length === 0) return;
+  const clamped = Math.max(0, Math.min(voice.queue.length - 1, targetIdx));
+
+  if (voice.markInterrupted) voice.markInterrupted();
+  if ('speechSynthesis' in window) {
+    try { window.speechSynthesis.cancel(); } catch {}
+  }
+  if (voice.currentAudio) {
+    try { voice.currentAudio.pause(); } catch {}
+    voice.currentAudio = null;
+  }
+  if (voice.currentSynthAbort) {
+    try { voice.currentSynthAbort.abort(); } catch {}
+    voice.currentSynthAbort = null;
+  }
+  voice.currentUtterance = null;
+  voice.currentIdx = clamped;
+
+  if (autoPlay) {
+    voice.playing = true;
+    setTimeout(() => {
+      if (voice.playing) speakCurrent();
+    }, 100);
+  } else {
+    voice.playing = false;
+    updateVoiceUI();
+  }
+}
+
 function updateVoiceUI() {
   const status = document.getElementById('vc-status');
   const playBtn = document.getElementById('vc-play');
   const pauseBtn = document.getElementById('vc-pause');
   const stopBtn = document.getElementById('vc-stop');
+  const prevBtn = document.getElementById('vc-prev');
+  const nextBtn = document.getElementById('vc-next');
+  const seek = document.getElementById('vc-seek');
+  const seekPos = document.getElementById('vc-seek-pos');
   if (!status || !playBtn) return;
+
+  const total = voice.queue.length;
+  const hasQueue = total > 0 && voice.currentIdx >= 0;
+  const idx = hasQueue ? voice.currentIdx : -1;
+
   if (voice.playing) {
-    status.textContent = `再生中 ${voice.currentIdx + 1} / ${voice.queue.length}`;
+    status.textContent = `再生中 ${idx + 1} / ${total}`;
     status.classList.add('playing');
     playBtn.disabled = true;
     pauseBtn.disabled = false;
     stopBtn.disabled = false;
-  } else if (voice.queue.length > 0 && voice.currentIdx >= 0) {
+  } else if (hasQueue) {
     status.textContent = '一時停止中';
     status.classList.remove('playing');
     playBtn.disabled = false;
@@ -8813,6 +8873,20 @@ function updateVoiceUI() {
     playBtn.disabled = false;
     pauseBtn.disabled = true;
     stopBtn.disabled = true;
+  }
+
+  if (prevBtn) prevBtn.disabled = !hasQueue || idx <= 0;
+  if (nextBtn) nextBtn.disabled = !hasQueue || idx >= total - 1;
+  if (seek) {
+    seek.disabled = !hasQueue;
+    seek.max = String(Math.max(0, total - 1));
+    // ユーザーがドラッグ中は上書きしない (input イベントで _seeking フラグを立てる)
+    if (!seek.dataset.seeking) {
+      seek.value = String(Math.max(0, idx));
+    }
+  }
+  if (seekPos) {
+    seekPos.textContent = hasQueue ? `${idx + 1} / ${total}` : `0 / ${total}`;
   }
 }
 
@@ -9043,6 +9117,39 @@ function initVoicePanel(ch) {
   document.getElementById('vc-stop').addEventListener('click', () => {
     stopSpeech();
   });
+
+  // 前の文へ (キュー未構築なら何もしない。構築済みなら前の chunk にジャンプして再生継続)
+  document.getElementById('vc-prev').addEventListener('click', () => {
+    if (voice.queue.length === 0) return;
+    jumpToChunk(voice.currentIdx - 1);
+  });
+
+  // 次の文へ
+  document.getElementById('vc-next').addEventListener('click', () => {
+    if (voice.queue.length === 0) return;
+    jumpToChunk(voice.currentIdx + 1);
+  });
+
+  // シークバー
+  // input 中: ラベルだけ更新 (ドラッグ操作で API を浪費しないため)
+  // change (リリース) で実ジャンプ
+  const seek = document.getElementById('vc-seek');
+  const seekPos = document.getElementById('vc-seek-pos');
+  if (seek) {
+    seek.addEventListener('input', (e) => {
+      seek.dataset.seeking = '1';
+      const v = parseInt(e.target.value, 10) || 0;
+      if (seekPos && voice.queue.length > 0) {
+        seekPos.textContent = `${v + 1} / ${voice.queue.length}`;
+      }
+    });
+    seek.addEventListener('change', (e) => {
+      delete seek.dataset.seeking;
+      if (voice.queue.length === 0) return;
+      const v = parseInt(e.target.value, 10) || 0;
+      jumpToChunk(v);
+    });
+  }
 
   updateVoiceUI();
 }
