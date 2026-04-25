@@ -7637,6 +7637,7 @@ const providers = {
           language: opts.lang || 'ja',
           output_format: { codec: 'mp3', sample_rate: 24000, bit_rate: 128000 },
         }),
+        signal: opts.signal,
       });
       // レート制限ヘッダ取得 (Shared モードのみ付与される)
       apiConfig.lastRateLimit = extractRateLimit(res);
@@ -7673,6 +7674,10 @@ const voice = {
   currentSynthAbort: null,   // synthesize中のAbortController
   jumpTimer: null,           // jumpToChunk の debounce タイマー (連打抑制)
   suppressScrollOnce: false, // 手動ジャンプ時の自動スクロールを 1 回だけ抑制
+  synthGeneration: 0,        // 各 playSynthesized が自身のスタンプを保持し、
+                             // jumpToChunk / stopSpeech で incr。古い in-flight な
+                             // 合成が完了しても自分が outdated と分かれば再生しない
+                             // (xAI fetch が signal 未対応の旧経路の保険)
 };
 
 // 保存された設定を復元
@@ -7854,6 +7859,8 @@ function disposeCurrentAudio() {
 }
 
 function stopSpeech() {
+  // 古い in-flight な合成は自分が outdated と気付いて bail する
+  voice.synthGeneration++;
   // 中断フラグを立てて、onend/onerrorで次に進まないようにする
   if (voice.markInterrupted) voice.markInterrupted();
 
@@ -8742,6 +8749,14 @@ function speakCurrent() {
 }
 
 async function playSynthesized(item, provider, interruptedFlagClosure) {
+  // generation スタンプ: jumpToChunk / stopSpeech が voice.synthGeneration を
+  // インクリメントすると、各 await から戻った時点で「自分は古い」と判定できる。
+  // モバイルで複数箇所を素早くタップして xAI fetch が並行した時に、古い fetch が
+  // 後から完了して voice.currentAudio を上書きし、複数音声が同時再生される
+  // 不具合 (xAI / API プロバイダ限定) への対策。
+  const myGen = voice.synthGeneration;
+  const isStale = () => myGen !== voice.synthGeneration;
+
   // キャッシュキー（rateは含めない：ブラウザ側でplaybackRateで制御するため、同一音声で速度変更可能）
   const voiceId = voice.selectedVoiceByProvider[provider.id] || provider.getVoices()[0]?.id;
   const cacheKey = `${provider.id}:${voiceId}:${simpleHash(item.text)}`;
@@ -8756,25 +8771,32 @@ async function playSynthesized(item, provider, interruptedFlagClosure) {
   try {
     blob = await cacheGet(cacheKey);
   } catch {}
+  if (isStale()) return;
 
   // 中断チェック
   if (voice.markInterrupted && !voice.playing) return;
 
   if (!blob) {
-    // 新規生成
+    // 新規生成。ローカル AbortController を作り signal を fetch に渡す。
+    // jumpToChunk 側からは voice.currentSynthAbort.abort() で中断できる。
+    const myAbort = new AbortController();
+    voice.currentSynthAbort = myAbort;
     try {
-      voice.currentSynthAbort = new AbortController();
       blob = await provider.synthesize(item.text, {
         voiceId,
         rate: voice.rate,
         lang: 'ja',
+        signal: myAbort.signal,
       });
-      voice.currentSynthAbort = null;
+      // global controller は最新の playSynthesized が握っている可能性があるので、
+      // 自分のものだけを null 化する
+      if (voice.currentSynthAbort === myAbort) voice.currentSynthAbort = null;
+      if (isStale()) return;
       // キャッシュに保存
       cachePut(cacheKey, blob);
     } catch (e) {
-      voice.currentSynthAbort = null;
-      if (e.name === 'AbortError') return;
+      if (voice.currentSynthAbort === myAbort) voice.currentSynthAbort = null;
+      if (e.name === 'AbortError' || isStale()) return;
       console.error('TTS synthesize error:', e);
       alert(`音声生成に失敗しました：${e.message}`);
       stopSpeech();
@@ -8783,7 +8805,7 @@ async function playSynthesized(item, provider, interruptedFlagClosure) {
   }
 
   // 中断チェック（生成中に停止された場合）
-  if (!voice.playing) return;
+  if (isStale() || !voice.playing) return;
 
   // Audio で再生
   const url = URL.createObjectURL(blob);
@@ -8798,14 +8820,14 @@ async function playSynthesized(item, provider, interruptedFlagClosure) {
   });
   audio.addEventListener('ended', () => {
     URL.revokeObjectURL(url);
-    voice.currentAudio = null;
-    if (!voice.playing) return;
+    if (voice.currentAudio === audio) voice.currentAudio = null;
+    if (isStale() || !voice.playing) return;
     playQueue();
   });
   audio.addEventListener('error', (e) => {
     URL.revokeObjectURL(url);
-    voice.currentAudio = null;
-    if (!voice.playing) return;
+    if (voice.currentAudio === audio) voice.currentAudio = null;
+    if (isStale() || !voice.playing) return;
     console.warn('Audio playback error:', e);
     playQueue();
   });
@@ -8860,6 +8882,9 @@ function jumpToChunk(targetIdx, autoPlay = true) {
   if (voice.queue.length === 0) return;
   const clamped = Math.max(0, Math.min(voice.queue.length - 1, targetIdx));
 
+  // 古い in-flight な合成 (xAI fetch 等) を outdate させる。次の playSynthesized で
+  // この generation を超えると自動 bail する。signal による fetch abort と二重防御。
+  voice.synthGeneration++;
   if (voice.markInterrupted) voice.markInterrupted();
   if ('speechSynthesis' in window) {
     try { window.speechSynthesis.cancel(); } catch {}
