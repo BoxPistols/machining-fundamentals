@@ -339,6 +339,16 @@ body.voice-enabled .voice-panel {
   cursor: pointer;
   max-width: 200px;
 }
+.voice-seek-section { flex: 1 1 200px; min-width: 180px; }
+.voice-seek-section label { width: 100%; gap: 8px; }
+.voice-seek-section input[type=range] { flex: 1; min-width: 120px; width: auto; }
+.voice-seek-pos {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent);
+  font-size: 11px;
+  min-width: 56px;
+  text-align: right;
+}
 .voice-status {
   font-size: 12px;
   color: var(--text-2);
@@ -379,6 +389,21 @@ body.voice-enabled .ch-body h3 {
 .ch-body [data-voice-block-id].voice-block-current {
   background: color-mix(in srgb, var(--accent) 12%, transparent);
   border-left-color: var(--accent);
+}
+/* 音声ON時: ブロック/見出しはクリックで「ここから再生」に対応 */
+body.voice-enabled .ch-body [data-voice-block-id],
+body.voice-enabled .ch-body h3[data-voice-section] {
+  cursor: pointer;
+}
+@media (hover: hover) {
+  /* 再生中ブロックの highlight (12% accent) を hover (6%) で上書きしないよう除外 */
+  body.voice-enabled .ch-body [data-voice-block-id]:not(.voice-block-current):hover {
+    background: color-mix(in srgb, var(--accent) 6%, transparent);
+    border-left-color: color-mix(in srgb, var(--accent) 50%, transparent);
+  }
+  body.voice-enabled .ch-body h3[data-voice-section]:not([data-voice-current="true"]):hover {
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
+  }
 }
 
 /* 要約モード表示の案内 */
@@ -6732,9 +6757,17 @@ function renderChapter() {
 
       <div class="voice-panel" id="voice-panel">
         <div class="voice-panel-section">
+          <button class="voice-btn" id="vc-prev" aria-label="前の文へ" title="前の文へ" disabled>◀◀</button>
           <button class="voice-btn primary" id="vc-play" title="再生">▶ 再生</button>
-          <button class="voice-btn" id="vc-pause" title="一時停止" disabled>⏸</button>
-          <button class="voice-btn" id="vc-stop" title="停止" disabled>■</button>
+          <button class="voice-btn" id="vc-pause" aria-label="一時停止" title="一時停止" disabled>⏸</button>
+          <button class="voice-btn" id="vc-next" aria-label="次の文へ" title="次の文へ" disabled>▶▶</button>
+          <button class="voice-btn" id="vc-stop" aria-label="停止" title="停止" disabled>■</button>
+        </div>
+        <div class="voice-panel-section voice-seek-section">
+          <label class="voice-seek-label">
+            位置 <span id="vc-seek-pos" class="voice-seek-pos">0 / 0</span>
+            <input type="range" id="vc-seek" aria-label="再生位置" min="0" max="0" step="1" value="0" disabled>
+          </label>
         </div>
         <div class="voice-panel-section">
           <div class="voice-mode-toggle" role="group" aria-label="読み上げモード">
@@ -7636,6 +7669,8 @@ const voice = {
   currentAudio: null,        // HTML5 Audio用（Grok等）
   markInterrupted: null,     // 中断フラグ
   currentSynthAbort: null,   // synthesize中のAbortController
+  jumpTimer: null,           // jumpToChunk の debounce タイマー (連打抑制)
+  suppressScrollOnce: false, // 手動ジャンプ時の自動スクロールを 1 回だけ抑制
 };
 
 // 保存された設定を復元
@@ -7800,6 +7835,22 @@ function splitLongText(text, maxLen) {
   return result.length > 0 ? result : [text];
 }
 
+// 現在の HTML5 Audio を停止し、Blob URL を解放する。
+// playSynthesized() の ended/error リスナーも同じ URL を revoke するが、
+// pause 経由の停止 (jumpToChunk / restartCurrentIfPlaying / stopSpeech) では
+// ended が発火しないため、明示的に解放する必要がある。
+// URL.revokeObjectURL は冪等なので二重呼び出しは安全。
+function disposeCurrentAudio() {
+  if (!voice.currentAudio) return;
+  try { voice.currentAudio.pause(); } catch {}
+  try {
+    const src = voice.currentAudio.src;
+    if (src && src.startsWith('blob:')) URL.revokeObjectURL(src);
+  } catch {}
+  try { voice.currentAudio.src = ''; } catch {}
+  voice.currentAudio = null;
+}
+
 function stopSpeech() {
   // 中断フラグを立てて、onend/onerrorで次に進まないようにする
   if (voice.markInterrupted) voice.markInterrupted();
@@ -7808,14 +7859,8 @@ function stopSpeech() {
   if ('speechSynthesis' in window) {
     window.speechSynthesis.cancel();
   }
-  // HTML5 Audio の停止
-  if (voice.currentAudio) {
-    try {
-      voice.currentAudio.pause();
-      voice.currentAudio.src = '';
-    } catch {}
-    voice.currentAudio = null;
-  }
+  // HTML5 Audio の停止 (Blob URL も解放)
+  disposeCurrentAudio();
   // synthesize中のfetchを中断
   if (voice.currentSynthAbort) {
     try { voice.currentSynthAbort.abort(); } catch {}
@@ -8588,6 +8633,19 @@ function buildTurning2dAnim(container) {
 
 // セクション + ブロック単位 highlight + スクロール
 function updateHighlight(item) {
+  // 手動ジャンプ (prev/next/seek) 時は suppressScrollOnce が立っている。
+  // その場合はターゲットが完全にビュー外の時だけスクロールし、視野内なら据え置く
+  // (連打中に勝手にスクロールしてボタンを見失う問題への対策)。
+  const manual = !!voice.suppressScrollOnce;
+  voice.suppressScrollOnce = false;
+  const shouldScroll = (el) => {
+    if (!el) return false;
+    if (!manual) return true;
+    const rect = el.getBoundingClientRect();
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+    return rect.bottom < 0 || rect.top > vh;
+  };
+
   document.querySelectorAll('[data-voice-current]').forEach(el => {
     el.removeAttribute('data-voice-current');
   });
@@ -8601,7 +8659,7 @@ function updateHighlight(item) {
 
   // blockIdx === -1 はセクション見出し読み上げ中、本文ブロックなし
   if (item.blockIdx === -1 || item.blockIdx === undefined) {
-    if (h3) h3.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (shouldScroll(h3)) h3.scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
   }
 
@@ -8612,10 +8670,10 @@ function updateHighlight(item) {
   if (block) {
     block.classList.add('voice-block-current');
     // 同じブロック内の sub-chunk (subIdx > 0) はスクロールしない (ジッタ回避)
-    if (!item.subIdx) {
+    if (!item.subIdx && shouldScroll(block)) {
       block.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-  } else if (item.isFirstOfSection && h3) {
+  } else if (item.isFirstOfSection && shouldScroll(h3)) {
     h3.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 }
@@ -8774,10 +8832,7 @@ function restartCurrentIfPlaying() {
   if ('speechSynthesis' in window) {
     window.speechSynthesis.cancel();
   }
-  if (voice.currentAudio) {
-    try { voice.currentAudio.pause(); } catch {}
-    voice.currentAudio = null;
-  }
+  disposeCurrentAudio();
   if (voice.currentSynthAbort) {
     try { voice.currentSynthAbort.abort(); } catch {}
     voice.currentSynthAbort = null;
@@ -8789,19 +8844,73 @@ function restartCurrentIfPlaying() {
   }, 100);
 }
 
+// chunk index へジャンプ (前/次/シーク共通)。queue は維持。
+// IndexedDB cache に既に Blob があれば API は再消費されない。
+// autoPlay=true の場合は再生を継続/開始、false の場合は currentIdx だけ移動。
+//
+// 連打対応:
+//   - 直前の jumpTimer があれば clearTimeout で破棄 → 最後のクリック位置でのみ
+//     speakCurrent が走るので無駄な発声/API 消費が起きない。
+//   - suppressScrollOnce フラグを立て、次の updateHighlight で消費。
+//     手動ジャンプ中は「ターゲットがビュー外の時のみスクロール」に切替わるので、
+//     ▶▶ 連打中にページがスクロールしてボタンを見失うのを防ぐ。
+function jumpToChunk(targetIdx, autoPlay = true) {
+  if (voice.queue.length === 0) return;
+  const clamped = Math.max(0, Math.min(voice.queue.length - 1, targetIdx));
+
+  if (voice.markInterrupted) voice.markInterrupted();
+  if ('speechSynthesis' in window) {
+    try { window.speechSynthesis.cancel(); } catch {}
+  }
+  disposeCurrentAudio();
+  if (voice.currentSynthAbort) {
+    try { voice.currentSynthAbort.abort(); } catch {}
+    voice.currentSynthAbort = null;
+  }
+  voice.currentUtterance = null;
+  voice.currentIdx = clamped;
+
+  if (voice.jumpTimer) {
+    clearTimeout(voice.jumpTimer);
+    voice.jumpTimer = null;
+  }
+
+  if (autoPlay) {
+    voice.playing = true;
+    voice.suppressScrollOnce = true;
+    voice.jumpTimer = setTimeout(() => {
+      voice.jumpTimer = null;
+      if (voice.playing) speakCurrent();
+    }, 100);
+    updateVoiceUI();
+  } else {
+    voice.playing = false;
+    updateVoiceUI();
+  }
+}
+
 function updateVoiceUI() {
   const status = document.getElementById('vc-status');
   const playBtn = document.getElementById('vc-play');
   const pauseBtn = document.getElementById('vc-pause');
   const stopBtn = document.getElementById('vc-stop');
+  const prevBtn = document.getElementById('vc-prev');
+  const nextBtn = document.getElementById('vc-next');
+  const seek = document.getElementById('vc-seek');
+  const seekPos = document.getElementById('vc-seek-pos');
   if (!status || !playBtn) return;
+
+  const total = voice.queue.length;
+  const hasQueue = total > 0 && voice.currentIdx >= 0;
+  const idx = hasQueue ? voice.currentIdx : -1;
+
   if (voice.playing) {
-    status.textContent = `再生中 ${voice.currentIdx + 1} / ${voice.queue.length}`;
+    status.textContent = `再生中 ${idx + 1} / ${total}`;
     status.classList.add('playing');
     playBtn.disabled = true;
     pauseBtn.disabled = false;
     stopBtn.disabled = false;
-  } else if (voice.queue.length > 0 && voice.currentIdx >= 0) {
+  } else if (hasQueue) {
     status.textContent = '一時停止中';
     status.classList.remove('playing');
     playBtn.disabled = false;
@@ -8813,6 +8922,22 @@ function updateVoiceUI() {
     playBtn.disabled = false;
     pauseBtn.disabled = true;
     stopBtn.disabled = true;
+  }
+
+  if (prevBtn) prevBtn.disabled = !hasQueue || idx <= 0;
+  if (nextBtn) nextBtn.disabled = !hasQueue || idx >= total - 1;
+  if (seek) {
+    seek.disabled = !hasQueue;
+    seek.max = String(Math.max(0, total - 1));
+    // ユーザーがドラッグ中は上書きしない (input イベントで _seeking フラグを立てる)
+    if (!seek.dataset.seeking) {
+      seek.value = String(Math.max(0, idx));
+    }
+    // スクリーンリーダーに「位置 N / total」を読ませる
+    seek.setAttribute('aria-valuetext', hasQueue ? `${idx + 1} / ${total}` : `0 / ${total}`);
+  }
+  if (seekPos) {
+    seekPos.textContent = hasQueue ? `${idx + 1} / ${total}` : `0 / ${total}`;
   }
 }
 
@@ -9043,6 +9168,88 @@ function initVoicePanel(ch) {
   document.getElementById('vc-stop').addEventListener('click', () => {
     stopSpeech();
   });
+
+  // 前の文へ (キュー未構築なら何もしない。構築済みなら前の chunk にジャンプして再生継続)
+  document.getElementById('vc-prev').addEventListener('click', () => {
+    if (voice.queue.length === 0) return;
+    jumpToChunk(voice.currentIdx - 1);
+  });
+
+  // 次の文へ
+  document.getElementById('vc-next').addEventListener('click', () => {
+    if (voice.queue.length === 0) return;
+    jumpToChunk(voice.currentIdx + 1);
+  });
+
+  // シークバー
+  // input 中: ラベルだけ更新 (ドラッグ操作で API を浪費しないため)
+  // change (リリース) で実ジャンプ
+  const seek = document.getElementById('vc-seek');
+  const seekPos = document.getElementById('vc-seek-pos');
+  if (seek) {
+    seek.addEventListener('input', (e) => {
+      seek.dataset.seeking = '1';
+      const v = parseInt(e.target.value, 10) || 0;
+      if (seekPos && voice.queue.length > 0) {
+        seekPos.textContent = `${v + 1} / ${voice.queue.length}`;
+      }
+    });
+    seek.addEventListener('change', (e) => {
+      delete seek.dataset.seeking;
+      if (voice.queue.length === 0) return;
+      const v = parseInt(e.target.value, 10) || 0;
+      jumpToChunk(v);
+    });
+  }
+
+  // 段落クリックで指定位置から再生 (voice.enabled 時のみ)。
+  // テキスト選択 (ドラッグ) と両立: getSelection() に文字列が残っていれば
+  // コピー目的の選択とみなして無視する (click イベントは大きなドラッグでは
+  // そもそも発火しないが、短い選択時の保険)。
+  // インタラクティブ要素 (a / button / フォーム / 対話型ビジュアライザ) は除外。
+  // queue 未構築 (まだ再生していない or 停止中) なら buildQueue でその場で構築。
+  const chBody = document.querySelector('.ch-body');
+  if (chBody) {
+    chBody.addEventListener('click', (e) => {
+      if (!voice.enabled || e.button !== 0) return;
+      const sel = window.getSelection();
+      if (sel && sel.toString().trim().length > 0) return;
+      if (e.target.closest(
+        'a, button, input, select, textarea, summary, [data-interactive], [contenteditable], [data-no-voice-jump]'
+      )) return;
+
+      const block = e.target.closest('[data-voice-block-id]');
+      const heading = e.target.closest('h3[data-voice-section]');
+      let sectionIdx, blockIdx;
+      if (block) {
+        const [s, b] = block.getAttribute('data-voice-block-id').split('-').map(Number);
+        sectionIdx = s;
+        blockIdx = b;
+      } else if (heading) {
+        sectionIdx = parseInt(heading.getAttribute('data-voice-section'), 10);
+        blockIdx = -1;  // セクション見出し
+      } else {
+        return;
+      }
+      if (Number.isNaN(sectionIdx) || Number.isNaN(blockIdx)) return;
+
+      // 要約モードはブロック単位の mapping が無いため対応外
+      if (voice.queue.length === 0) {
+        if (voice.mode === 'summary') return;
+        voice.queue = buildQueue(ch);
+        if (voice.queue.length === 0) return;
+      }
+
+      // 該当 chunk の最初の sub-chunk へジャンプ
+      const idx = voice.queue.findIndex((it) =>
+        it.sectionIdx === sectionIdx &&
+        it.blockIdx === blockIdx &&
+        (it.subIdx === 0 || it.subIdx === undefined)
+      );
+      if (idx < 0) return;
+      jumpToChunk(idx, true);
+    });
+  }
 
   updateVoiceUI();
 }
