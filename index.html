@@ -390,14 +390,16 @@ body.voice-enabled .ch-body h3 {
   background: color-mix(in srgb, var(--accent) 12%, transparent);
   border-left-color: var(--accent);
 }
-/* 音声ON時: ブロック/見出しはクリックで「ここから再生」に対応 */
-body.voice-enabled .ch-body [data-voice-block-id],
+/* 音声ON時: ブロック/見出しはクリックで「ここから再生」に対応。
+   ただし対話型ビジュアライザ ([data-interactive]) はクリックハンドラ側で
+   除外しているため、cursor/hover も付けない (誤誘導防止)。 */
+body.voice-enabled .ch-body [data-voice-block-id]:not([data-interactive]),
 body.voice-enabled .ch-body h3[data-voice-section] {
   cursor: pointer;
 }
 @media (hover: hover) {
   /* 再生中ブロックの highlight (12% accent) を hover (6%) で上書きしないよう除外 */
-  body.voice-enabled .ch-body [data-voice-block-id]:not(.voice-block-current):hover {
+  body.voice-enabled .ch-body [data-voice-block-id]:not([data-interactive]):not(.voice-block-current):hover {
     background: color-mix(in srgb, var(--accent) 6%, transparent);
     border-left-color: color-mix(in srgb, var(--accent) 50%, transparent);
   }
