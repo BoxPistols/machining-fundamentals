@@ -11,7 +11,8 @@
     "dev:py": "python3 -m http.server 5556",
     "dev:vercel": "vercel dev --listen 5557",
     "preview": "vercel",
-    "deploy": "vercel --prod"
+    "deploy": "vercel --prod",
+    "test": "node scripts/test-voice-race.mjs"
   },
   "devDependencies": {
     "serve": "^14.2.4",
