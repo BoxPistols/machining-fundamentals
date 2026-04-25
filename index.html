@@ -390,6 +390,21 @@ body.voice-enabled .ch-body h3 {
   background: color-mix(in srgb, var(--accent) 12%, transparent);
   border-left-color: var(--accent);
 }
+/* 音声ON時: ブロック/見出しはクリックで「ここから再生」に対応 */
+body.voice-enabled .ch-body [data-voice-block-id],
+body.voice-enabled .ch-body h3[data-voice-section] {
+  cursor: pointer;
+}
+@media (hover: hover) {
+  /* 再生中ブロックの highlight (12% accent) を hover (6%) で上書きしないよう除外 */
+  body.voice-enabled .ch-body [data-voice-block-id]:not(.voice-block-current):hover {
+    background: color-mix(in srgb, var(--accent) 6%, transparent);
+    border-left-color: color-mix(in srgb, var(--accent) 50%, transparent);
+  }
+  body.voice-enabled .ch-body h3[data-voice-section]:not([data-voice-current="true"]):hover {
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
+  }
+}
 
 /* 要約モード表示の案内 */
 .voice-summary-note {
@@ -9184,6 +9199,55 @@ function initVoicePanel(ch) {
       if (voice.queue.length === 0) return;
       const v = parseInt(e.target.value, 10) || 0;
       jumpToChunk(v);
+    });
+  }
+
+  // 段落クリックで指定位置から再生 (voice.enabled 時のみ)。
+  // テキスト選択 (ドラッグ) と両立: getSelection() に文字列が残っていれば
+  // コピー目的の選択とみなして無視する (click イベントは大きなドラッグでは
+  // そもそも発火しないが、短い選択時の保険)。
+  // インタラクティブ要素 (a / button / フォーム / 対話型ビジュアライザ) は除外。
+  // queue 未構築 (まだ再生していない or 停止中) なら buildQueue でその場で構築。
+  const chBody = document.querySelector('.ch-body');
+  if (chBody) {
+    chBody.addEventListener('click', (e) => {
+      if (!voice.enabled || e.button !== 0) return;
+      const sel = window.getSelection();
+      if (sel && sel.toString().trim().length > 0) return;
+      if (e.target.closest(
+        'a, button, input, select, textarea, summary, [data-interactive], [contenteditable], [data-no-voice-jump]'
+      )) return;
+
+      const block = e.target.closest('[data-voice-block-id]');
+      const heading = e.target.closest('h3[data-voice-section]');
+      let sectionIdx, blockIdx;
+      if (block) {
+        const [s, b] = block.getAttribute('data-voice-block-id').split('-').map(Number);
+        sectionIdx = s;
+        blockIdx = b;
+      } else if (heading) {
+        sectionIdx = parseInt(heading.getAttribute('data-voice-section'), 10);
+        blockIdx = -1;  // セクション見出し
+      } else {
+        return;
+      }
+      if (Number.isNaN(sectionIdx) || Number.isNaN(blockIdx)) return;
+
+      // 要約モードはブロック単位の mapping が無いため対応外
+      if (voice.queue.length === 0) {
+        if (voice.mode === 'summary') return;
+        voice.queue = buildQueue(ch);
+        if (voice.queue.length === 0) return;
+      }
+
+      // 該当 chunk の最初の sub-chunk へジャンプ
+      const idx = voice.queue.findIndex((it) =>
+        it.sectionIdx === sectionIdx &&
+        it.blockIdx === blockIdx &&
+        (it.subIdx === 0 || it.subIdx === undefined)
+      );
+      if (idx < 0) return;
+      jumpToChunk(idx, true);
     });
   }
 
