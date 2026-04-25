@@ -6742,16 +6742,16 @@ function renderChapter() {
 
       <div class="voice-panel" id="voice-panel">
         <div class="voice-panel-section">
-          <button class="voice-btn" id="vc-prev" title="前の文へ" disabled>◀◀</button>
+          <button class="voice-btn" id="vc-prev" aria-label="前の文へ" title="前の文へ" disabled>◀◀</button>
           <button class="voice-btn primary" id="vc-play" title="再生">▶ 再生</button>
-          <button class="voice-btn" id="vc-pause" title="一時停止" disabled>⏸</button>
-          <button class="voice-btn" id="vc-next" title="次の文へ" disabled>▶▶</button>
-          <button class="voice-btn" id="vc-stop" title="停止" disabled>■</button>
+          <button class="voice-btn" id="vc-pause" aria-label="一時停止" title="一時停止" disabled>⏸</button>
+          <button class="voice-btn" id="vc-next" aria-label="次の文へ" title="次の文へ" disabled>▶▶</button>
+          <button class="voice-btn" id="vc-stop" aria-label="停止" title="停止" disabled>■</button>
         </div>
         <div class="voice-panel-section voice-seek-section">
           <label class="voice-seek-label">
             位置 <span id="vc-seek-pos" class="voice-seek-pos">0 / 0</span>
-            <input type="range" id="vc-seek" min="0" max="0" step="1" value="0" disabled>
+            <input type="range" id="vc-seek" aria-label="再生位置" min="0" max="0" step="1" value="0" disabled>
           </label>
         </div>
         <div class="voice-panel-section">
@@ -7654,6 +7654,8 @@ const voice = {
   currentAudio: null,        // HTML5 Audio用（Grok等）
   markInterrupted: null,     // 中断フラグ
   currentSynthAbort: null,   // synthesize中のAbortController
+  jumpTimer: null,           // jumpToChunk の debounce タイマー (連打抑制)
+  suppressScrollOnce: false, // 手動ジャンプ時の自動スクロールを 1 回だけ抑制
 };
 
 // 保存された設定を復元
@@ -7818,6 +7820,22 @@ function splitLongText(text, maxLen) {
   return result.length > 0 ? result : [text];
 }
 
+// 現在の HTML5 Audio を停止し、Blob URL を解放する。
+// playSynthesized() の ended/error リスナーも同じ URL を revoke するが、
+// pause 経由の停止 (jumpToChunk / restartCurrentIfPlaying / stopSpeech) では
+// ended が発火しないため、明示的に解放する必要がある。
+// URL.revokeObjectURL は冪等なので二重呼び出しは安全。
+function disposeCurrentAudio() {
+  if (!voice.currentAudio) return;
+  try { voice.currentAudio.pause(); } catch {}
+  try {
+    const src = voice.currentAudio.src;
+    if (src && src.startsWith('blob:')) URL.revokeObjectURL(src);
+  } catch {}
+  try { voice.currentAudio.src = ''; } catch {}
+  voice.currentAudio = null;
+}
+
 function stopSpeech() {
   // 中断フラグを立てて、onend/onerrorで次に進まないようにする
   if (voice.markInterrupted) voice.markInterrupted();
@@ -7826,14 +7844,8 @@ function stopSpeech() {
   if ('speechSynthesis' in window) {
     window.speechSynthesis.cancel();
   }
-  // HTML5 Audio の停止
-  if (voice.currentAudio) {
-    try {
-      voice.currentAudio.pause();
-      voice.currentAudio.src = '';
-    } catch {}
-    voice.currentAudio = null;
-  }
+  // HTML5 Audio の停止 (Blob URL も解放)
+  disposeCurrentAudio();
   // synthesize中のfetchを中断
   if (voice.currentSynthAbort) {
     try { voice.currentSynthAbort.abort(); } catch {}
@@ -8606,6 +8618,19 @@ function buildTurning2dAnim(container) {
 
 // セクション + ブロック単位 highlight + スクロール
 function updateHighlight(item) {
+  // 手動ジャンプ (prev/next/seek) 時は suppressScrollOnce が立っている。
+  // その場合はターゲットが完全にビュー外の時だけスクロールし、視野内なら据え置く
+  // (連打中に勝手にスクロールしてボタンを見失う問題への対策)。
+  const manual = !!voice.suppressScrollOnce;
+  voice.suppressScrollOnce = false;
+  const shouldScroll = (el) => {
+    if (!el) return false;
+    if (!manual) return true;
+    const rect = el.getBoundingClientRect();
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+    return rect.bottom < 0 || rect.top > vh;
+  };
+
   document.querySelectorAll('[data-voice-current]').forEach(el => {
     el.removeAttribute('data-voice-current');
   });
@@ -8619,7 +8644,7 @@ function updateHighlight(item) {
 
   // blockIdx === -1 はセクション見出し読み上げ中、本文ブロックなし
   if (item.blockIdx === -1 || item.blockIdx === undefined) {
-    if (h3) h3.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (shouldScroll(h3)) h3.scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
   }
 
@@ -8630,10 +8655,10 @@ function updateHighlight(item) {
   if (block) {
     block.classList.add('voice-block-current');
     // 同じブロック内の sub-chunk (subIdx > 0) はスクロールしない (ジッタ回避)
-    if (!item.subIdx) {
+    if (!item.subIdx && shouldScroll(block)) {
       block.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-  } else if (item.isFirstOfSection && h3) {
+  } else if (item.isFirstOfSection && shouldScroll(h3)) {
     h3.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 }
@@ -8792,10 +8817,7 @@ function restartCurrentIfPlaying() {
   if ('speechSynthesis' in window) {
     window.speechSynthesis.cancel();
   }
-  if (voice.currentAudio) {
-    try { voice.currentAudio.pause(); } catch {}
-    voice.currentAudio = null;
-  }
+  disposeCurrentAudio();
   if (voice.currentSynthAbort) {
     try { voice.currentSynthAbort.abort(); } catch {}
     voice.currentSynthAbort = null;
@@ -8810,6 +8832,13 @@ function restartCurrentIfPlaying() {
 // chunk index へジャンプ (前/次/シーク共通)。queue は維持。
 // IndexedDB cache に既に Blob があれば API は再消費されない。
 // autoPlay=true の場合は再生を継続/開始、false の場合は currentIdx だけ移動。
+//
+// 連打対応:
+//   - 直前の jumpTimer があれば clearTimeout で破棄 → 最後のクリック位置でのみ
+//     speakCurrent が走るので無駄な発声/API 消費が起きない。
+//   - suppressScrollOnce フラグを立て、次の updateHighlight で消費。
+//     手動ジャンプ中は「ターゲットがビュー外の時のみスクロール」に切替わるので、
+//     ▶▶ 連打中にページがスクロールしてボタンを見失うのを防ぐ。
 function jumpToChunk(targetIdx, autoPlay = true) {
   if (voice.queue.length === 0) return;
   const clamped = Math.max(0, Math.min(voice.queue.length - 1, targetIdx));
@@ -8818,10 +8847,7 @@ function jumpToChunk(targetIdx, autoPlay = true) {
   if ('speechSynthesis' in window) {
     try { window.speechSynthesis.cancel(); } catch {}
   }
-  if (voice.currentAudio) {
-    try { voice.currentAudio.pause(); } catch {}
-    voice.currentAudio = null;
-  }
+  disposeCurrentAudio();
   if (voice.currentSynthAbort) {
     try { voice.currentSynthAbort.abort(); } catch {}
     voice.currentSynthAbort = null;
@@ -8829,11 +8855,19 @@ function jumpToChunk(targetIdx, autoPlay = true) {
   voice.currentUtterance = null;
   voice.currentIdx = clamped;
 
+  if (voice.jumpTimer) {
+    clearTimeout(voice.jumpTimer);
+    voice.jumpTimer = null;
+  }
+
   if (autoPlay) {
     voice.playing = true;
-    setTimeout(() => {
+    voice.suppressScrollOnce = true;
+    voice.jumpTimer = setTimeout(() => {
+      voice.jumpTimer = null;
       if (voice.playing) speakCurrent();
     }, 100);
+    updateVoiceUI();
   } else {
     voice.playing = false;
     updateVoiceUI();
@@ -8884,6 +8918,8 @@ function updateVoiceUI() {
     if (!seek.dataset.seeking) {
       seek.value = String(Math.max(0, idx));
     }
+    // スクリーンリーダーに「位置 N / total」を読ませる
+    seek.setAttribute('aria-valuetext', hasQueue ? `${idx + 1} / ${total}` : `0 / ${total}`);
   }
   if (seekPos) {
     seekPos.textContent = hasQueue ? `${idx + 1} / ${total}` : `0 / ${total}`;

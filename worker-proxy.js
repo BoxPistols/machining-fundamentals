@@ -34,9 +34,10 @@
 // production で "*" のままだと、悪意サイトが visitor の IP/UA で 30 req/day 枠を
 // 消費する CSRF 的攻撃が成立する。env 必須化を recommend.
 const DEFAULT_ALLOWED_ORIGIN = "*";
-// 70 ≒ 1ユーザー1日あたり3〜5ページ相当 (180文字/chunk × 70 ≒ 12,600字)
-// 5人 × 7日 想定で月約 $1 以下に収まる ($4.20/1M chars)。
-// Cloudflare Workers の env `RATE_LIMIT_PER_DAY` で上書き可能。
+// env 未設定時のフォールバック値。70 ≒ 約 12,600 字/日 (180 chars/chunk × 70)。
+// 実運用 (3〜4 人 × 5P/週 想定) では env `RATE_LIMIT_PER_DAY` で本番上書きする。
+// 例: RATE_LIMIT_PER_DAY=300 → 1 IP フル消費でも $0.23/日 ($4.20/1M chars 基準)。
+//     キャッシュヒット分は API を消費しないため、実コストはこれよりさらに小さい。
 const DEFAULT_RATE_LIMIT = 70;
 // BYOK key 形式検証 (audit + 早期拒否)
 const BYOK_OPENAI_RE = /^Bearer sk-[A-Za-z0-9_-]{20,}$/;
