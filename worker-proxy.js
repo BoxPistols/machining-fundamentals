@@ -252,22 +252,25 @@ const PROVIDERS = {
   openai: {
     endpoint: OPENAI_API_BASE,
     buildBody: (model, systemPrompt, messages, opts) => {
-      // GPT-5.x 系列は max_tokens 廃止、max_completion_tokens のみ受付
-      // GPT-4 系列など旧モデルは max_tokens のみ
-      const isNewSeries = /^gpt-5/.test(model);
-      const tokenField = isNewSeries
-        ? { max_completion_tokens: opts.maxOutputTokens }
-        : { max_tokens: opts.maxOutputTokens };
-      return {
+      // GPT-5 / o1 / o3 系列は max_tokens 廃止 + temperature/top_p 指定不可 (400 error)
+      // GPT-4 系列など旧モデルは max_tokens + temperature OK
+      const isNewSeries = /^(gpt-5|o1|o3)/.test(model);
+      const body = {
         model,
         messages: [
           { role: "system", content: systemPrompt },
           ...messages,
         ],
-        ...tokenField,
-        temperature: opts.temperature,
         stream: true,
       };
+      if (isNewSeries) {
+        body.max_completion_tokens = opts.maxOutputTokens;
+        // temperature / top_p は送らない (新世代モデルは 400 を返す)
+      } else {
+        body.max_tokens = opts.maxOutputTokens;
+        body.temperature = opts.temperature;
+      }
+      return body;
     },
   },
   // Gemini はネイティブ endpoint を直接使用 (Phase 0 検証で OpenAI 互換は不安定:
@@ -384,6 +387,25 @@ function estimateTokens(text) {
   return Math.ceil(ja * 1.5 + en * 1.3);
 }
 
+// モデル別の maxOutputTokens (peer kaze-ux 推奨値、学習アプリは短文応答前提で縮小)
+// - gpt-5-nano: 短文 Q&A 前提の 800
+// - gpt-5-mini / full / o1 / o3: 章解説の余裕枠 1600
+// - gemini-2.5-*: reasoning tokens 消費必須、+1200 buffer 込みで 2000-3000
+// env `CHAT_MAX_OUTPUT_TOKENS` が設定されていればそちらを優先 (従来互換)
+function resolveMaxOutputTokens(model, env) {
+  if (env.CHAT_MAX_OUTPUT_TOKENS) {
+    const override = parseInt(env.CHAT_MAX_OUTPUT_TOKENS);
+    if (override > 0) {
+      return model.includes("gemini-2.5") ? override + 1200 : override;
+    }
+  }
+  if (model.includes("gpt-5-nano") || model.includes("nano")) return 800;
+  if (/^(gpt-5|o1|o3)/.test(model)) return 1600;
+  if (model.includes("gemini-2.5-pro")) return 3000;
+  if (model.includes("gemini-2.5")) return 2000;
+  return CHAT_DEFAULTS.maxOutputTokens;
+}
+
 function chatLimitsFor(tier, env) {
   if (tier === "byok") return null; // 制限なし
   if (tier === "invited") {
@@ -401,8 +423,9 @@ function chatLimitsFor(tier, env) {
 async function checkChatRateLimit(env, sessionKey, tier, estimatedInputTokens) {
   const limits = chatLimitsFor(tier, env);
   if (!limits) return { allowed: true, skip: true };
+  const resetAt = nextMidnightUtcEpoch();
   if (!env.RATE_LIMIT_KV) {
-    return { allowed: true, limits, reqCount: -1, tokCount: -1, noKv: true };
+    return { allowed: true, limits, reqCount: -1, tokCount: -1, resetAt, noKv: true };
   }
   const day = todayUtc();
   const reqKey = `chat:${tier}:${sessionKey}:${day}:requests`;
@@ -414,10 +437,10 @@ async function checkChatRateLimit(env, sessionKey, tier, estimatedInputTokens) {
   const reqCount = parseInt(reqRaw) || 0;
   const tokCount = parseInt(tokRaw) || 0;
   if (reqCount >= limits.reqLimit) {
-    return { allowed: false, reason: "request_limit", limits, reqCount, tokCount };
+    return { allowed: false, reason: "request_limit", limits, reqCount, tokCount, resetAt };
   }
   if (tokCount + estimatedInputTokens >= limits.tokLimit) {
-    return { allowed: false, reason: "token_limit", limits, reqCount, tokCount };
+    return { allowed: false, reason: "token_limit", limits, reqCount, tokCount, resetAt };
   }
   // 先に requests と 推定入力 tokens を増分。出力 token は ストリーム完了後に追加
   await Promise.all([
@@ -435,6 +458,7 @@ async function checkChatRateLimit(env, sessionKey, tier, estimatedInputTokens) {
     tokCount: tokCount + estimatedInputTokens,
     reqKey,
     tokKey,
+    resetAt,
   };
 }
 
@@ -545,7 +569,10 @@ async function handleChat(request, env, ctx, allowedOrigin) {
           "X-RateLimit-Remaining": String(
             Math.max(0, rlResult.limits.reqLimit - rlResult.reqCount)
           ),
-          "Retry-After": "3600",
+          "X-RateLimit-Reset": String(rlResult.resetAt),
+          "Retry-After": String(
+            Math.max(1, rlResult.resetAt - Math.floor(Date.now() / 1000))
+          ),
         },
         allowedOrigin
       );
@@ -568,10 +595,9 @@ async function handleChat(request, env, ctx, allowedOrigin) {
     upstreamAuth = `Bearer ${env.GEMINI_API_KEY}`;
   }
 
-  // Upstream 呼び出し
-  // Gemini 2.5+ は thinking tokens を消費するため maxOutputTokens にバッファを足す
-  const maxOutputBase = parseInt(env.CHAT_MAX_OUTPUT_TOKENS) || CHAT_DEFAULTS.maxOutputTokens;
-  const maxOutput = provider.name === "gemini" ? maxOutputBase + 1200 : maxOutputBase;
+  // Upstream 呼び出し: model 名から maxOutputTokens を決定 (peer kaze-ux 推奨値準拠)
+  // env 値はキャップ。明示設定時は env を優先、未設定時は model 別の既定を使う。
+  const maxOutput = resolveMaxOutputTokens(model, env);
   const reqBody = provider.cfg.buildBody(model, systemPrompt, messages, {
     maxOutputTokens: maxOutput,
     temperature: CHAT_DEFAULTS.defaultTemperature,
@@ -630,6 +656,9 @@ async function handleChat(request, env, ctx, allowedOrigin) {
     responseHeaders["X-RateLimit-Remaining"] = String(
       Math.max(0, rlResult.limits.reqLimit - rlResult.reqCount)
     );
+    if (rlResult.resetAt) {
+      responseHeaders["X-RateLimit-Reset"] = String(rlResult.resetAt);
+    }
   }
   if (tierInfo.inviteFail) {
     responseHeaders["X-Invite-Fail"] = tierInfo.inviteFail;
