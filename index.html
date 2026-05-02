@@ -367,6 +367,21 @@ body.voice-enabled .voice-panel {
   50% { opacity: 0.3; }
 }
 
+/* VOICEVOX 利用規約に基づくクレジット表記 (provider が voicevox の時のみ表示) */
+.voice-credit {
+  flex-basis: 100%;
+  font-size: 11px;
+  color: var(--text-3, var(--text-2));
+  font-family: 'JetBrains Mono', monospace;
+  margin-top: 2px;
+  opacity: 0.85;
+}
+.voice-credit a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
+
 /* 現在読み上げ中のセクション */
 .ch-body h3[data-voice-current="true"],
 .ch-body [data-voice-section][data-voice-current="true"] {
@@ -6766,6 +6781,7 @@ function renderChapter() {
           </label>
         </div>
         <div class="voice-status" id="vc-status">待機中</div>
+        <div class="voice-credit" id="vc-credit" hidden></div>
       </div>
 
       <div class="voice-summary-note">
@@ -7244,10 +7260,14 @@ document.getElementById('theme-toggle').addEventListener('click', () => {
 // 既定の共有 TTS プロキシ (machining-tts Worker)。BYOK や別 Worker 利用時は [設定] で上書き
 const DEFAULT_TTS_PROXY_URL = 'https://machining-tts.ito-atsu-mail.workers.dev';
 
+// VOICEVOX エンジン (ローカル) のデフォルト URL。アプリ起動中なら CORS も許可済み。
+const DEFAULT_VOICEVOX_URL = 'http://localhost:50021';
+
 const apiConfig = {
   grokKey: '',
   grokProxyUrl: DEFAULT_TTS_PROXY_URL,
   grokProxySecret: '',   // プロキシに設定した合言葉（任意）
+  voicevoxUrl: DEFAULT_VOICEVOX_URL, // ローカル engine。Docker 等で別ポートに変えた人向けに override 可
   lastRateLimit: null,   // 直近レスポンスの {limit, remaining, resetAt} | null
 };
 
@@ -7287,6 +7307,9 @@ function loadApiConfig() {
         apiConfig.grokProxyUrl = /grok-tts-proxy/.test(obj.grokProxyUrl) ? DEFAULT_TTS_PROXY_URL : obj.grokProxyUrl;
       }
       if (typeof obj.grokProxySecret === 'string') apiConfig.grokProxySecret = obj.grokProxySecret;
+      if (typeof obj.voicevoxUrl === 'string' && obj.voicevoxUrl.trim()) {
+        apiConfig.voicevoxUrl = obj.voicevoxUrl;
+      }
     }
   } catch {}
 }
@@ -7618,6 +7641,180 @@ const providers = {
         throw buildGrokError(res);
       }
       return await res.blob();
+    },
+  },
+
+  // ----- VOICEVOX (ローカル engine) -----
+  // 完全ローカル / 無料 / クレジット表記必須 (VOICEVOX:キャラクター名)
+  // 既定 endpoint: http://localhost:50021
+  // ユーザが VOICEVOX アプリを起動していれば CORS 許可済みで直接叩ける。
+  // HTTPS ページ → http://localhost は localhost が secure context 扱いのため許可される。
+  voicevox: {
+    id: 'voicevox',
+    label: 'VOICEVOX（ローカル・無料）',
+    requiresApiKey: false,
+    isConfigured: () => !!apiConfig.voicevoxUrl,
+    // speaker ID は VOICEVOX 公式キャラクター定義値。よく使われるキャラ + ずんだもん全スタイルを優先
+    getVoices() {
+      return [
+        { id: '3',  label: 'ずんだもん（ノーマル）',   lang: 'ja' },
+        { id: '1',  label: 'ずんだもん（あまあま）',   lang: 'ja' },
+        { id: '7',  label: 'ずんだもん（ツンツン）',   lang: 'ja' },
+        { id: '5',  label: 'ずんだもん（セクシー）',   lang: 'ja' },
+        { id: '22', label: 'ずんだもん（ささやき）',   lang: 'ja' },
+        { id: '38', label: 'ずんだもん（ヒソヒソ）',   lang: 'ja' },
+        { id: '2',  label: '四国めたん（ノーマル）',   lang: 'ja' },
+        { id: '0',  label: '四国めたん（あまあま）',   lang: 'ja' },
+        { id: '6',  label: '四国めたん（セクシー）',   lang: 'ja' },
+        { id: '8',  label: '春日部つむぎ（ノーマル）', lang: 'ja' },
+        { id: '10', label: '雨晴はう（ノーマル）',     lang: 'ja' },
+        { id: '11', label: '波音リツ（ノーマル）',     lang: 'ja' },
+        { id: '13', label: '青山龍星（ノーマル）',     lang: 'ja' },
+        { id: '14', label: '冥鳴ひまり（ノーマル）',   lang: 'ja' },
+        { id: '16', label: '九州そら（ノーマル）',     lang: 'ja' },
+        { id: '20', label: 'もち子さん（ノーマル）',   lang: 'ja' },
+        { id: '21', label: '剣崎雌雄（ノーマル）',     lang: 'ja' },
+      ];
+    },
+    async synthesize(text, opts) {
+      const base = (apiConfig.voicevoxUrl || DEFAULT_VOICEVOX_URL).replace(/\/+$/, '');
+      const speaker = opts.voiceId || '3';
+      // Step 1: audio_query (text + speaker → AudioQuery JSON)
+      let queryRes;
+      try {
+        queryRes = await fetch(
+          `${base}/audio_query?text=${encodeURIComponent(text)}&speaker=${encodeURIComponent(speaker)}`,
+          { method: 'POST', signal: opts.signal },
+        );
+      } catch (e) {
+        if (e.name === 'AbortError') throw e;
+        throw new Error('VOICEVOX エンジンに接続できません。VOICEVOX アプリを起動してください（既定: http://localhost:50021）。');
+      }
+      if (!queryRes.ok) {
+        throw new Error(`VOICEVOX audio_query エラー: ${queryRes.status}`);
+      }
+      const query = await queryRes.json();
+      // Step 2: synthesis (AudioQuery → WAV blob)
+      const synthRes = await fetch(
+        `${base}/synthesis?speaker=${encodeURIComponent(speaker)}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'audio/wav' },
+          body: JSON.stringify(query),
+          signal: opts.signal,
+        },
+      );
+      if (!synthRes.ok) {
+        throw new Error(`VOICEVOX synthesis エラー: ${synthRes.status}`);
+      }
+      return await synthRes.blob();
+    },
+  },
+
+  // ----- VOICEVOX (TTS Quest 公開 API) -----
+  // 第三者運用の公開 API (https://api.tts.quest/)。VOICEVOX アプリ不要 = 公開 Vercel
+  // サイト訪問者でも「ずんだもん」を聞ける。代償としてレート制限・第三者依存あり。
+  // 流れ: synthesis に POST/GET → JSON で audioStatusUrl/mp3DownloadUrl 取得 →
+  //       audioStatusUrl をポーリングして isAudioReady=true まで待機 → mp3 を fetch
+  ttsquest: {
+    id: 'ttsquest',
+    label: 'VOICEVOX 公開API（無料・低レート）',
+    requiresApiKey: false,
+    isConfigured: () => true,
+    // ローカル engine と互換の speaker ID なので、voicevox の音声一覧を流用
+    getVoices() {
+      return providers.voicevox.getVoices();
+    },
+    async synthesize(text, opts) {
+      const speaker = opts.voiceId || '3';
+      const submitUrl =
+        `https://api.tts.quest/v3/voicevox/synthesis?speaker=${encodeURIComponent(speaker)}` +
+        `&text=${encodeURIComponent(text)}`;
+
+      // Step 1: synthesis 申込み (api.tts.quest は ~1 req/秒 と厳しいので 429 を自動リトライ)
+      // 最大 3 回 (Retry-After 秒待機 / 既定 2 秒) → それでもダメならエラー
+      let json;
+      const MAX_429_RETRIES = 3;
+      let attempt = 0;
+      while (true) {
+        if (opts.signal && opts.signal.aborted) throw new DOMException('aborted', 'AbortError');
+        let submitRes;
+        try {
+          submitRes = await fetch(submitUrl, { signal: opts.signal });
+        } catch (e) {
+          if (e.name === 'AbortError') throw e;
+          throw new Error('TTS Quest API に接続できません（CORS / 通信エラーの可能性）。');
+        }
+        if (submitRes.status === 429) {
+          if (attempt < MAX_429_RETRIES) {
+            const retry = submitRes.headers.get('Retry-After');
+            const waitSec = retry && /^\d+$/.test(retry) ? parseInt(retry, 10) : 2;
+            console.info(`[TTS Quest] 429 received, retrying in ${waitSec}s (attempt ${attempt + 1}/${MAX_429_RETRIES})`);
+            await new Promise(r => setTimeout(r, waitSec * 1000));
+            attempt++;
+            continue;
+          }
+          // ここまで来たら諦め
+          const retry = submitRes.headers.get('Retry-After');
+          const waitSec = retry && /^\d+$/.test(retry) ? parseInt(retry, 10) : null;
+          const tail = waitSec
+            ? `${waitSec}秒後に再試行してください`
+            : '少し時間を置いて再試行するか、ローカル VOICEVOX に切替えてください';
+          throw new Error(`TTS Quest: レート制限に到達しました（自動リトライ済み）。${tail}。`);
+        }
+        if (!submitRes.ok) {
+          throw new Error(`TTS Quest synthesis エラー: ${submitRes.status}`);
+        }
+        try {
+          json = await submitRes.json();
+        } catch (e) {
+          if (e.name === 'AbortError') throw e;
+          throw new Error('TTS Quest: レスポンスの JSON 解析に失敗しました。');
+        }
+        break; // 成功
+      }
+      if (!json.success) {
+        throw new Error(`TTS Quest: ${json.errorMessage || '不明なエラー'}`);
+      }
+      if (!json.mp3DownloadUrl || !json.audioStatusUrl) {
+        throw new Error('TTS Quest: 不正なレスポンス（URL が欠落）');
+      }
+
+      // Step 2: 合成完了をポーリング (status.isAudioReady)
+      // 通常は短文 1 秒・長文でも数秒で ready。60 秒到達は TTS Quest 側の混雑。
+      const startedAt = Date.now();
+      const TIMEOUT_MS = 60_000;
+      while (true) {
+        if (opts.signal && opts.signal.aborted) throw new DOMException('aborted', 'AbortError');
+        if (Date.now() - startedAt > TIMEOUT_MS) {
+          // 再現調査用に status URL を console に残す
+          console.warn('[TTS Quest] timeout. audioStatusUrl=', json.audioStatusUrl);
+          throw new Error(
+            `TTS Quest: 合成タイムアウト (${TIMEOUT_MS / 1000}秒)。サーバ混雑の可能性があります。少し時間を置いて再試行するか、ローカル VOICEVOX に切替えてください。`,
+          );
+        }
+        await new Promise(r => setTimeout(r, 500));
+        try {
+          const sRes = await fetch(json.audioStatusUrl, { signal: opts.signal });
+          if (!sRes.ok) continue; // 一時的な 5xx はリトライ
+          const status = await sRes.json();
+          if (status.isAudioError) {
+            throw new Error(`TTS Quest: 合成側エラー (${status.status || 'unknown'})`);
+          }
+          if (status.isAudioReady) break;
+        } catch (e) {
+          if (e.name === 'AbortError') throw e;
+          if (e.message && e.message.startsWith('TTS Quest')) throw e;
+          // それ以外（一時的なポーリング失敗）は次ループへ
+        }
+      }
+
+      // Step 3: MP3 ダウンロード → blob
+      const audioRes = await fetch(json.mp3DownloadUrl, { signal: opts.signal });
+      if (!audioRes.ok) {
+        throw new Error(`TTS Quest: MP3 ダウンロード失敗 (${audioRes.status})`);
+      }
+      return await audioRes.blob();
     },
   },
 };
@@ -9006,6 +9203,44 @@ function populateVoiceSelect() {
     voice.selectedVoiceByProvider[provider.id] = voices[0].id;
     saveVoicePrefs();
   }
+  updateVoiceCredit();
+}
+
+// VOICEVOX 利用規約に基づくクレジット表示。
+// voicevox (ローカル engine) または ttsquest (公開 API) 選択時に表示。
+// 例: "Powered by VOICEVOX:ずんだもん" / "...:ずんだもん / API: TTS Quest"
+// XSS 防止のため createElement + textContent で構築 (innerHTML 不使用)。
+function updateVoiceCredit() {
+  const credit = document.getElementById('vc-credit');
+  if (!credit) return;
+  while (credit.firstChild) credit.removeChild(credit.firstChild);
+  const provider = getActiveProvider();
+  const isVoicevox = provider.id === 'voicevox' || provider.id === 'ttsquest';
+  if (!isVoicevox) {
+    credit.hidden = true;
+    return;
+  }
+  const voiceId = voice.selectedVoiceByProvider[provider.id] || provider.getVoices()[0]?.id;
+  const v = provider.getVoices().find(x => x.id === voiceId);
+  const charName = v ? v.label.replace(/（.*$/, '') : '';
+  credit.appendChild(document.createTextNode('Powered by '));
+  const link = document.createElement('a');
+  link.href = 'https://voicevox.hiroshiba.jp/';
+  link.target = '_blank';
+  link.rel = 'noopener';
+  link.textContent = 'VOICEVOX';
+  credit.appendChild(link);
+  credit.appendChild(document.createTextNode(':' + charName));
+  if (provider.id === 'ttsquest') {
+    credit.appendChild(document.createTextNode(' / API: '));
+    const apiLink = document.createElement('a');
+    apiLink.href = 'https://api.tts.quest/';
+    apiLink.target = '_blank';
+    apiLink.rel = 'noopener';
+    apiLink.textContent = 'TTS Quest';
+    credit.appendChild(apiLink);
+  }
+  credit.hidden = false;
 }
 
 function initVoicePanel(ch) {
@@ -9084,6 +9319,7 @@ function initVoicePanel(ch) {
     saveVoicePrefs();
     stopSpeech();
     populateVoiceSelect();
+    updateVoiceCredit();
   });
 
   // 音声選択：再生中でも即時に切り替え可能
@@ -9094,6 +9330,7 @@ function initVoicePanel(ch) {
       voice.selectedVoiceURI = e.target.value;
     }
     saveVoicePrefs();
+    updateVoiceCredit();
     // 再生中なら現在のセクションから新しい音声で再開
     if (voice.playing) {
       restartCurrentIfPlaying();
@@ -9687,6 +9924,29 @@ async function openSettingsDialog() {
         </div>
 
         <div class="settings-section">
+          <h3><svg class="icon icon-lg"><use href="#i-mic"/></svg> VOICEVOX（ずんだもん等）</h3>
+          <p class="desc">
+            完全ローカル・無料。<a href="https://voicevox.hiroshiba.jp/" target="_blank" rel="noopener">VOICEVOX</a> アプリを起動しておくと、ずんだもんを含む 50 以上のキャラ音声で読み上げできます。
+          </p>
+          <p class="desc" style="font-size:12px;margin-top:6px;">
+            利用規約上、再配布時はクレジット <code style="background:var(--bg-3);padding:2px 6px;">VOICEVOX:キャラ名</code> の表示が必須。本サイトでは再生中に自動で表示されます。
+          </p>
+
+          <div class="settings-field">
+            <label for="voicevox-url-input">エンジン URL</label>
+            <input type="text" id="voicevox-url-input" placeholder="http://localhost:50021" value="${apiConfig.voicevoxUrl || DEFAULT_VOICEVOX_URL}" autocomplete="off" spellcheck="false">
+            <div class="field-hint">
+              既定: <code style="font-family:'JetBrains Mono',monospace;color:var(--cyan);">http://localhost:50021</code>。Docker 等で別ポートに変えた場合のみ書き換え
+              <span id="voicevox-status" class="settings-field-status"></span>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px;">
+            <button class="dialog-btn" id="voicevox-test-btn"><svg class="icon"><use href="#i-search"/></svg> 接続テスト</button>
+            <button class="dialog-btn primary" id="voicevox-save-btn"><svg class="icon"><use href="#i-disk"/></svg> 保存</button>
+          </div>
+        </div>
+
+        <div class="settings-section">
           <h3><svg class="icon icon-lg"><use href="#i-disk"/></svg> 音声キャッシュ</h3>
           <p class="desc">
             生成した音声はお使いのブラウザ内（IndexedDB）にキャッシュされるため、
@@ -9835,6 +10095,49 @@ async function openSettingsDialog() {
       statusEl.textContent = '✗ ' + msg;
     } finally {
       testBtn.disabled = false;
+    }
+  });
+
+  // === VOICEVOX 設定 ===
+  const voicevoxUrlInput = document.getElementById('voicevox-url-input');
+  const voicevoxStatusEl = document.getElementById('voicevox-status');
+  const voicevoxSaveBtn = document.getElementById('voicevox-save-btn');
+  const voicevoxTestBtn = document.getElementById('voicevox-test-btn');
+
+  voicevoxSaveBtn.addEventListener('click', () => {
+    apiConfig.voicevoxUrl = voicevoxUrlInput.value.trim() || DEFAULT_VOICEVOX_URL;
+    voicevoxUrlInput.value = apiConfig.voicevoxUrl;
+    saveApiConfig();
+    voicevoxStatusEl.className = 'settings-field-status ok';
+    voicevoxStatusEl.textContent = '✓ 保存しました';
+    populateProviderSelect();
+    setTimeout(() => {
+      voicevoxStatusEl.textContent = '';
+      voicevoxStatusEl.className = 'settings-field-status';
+    }, 2500);
+  });
+
+  // 接続テスト: /version を叩いてエンジン稼働確認 (合成までは行わない)
+  voicevoxTestBtn.addEventListener('click', async () => {
+    const url = (voicevoxUrlInput.value.trim() || DEFAULT_VOICEVOX_URL).replace(/\/+$/, '');
+    voicevoxStatusEl.className = 'settings-field-status';
+    voicevoxStatusEl.textContent = '接続確認中...';
+    voicevoxTestBtn.disabled = true;
+    try {
+      const res = await fetch(`${url}/version`);
+      if (res.ok) {
+        const ver = (await res.text()).replace(/^"|"$/g, '');
+        voicevoxStatusEl.className = 'settings-field-status ok';
+        voicevoxStatusEl.textContent = `✓ 接続成功 (engine v${ver})`;
+      } else {
+        voicevoxStatusEl.className = 'settings-field-status ng';
+        voicevoxStatusEl.textContent = `✗ ${res.status} エラー`;
+      }
+    } catch (e) {
+      voicevoxStatusEl.className = 'settings-field-status ng';
+      voicevoxStatusEl.textContent = '✗ 接続不可。VOICEVOX アプリが起動しているか・URL が正しいか確認してください。';
+    } finally {
+      voicevoxTestBtn.disabled = false;
     }
   });
 
