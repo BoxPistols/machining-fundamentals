@@ -7552,14 +7552,16 @@ async function cacheClear() {
   } catch { return false; }
 }
 
-// 簡易ハッシュ（キャッシュキー用）
-function simpleHash(s) {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) {
-    h = ((h << 5) - h) + s.charCodeAt(i);
-    h |= 0;
-  }
-  return h.toString(36);
+// SHA-256 → 16 bytes (32 chars hex)。cache key 用。
+// 旧 simpleHash (32-bit XOR) は衝突確率が cache 用途に非実用 (数百段落で衝突あり得る)
+// SubtleCrypto SHA-256 16 bytes で衝突期待値を 2^64 件まで押し上げる。
+async function strongHash(s) {
+  const buf = new TextEncoder().encode(s);
+  const digest = await crypto.subtle.digest('SHA-256', buf);
+  return Array.from(new Uint8Array(digest))
+    .slice(0, 16)
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
 }
 
 // =============================================================================
@@ -7743,8 +7745,12 @@ document.getElementById('voice-toggle').addEventListener('click', () => {
 // テキスト正規化：HTMLタグ除去、記号整形、読み上げに不要な文字を削除
 function normalizeForSpeech(text) {
   if (!text) return '';
-  // HTMLタグ除去
-  let t = text.replace(/<[^>]+>/g, ' ');
+  // コードブロック完全スキップ。タグ除去だけだと中身まで読み上げてしまう。
+  // <pre> ブロックは「コード省略。」に置換、inline <code> は削除（前後文脈で読める想定）
+  let t = text.replace(/<pre[\s\S]*?<\/pre>/gi, ' コード省略。 ');
+  t = t.replace(/<code[^>]*>[\s\S]*?<\/code>/gi, ' ');
+  // HTMLタグ除去（pre/code 以外）
+  t = t.replace(/<[^>]+>/g, ' ');
   // HTMLエンティティ
   t = t.replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&')
        .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
@@ -8640,6 +8646,13 @@ function buildTurning2dAnim(container) {
   tool.setAttribute('transform', `translate(470, 105)`);
 }
 
+// prefers-reduced-motion 環境では smooth ではなく auto。
+// 視覚過敏ユーザーへの a11y 配慮 (WCAG 2.3.3 Animation from Interactions)
+function getScrollBehavior() {
+  if (typeof window === 'undefined' || !window.matchMedia) return 'smooth';
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+}
+
 // セクション + ブロック単位 highlight + スクロール
 function updateHighlight(item) {
   // 手動ジャンプ (prev/next/seek) 時は suppressScrollOnce が立っている。
@@ -8666,9 +8679,11 @@ function updateHighlight(item) {
   const h3 = document.querySelector(`h3[data-voice-section="${item.sectionIdx}"]`);
   if (h3) h3.setAttribute('data-voice-current', 'true');
 
+  const behavior = getScrollBehavior();
+
   // blockIdx === -1 はセクション見出し読み上げ中、本文ブロックなし
   if (item.blockIdx === -1 || item.blockIdx === undefined) {
-    if (shouldScroll(h3)) h3.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (shouldScroll(h3)) h3.scrollIntoView({ behavior, block: 'center' });
     return;
   }
 
@@ -8680,10 +8695,10 @@ function updateHighlight(item) {
     block.classList.add('voice-block-current');
     // 同じブロック内の sub-chunk (subIdx > 0) はスクロールしない (ジッタ回避)
     if (!item.subIdx && shouldScroll(block)) {
-      block.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      block.scrollIntoView({ behavior, block: 'center' });
     }
   } else if (item.isFirstOfSection && shouldScroll(h3)) {
-    h3.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    h3.scrollIntoView({ behavior, block: 'center' });
   }
 }
 
@@ -8759,7 +8774,7 @@ async function playSynthesized(item, provider, interruptedFlagClosure) {
 
   // キャッシュキー（rateは含めない：ブラウザ側でplaybackRateで制御するため、同一音声で速度変更可能）
   const voiceId = voice.selectedVoiceByProvider[provider.id] || provider.getVoices()[0]?.id;
-  const cacheKey = `${provider.id}:${voiceId}:${simpleHash(item.text)}`;
+  const cacheKey = `${provider.id}:${voiceId}:${await strongHash(item.text)}`;
 
   // ステータス表示：生成中
   const status = document.getElementById('vc-status');
