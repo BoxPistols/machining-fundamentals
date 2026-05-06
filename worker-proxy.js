@@ -15,7 +15,10 @@
 //     XAI_API_KEY            (Secret)  TTS Shared モード用 xAI キー (TTS を使うなら必須)
 //     OPENAI_API_KEY         (Secret)  Chat Anonymous/Invited 用 OpenAI キー
 //     GEMINI_API_KEY         (Secret)  Chat Anonymous/Invited 用 Google AI Studio キー
-//     ALLOWED_ORIGIN         (Text)    "https://machining-fundamentals.vercel.app" 推奨
+//     ALLOWED_ORIGIN         (Text)    カンマ区切り複数可。
+//                                       例: "https://machining-fundamentals.vercel.app,https://staging.example.com"
+//     ALLOWED_ORIGIN_PATTERN (Text)    任意。Vercel preview 等を一括許可する正規表現。
+//                                       例: "^https://machining-fundamentals-git-[^.]+-asagiri\\.vercel\\.app$"
 //     PROXY_SHARED_SECRET    (Secret)  BYOK 利用時の追加認証 (任意)
 //     RATE_LIMIT_PER_DAY     (Text)    TTS 1日上限。省略時 70
 //     CHAT_LIMIT_ANON_REQ    (Text)    Chat Anon req/日。省略時 50
@@ -33,6 +36,10 @@
 // 未設定時は "*" にフォールバックするが、これは開発・PoC 用途限定。
 // production で "*" のままだと、悪意サイトが visitor の IP/UA で 30 req/day 枠を
 // 消費する CSRF 的攻撃が成立する。env 必須化を recommend.
+//
+// 複数 origin が必要な場合 (production + staging + preview) は ALLOWED_ORIGIN を
+// カンマ区切りリストで設定する。Vercel preview のように URL がデプロイ毎に変わる
+// ケースは ALLOWED_ORIGIN_PATTERN (正規表現) を併用すると一括許可できる。
 const DEFAULT_ALLOWED_ORIGIN = "*";
 // env 未設定時のフォールバック値。70 ≒ 約 12,600 字/日 (180 chars/chunk × 70)。
 // 実運用 (3〜4 人 × 5P/週 想定) では env `RATE_LIMIT_PER_DAY` で本番上書きする。
@@ -66,6 +73,27 @@ function corsHeaders(allowedOrigin) {
     "Access-Control-Max-Age": "86400",
     "Vary": "Origin",
   };
+}
+
+// ALLOWED_ORIGIN (カンマ区切り) と ALLOWED_ORIGIN_PATTERN (正規表現) の両方を見て、
+// リクエストの Origin が一致したものをそのまま返す。一致しない場合は list の先頭を
+// 返し、ブラウザ側で CORS NG として弾かれる挙動に倒す ("*" を不用意に返さない)。
+function pickAllowedOrigin(request, env) {
+  const requestOrigin = request.headers.get("Origin") || "";
+  const raw = env.ALLOWED_ORIGIN || DEFAULT_ALLOWED_ORIGIN;
+  const list = raw.split(",").map((s) => s.trim()).filter(Boolean);
+  if (list.includes("*")) return "*";
+  if (requestOrigin && list.includes(requestOrigin)) return requestOrigin;
+  if (requestOrigin && env.ALLOWED_ORIGIN_PATTERN) {
+    try {
+      if (new RegExp(env.ALLOWED_ORIGIN_PATTERN).test(requestOrigin)) {
+        return requestOrigin;
+      }
+    } catch {
+      // 不正な正規表現は無視 (production で fail-closed させない)
+    }
+  }
+  return list[0] || "*";
 }
 
 async function sha256Hex(input) {
@@ -139,7 +167,7 @@ function jsonError(status, message, extraHeaders, allowedOrigin) {
 
 export default {
   async fetch(request, env, ctx) {
-    const allowedOrigin = env.ALLOWED_ORIGIN || DEFAULT_ALLOWED_ORIGIN;
+    const allowedOrigin = pickAllowedOrigin(request, env);
     const cors = corsHeaders(allowedOrigin);
 
     if (request.method === "OPTIONS") {
