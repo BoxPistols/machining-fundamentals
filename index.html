@@ -10163,7 +10163,8 @@ async function openSettingsDialog() {
     } catch (e) {
       statusEl.className = 'settings-field-status ng';
       let msg = e.message || '通信エラー';
-      if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
+      // Safari は "Load failed" / Chrome は "Failed to fetch" / Firefox は "NetworkError"
+      if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('Load failed')) {
         msg += '（プロキシURL誤り・Worker未デプロイ・CORS未許可の可能性）';
       }
       statusEl.textContent = '✗ ' + msg;
