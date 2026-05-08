@@ -67,9 +67,16 @@
 
 ## 事前生成 MP3（章ごとに収録音声を同梱）
 
-VOICEVOX や Grok TTS で **一度合成した音声を mp3/wav として `audio/` 以下に置き、ライブ TTS より優先して再生** できます。閲覧者は VOICEVOX 起動も Grok 鍵も不要、API コストも 0、初回再生も即時。
+VOICEVOX や Grok TTS で **一度合成した音声を mp3/wav として `audio/` 以下に置き、デプロイ後に閲覧者が何も起動せずに再生** できる仕組みです。閲覧者側は VOICEVOX 起動も Grok 鍵も不要、API コストも 0、初回再生も即時。
 
-生成は `scripts/generate-audio.mjs`。生成結果は `audio/<provider>/<voiceId>/<chapterId>-<mode>.<ext>` に保存され、`audio/manifest.json` にエントリが追加されます。プレーヤーは起動時にこのマニフェストを読み、現在の章 / モード / プロバイダ / 声に一致する事前ファイルがあればそれを再生、無ければ既存のライブ TTS にフォールバックします。
+仕組み:
+
+- 生成: 運営者が手元で `scripts/generate-audio.mjs` を走らせ、`audio/<provider>/<voiceId>/<chapterId>-<mode>.<ext>` を作る。`audio/manifest.json` も同時に更新される。
+- 配信: 生成物を git に commit して Vercel に push するだけ。Vercel は静的配信。
+- 再生: 閲覧者がページを開くと、ブラウザが `audio/manifest.json` を読み、エントリが 1 件以上あれば 音声プロバイダのドロップダウンに **「収録音声（事前生成・サーバ同梱）」** が現れ、初回訪問時はこれが既定で選ばれる。閲覧者は ▶ を押すだけで MP3 が再生される。
+- フォールバック: 章ごとに音声が無い場合や、閲覧者が他の voice/provider に切り替えた場合は、既存のライブ TTS（ブラウザ内蔵 / VOICEVOX / Grok）に自動で切替わる。
+
+生成コマンドの例:
 
 ```bash
 # VOICEVOX (要 engine 起動: http://localhost:50021)

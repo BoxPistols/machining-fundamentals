@@ -7579,14 +7579,36 @@ function loadPrebakeManifest() {
   })();
   return prebake.loadPromise;
 }
-loadPrebakeManifest();
+
+// マニフェスト読み込み完了後にドロップダウンを再描画し、
+// 初回訪問者 (cfd-voice 未保存) で prebake が利用可能なら自動的に prebake を既定にする。
+// 既存ユーザの選好 (saved provider) は尊重する。
+loadPrebakeManifest().then(() => {
+  if (!prebake.manifest || !providers.prebake.isConfigured()) {
+    if (typeof populateProviderSelect === 'function') populateProviderSelect();
+    return;
+  }
+  const hasSavedPref = !!localStorage.getItem('cfd-voice');
+  if (!hasSavedPref) {
+    voice.provider = 'prebake';
+    const list = providers.prebake.getVoices();
+    if (list.length && !voice.selectedVoiceByProvider.prebake) {
+      voice.selectedVoiceByProvider.prebake = list[0].id;
+    }
+  }
+  if (typeof populateProviderSelect === 'function') populateProviderSelect();
+  if (typeof populateVoiceSelect === 'function') populateVoiceSelect();
+});
 
 // 現在の章 / モード / プロバイダ / 声に一致する事前生成ファイルがあれば URL を返す。
 // providerId が 'browser' の場合は常に null (Web Speech API はファイル不要)。
+// providerId が 'prebake' の場合、voiceId は内部キー (例 'voicevox:3') そのもの。
+// それ以外の providerId (voicevox, grok) では `<providerId>:<voiceId>` を組み立てて参照。
 function findPrebakeUrl(chapterId, mode, providerId, voiceId) {
-  if (!prebake.manifest || providerId === 'browser') return null;
+  if (!prebake.manifest || providerId === 'browser' || !voiceId) return null;
   const id = String(chapterId);
-  const entry = prebake.manifest.files?.[id]?.[mode]?.[`${providerId}:${voiceId}`];
+  const key = providerId === 'prebake' ? voiceId : `${providerId}:${voiceId}`;
+  const entry = prebake.manifest.files?.[id]?.[mode]?.[key];
   return entry?.path || null;
 }
 
@@ -7776,8 +7798,55 @@ const providers = {
 
 };
 
+// ----- 事前生成 MP3 を再生する仮想プロバイダ -----
+// audio/manifest.json にエントリがある時だけドロップダウンに登場する。
+// synthesize は実際には呼ばれない (play 経路で audioUrl を fetch してそのまま blob にする)。
+// getVoices は manifest を走査して、内部キー <provider>:<voiceId> を id とする
+// 統合リストを返す。ラベルは VOICEVOX / Grok の本物の voice リストから流用。
+providers.prebake = {
+  id: 'prebake',
+  label: '収録音声（事前生成・サーバ同梱）',
+  requiresApiKey: false,
+  isConfigured: () => !!prebake.manifest && Object.keys(prebake.manifest.files || {}).length > 0,
+  getVoices() {
+    if (!prebake.manifest) return [];
+    const seen = new Map();
+    const labelOf = (src, vid) => {
+      const base = providers[src]?.getVoices?.() || [];
+      const found = base.find(v => v.id === vid);
+      const tag = src === 'voicevox' ? 'VOICEVOX' : src === 'grok' ? 'Grok' : src;
+      return found ? `${found.label} — ${tag}` : `${vid} (${tag})`;
+    };
+    for (const chId of Object.keys(prebake.manifest.files || {})) {
+      const modes = prebake.manifest.files[chId] || {};
+      for (const mode of Object.keys(modes)) {
+        for (const key of Object.keys(modes[mode] || {})) {
+          if (seen.has(key)) continue;
+          const [src, vid] = key.split(':');
+          seen.set(key, { id: key, label: labelOf(src, vid), lang: 'ja' });
+        }
+      }
+    }
+    return Array.from(seen.values());
+  },
+  async synthesize() {
+    // 通常は呼ばれない。万一呼ばれた場合はライブ TTS と同じインタフェースで失敗させる。
+    throw new Error('PREBAKE_NO_URL');
+  },
+};
+
 function getActiveProvider() {
   return providers[voice.provider] || providers.browser;
+}
+
+// アイテム単位の実際の再生経路を決定する。
+// - isPrebake かつ audioUrl がある場合: prebake provider (playSynthesized が URL fetch)
+// - voice.provider === 'prebake' で prebake URL が無い場合: ブラウザ TTS にフォールバック
+// - それ以外: 通常の選択 provider
+function getEffectivePlaybackProvider(item) {
+  if (item?.isPrebake && item.audioUrl) return providers.prebake;
+  if (voice.provider === 'prebake') return providers.browser;
+  return getActiveProvider();
 }
 
 // =============================================================================
@@ -8866,15 +8935,15 @@ function speakCurrent() {
     return;
   }
   let item = voice.queue[voice.currentIdx];
-  const provider = getActiveProvider();
 
   // 事前生成キューだが、provider 切替などで browser になった / 該当 prebake が無い場合は
   // 通常のセクション分割キューに張り替える (browser は Web Speech API なのでファイル不要)。
   if (item.isPrebake) {
-    const provVoice = voice.selectedVoiceByProvider[provider.id]
-                   || provider.getVoices?.()?.[0]?.id;
-    const reUrl = findPrebakeUrl(item.chapterId, item.mode, provider.id, provVoice);
-    if (provider.id === 'browser' || !reUrl) {
+    const activeProv = getActiveProvider();
+    const provVoice = voice.selectedVoiceByProvider[activeProv.id]
+                   || activeProv.getVoices?.()?.[0]?.id;
+    const reUrl = findPrebakeUrl(item.chapterId, item.mode, activeProv.id, provVoice);
+    if (activeProv.id === 'browser' || !reUrl) {
       const fallbackCh = CHAPTERS.find(c => String(c.id) === String(item.chapterId));
       if (fallbackCh) {
         voice.queue = buildQueue(fallbackCh);
@@ -8882,12 +8951,21 @@ function speakCurrent() {
         item = voice.queue[0];
         if (!item) { stopSpeech(); return; }
       }
+    } else {
+      // 切替で URL が新しくなった場合に備え item を最新化
+      item.audioUrl = reUrl;
     }
   }
 
   // 中断フラグ
   let interrupted = false;
   voice.markInterrupted = () => { interrupted = true; };
+
+  // この item を実際にどの再生経路で扱うかを決定する。
+  // - isPrebake + audioUrl → providers.prebake (playSynthesized が URL fetch)
+  // - voice.provider === 'prebake' で prebake 無し → ブラウザ TTS にフォールバック
+  // - それ以外 → ユーザ選択の provider
+  const provider = getEffectivePlaybackProvider(item);
 
   if (provider.id === 'browser') {
     // ---- Web Speech API ----
@@ -9186,8 +9264,15 @@ function updateVoiceUI() {
 function populateProviderSelect() {
   const sel = document.getElementById('vc-provider');
   if (!sel) return;
+  // 選択中の provider が今は不可 (prebake が外れた等) ならブラウザに退避
+  if (voice.provider === 'prebake' && !providers.prebake.isConfigured()) {
+    voice.provider = 'browser';
+    saveVoicePrefs();
+  }
   sel.innerHTML = '';
   Object.values(providers).forEach(p => {
+    // prebake は manifest に登録があるときだけ dropdown に出す
+    if (p.id === 'prebake' && !p.isConfigured()) return;
     const opt = document.createElement('option');
     opt.value = p.id;
     let label = p.label;
@@ -9541,7 +9626,9 @@ function initVoicePanel(ch) {
     // 新規再生
     stopSpeech();
     // 事前生成 MP3 が登録されていればキューを 1 アイテムに置換し、
-    // ライブ TTS をスキップして直接再生する (provider が browser のときは適用しない)
+    // ライブ TTS をスキップして直接再生する (provider が browser のときは適用しない)。
+    // prebake provider 選択中だが該当 chapter の音声が無い場合は buildQueue + Web Speech API
+    // にフォールバック (speakCurrent 内で getEffectivePlaybackProvider が判断)。
     const provVoice = voice.selectedVoiceByProvider[provider.id]
                    || provider.getVoices?.()?.[0]?.id;
     const prebakeUrl = findPrebakeUrl(ch.id, voice.mode, provider.id, provVoice);
