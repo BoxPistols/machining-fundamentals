@@ -23,3 +23,6 @@ yarn.lock
 
 # ログ
 *.log
+
+# 事前生成音声 (scripts/generate-audio.mjs) の中間ファイル
+audio/**/*.tmp.wav

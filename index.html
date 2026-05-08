@@ -7548,6 +7548,48 @@ async function cacheClear() {
   } catch { return false; }
 }
 
+// =============================================================================
+// 事前生成 MP3 マニフェスト
+// =============================================================================
+// scripts/generate-audio.mjs が章ごとに音声を焼いて audio/manifest.json を吐く。
+// プレーヤーは playSynthesized でこれを参照し、ライブ TTS より優先する。
+// 形式: { version, files: { <chapterId>: { <mode>: { "<provider>:<voiceId>": { path, ... } } } } }
+
+const prebake = {
+  loaded: false,
+  manifest: null,
+  loadPromise: null,
+};
+
+function loadPrebakeManifest() {
+  if (prebake.loadPromise) return prebake.loadPromise;
+  prebake.loadPromise = (async () => {
+    try {
+      const res = await fetch('audio/manifest.json', { cache: 'no-cache' });
+      if (!res.ok) return null;
+      const obj = await res.json();
+      if (!obj || !obj.files) return null;
+      prebake.manifest = obj;
+      return obj;
+    } catch {
+      return null;
+    } finally {
+      prebake.loaded = true;
+    }
+  })();
+  return prebake.loadPromise;
+}
+loadPrebakeManifest();
+
+// 現在の章 / モード / プロバイダ / 声に一致する事前生成ファイルがあれば URL を返す。
+// providerId が 'browser' の場合は常に null (Web Speech API はファイル不要)。
+function findPrebakeUrl(chapterId, mode, providerId, voiceId) {
+  if (!prebake.manifest || providerId === 'browser') return null;
+  const id = String(chapterId);
+  const entry = prebake.manifest.files?.[id]?.[mode]?.[`${providerId}:${voiceId}`];
+  return entry?.path || null;
+}
+
 // SHA-256 → 16 bytes (32 chars hex)。cache key 用。
 // 旧 simpleHash (32-bit XOR) は衝突確率が cache 用途に非実用 (数百段落で衝突あり得る)
 // SubtleCrypto SHA-256 16 bytes で衝突期待値を 2^64 件まで押し上げる。
@@ -8823,8 +8865,25 @@ function speakCurrent() {
     });
     return;
   }
-  const item = voice.queue[voice.currentIdx];
+  let item = voice.queue[voice.currentIdx];
   const provider = getActiveProvider();
+
+  // 事前生成キューだが、provider 切替などで browser になった / 該当 prebake が無い場合は
+  // 通常のセクション分割キューに張り替える (browser は Web Speech API なのでファイル不要)。
+  if (item.isPrebake) {
+    const provVoice = voice.selectedVoiceByProvider[provider.id]
+                   || provider.getVoices?.()?.[0]?.id;
+    const reUrl = findPrebakeUrl(item.chapterId, item.mode, provider.id, provVoice);
+    if (provider.id === 'browser' || !reUrl) {
+      const fallbackCh = CHAPTERS.find(c => String(c.id) === String(item.chapterId));
+      if (fallbackCh) {
+        voice.queue = buildQueue(fallbackCh);
+        voice.currentIdx = 0;
+        item = voice.queue[0];
+        if (!item) { stopSpeech(); return; }
+      }
+    }
+  }
 
   // 中断フラグ
   let interrupted = false;
@@ -8884,15 +8943,50 @@ async function playSynthesized(item, provider, interruptedFlagClosure) {
 
   // ステータス表示：生成中
   const status = document.getElementById('vc-status');
-  if (status) status.textContent = '音声生成中...';
+  if (status) status.textContent = item.isPrebake ? '収録音声を読み込み中...' : '音声生成中...';
 
   let blob = null;
 
-  // キャッシュ確認
-  try {
-    blob = await cacheGet(cacheKey);
-  } catch {}
-  if (isStale()) return;
+  // 事前生成 MP3 (item.isPrebake) があれば、ライブ合成も IndexedDB キャッシュもスキップ。
+  // 再生中に provider/voice が切り替わっても新しい URL を取れるよう、毎回 manifest を引き直す。
+  // 取れなかった場合は通常のキュー (buildQueue) を再構築してライブ TTS にフォールバック。
+  if (item.isPrebake) {
+    const reUrl = findPrebakeUrl(item.chapterId, item.mode, provider.id, voiceId);
+    if (reUrl) {
+      try {
+        const res = await fetch(reUrl, { cache: 'force-cache' });
+        if (isStale()) return;
+        if (res.ok) {
+          blob = await res.blob();
+        } else {
+          console.warn('Prebake fetch failed:', res.status, reUrl);
+        }
+      } catch (e) {
+        if (isStale()) return;
+        console.warn('Prebake fetch error:', e);
+      }
+    }
+    if (!blob) {
+      const fallbackCh = CHAPTERS.find(c => String(c.id) === String(item.chapterId));
+      if (fallbackCh) {
+        voice.queue = buildQueue(fallbackCh);
+        voice.currentIdx = -1;
+        if (status) status.textContent = '';
+        playQueue();
+      } else {
+        stopSpeech();
+      }
+      return;
+    }
+  }
+
+  // キャッシュ確認 (prebake が使えなかった場合のみ)
+  if (!blob) {
+    try {
+      blob = await cacheGet(cacheKey);
+    } catch {}
+    if (isStale()) return;
+  }
 
   // 中断チェック
   if (voice.markInterrupted && !voice.playing) return;
@@ -9446,7 +9540,25 @@ function initVoicePanel(ch) {
     }
     // 新規再生
     stopSpeech();
-    voice.queue = buildQueue(ch);
+    // 事前生成 MP3 が登録されていればキューを 1 アイテムに置換し、
+    // ライブ TTS をスキップして直接再生する (provider が browser のときは適用しない)
+    const provVoice = voice.selectedVoiceByProvider[provider.id]
+                   || provider.getVoices?.()?.[0]?.id;
+    const prebakeUrl = findPrebakeUrl(ch.id, voice.mode, provider.id, provVoice);
+    if (prebakeUrl) {
+      voice.queue = [{
+        text: voice.mode === 'summary'
+          ? (ch.voiceSummary || ch.summary || '')
+          : `第${parseInt(ch.num, 10)}章 ${ch.title}`,
+        sectionIdx: -1,
+        isPrebake: true,
+        audioUrl: prebakeUrl,
+        chapterId: ch.id,
+        mode: voice.mode,
+      }];
+    } else {
+      voice.queue = buildQueue(ch);
+    }
     if (voice.queue.length === 0) {
       alert('読み上げる内容がありません');
       return;

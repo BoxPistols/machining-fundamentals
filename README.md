@@ -11,7 +11,7 @@
 - **用語集と参考資料** — 日英対訳、教科書・規格・メーカー資料へのリンク
 - **体験シミュレーター** — 第7章「冷却液の役割」から起動できる3D CFDシミュレーター（Three.js）
 - **テキスト書き出し** — 他の音声読み上げツール（VOICEVOX、ElevenLabs等）に流し込めるプレーンテキスト出力
-- **音声読み上げモード** — ブラウザ内蔵音声、または xAI Grok TTS
+- **音声読み上げモード** — ブラウザ内蔵音声、xAI Grok TTS、または事前生成 MP3
 - **ダーク / ライト テーマ切替**
 - **学習進捗の記録**（localStorage）
 
@@ -64,6 +64,29 @@
 3. 必要ならプロキシ合言葉（`PROXY_SHARED_SECRET` を運用者が設定している場合）
 
 これで BYOK モードになり、Shared の上限を消費しません。API キーは**ブラウザの localStorage にのみ**保存され、サーバーには送信されません（プロキシ経由で xAI に転送されるのみ）。
+
+## 事前生成 MP3（章ごとに収録音声を同梱）
+
+VOICEVOX や Grok TTS で **一度合成した音声を mp3/wav として `audio/` 以下に置き、ライブ TTS より優先して再生** できます。閲覧者は VOICEVOX 起動も Grok 鍵も不要、API コストも 0、初回再生も即時。
+
+生成は `scripts/generate-audio.mjs`。生成結果は `audio/<provider>/<voiceId>/<chapterId>-<mode>.<ext>` に保存され、`audio/manifest.json` にエントリが追加されます。プレーヤーは起動時にこのマニフェストを読み、現在の章 / モード / プロバイダ / 声に一致する事前ファイルがあればそれを再生、無ければ既存のライブ TTS にフォールバックします。
+
+```bash
+# VOICEVOX (要 engine 起動: http://localhost:50021)
+node scripts/generate-audio.mjs --provider voicevox --speaker 3 --chapter all
+node scripts/generate-audio.mjs --provider voicevox --speaker 126 --chapter a1 --mode summary
+
+# 全文モードは export ダイアログから保存した .txt を渡す
+node scripts/generate-audio.mjs --provider voicevox --speaker 3 --chapter 1 --mode full --source out/ch1.txt
+
+# Grok (Cloudflare Worker 経由)
+GROK_API_KEY=xai-... node scripts/generate-audio.mjs \
+  --provider grok --voice ara --proxy-url https://xxx.workers.dev --chapter all
+```
+
+`ffmpeg` がパスにあれば VOICEVOX の WAV は MP3 に変換されます (既定 64 kbps mono)。無い場合は WAV のまま保存されます（`--no-mp3` で警告抑止）。詳細は `node scripts/generate-audio.mjs --help`。
+
+> 配布時のライセンス: VOICEVOX のキャラ音声はキャラごとに利用規約が異なります。Grok TTS の生成物の再配布は xAI ToS を確認してください。詳しくは [`docs/voicevox.md`](./docs/voicevox.md) §8 を参照。
 
 ## Vercel デプロイ
 
