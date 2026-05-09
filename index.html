@@ -9262,10 +9262,15 @@ function populateVoiceSelect() {
     return;
   }
 
-  // 現在のプロバイダー用の選択済み音声
+  // VOICEVOX のみ既定話者を「里石ユカ（つぼみ）」(id=126) にする。
+  // SPEAKER_PRESETS で audio_query パラメータをチューニング済みのキャラ。
+  // CLI 側 (~/.claude/hooks/voicevox-config.json) も speaker=126 で揃えている。
+  const providerDefault = provider.id === 'voicevox' && voices.some(v => v.id === '126')
+    ? '126'
+    : voices[0].id;
   const currentSelected = voice.selectedVoiceByProvider[provider.id] ||
     (provider.id === 'browser' ? voice.selectedVoiceURI : null) ||
-    voices[0].id;
+    providerDefault;
 
   voices.forEach(v => {
     const opt = document.createElement('option');
@@ -9282,9 +9287,9 @@ function populateVoiceSelect() {
       voice.selectedVoiceURI = voices[0].id;
     }
   }
-  // selectedVoiceByProvider も初期化
+  // selectedVoiceByProvider も初期化（VOICEVOX は providerDefault = 126 を採用）
   if (!voice.selectedVoiceByProvider[provider.id]) {
-    voice.selectedVoiceByProvider[provider.id] = voices[0].id;
+    voice.selectedVoiceByProvider[provider.id] = providerDefault;
     saveVoicePrefs();
   }
   updateVoiceCredit();
