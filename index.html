@@ -6073,6 +6073,164 @@ const CHAPTERS = [
       '本リポ: <a href="https://github.com/BoxPistols/machining-fundamentals/blob/main/integration-points.md" target="_blank" rel="noopener">integration-points.md</a>（相互参照規約）',
     ],
   },
+  {
+    id: 'c2',
+    num: 'C2',
+    title: '計測データ標準化と MaiML',
+    summary: '計測分析データの共通フォーマット MaiML（JIS K 0200）の概観。切削加工の材料・摩耗・粗さデータを長期保存・流通させる基盤。',
+    voiceSummary: '切削加工で扱う材料硬度、工具摩耗、表面粗さなどはすべて計測分析装置の出力です。MaiML は日本分析機器工業会が策定した計測データの共通XMLフォーマットで、JIS K 0200 として規格化されています。ベンダー独自フォーマットの壁を取り払い、加工条件と検査結果をひとつのデータ流通に乗せる将来像を持ちます。本章ではMaiMLの仕様骨格、設計思想、切削加工分野での実用パターン、普及のハードルまでを概観します。',
+    readTime: '8分',
+    hasSim: false,
+    lead: '本章は Part C 第 2 章。第 C1 章で「研究の地図」を扱ったのに続き、ここでは「研究で得たデータをどう残し、どう流通させるか」という標準化の話題を取り上げます。中心となるのは MaiML（Measurement Analysis Instrument Markup Language）— 計測分析装置の出力を共通の XML で記述する取り組みで、2024 年に JIS K 0200 として規格化されました。本章は概観のみです。スキーマ準拠実装は本リポでは扱わず、JIS 本体と公式ガイドラインへの導線提供までを担当します。',
+    sections: [
+      {
+        heading: 'MaiML とは何か',
+        html: `
+          <p>MaiML（マイエムエル / Measurement Analysis Instrument Markup Language）は、<strong>計測分析装置の出力データを共通の XML フォーマットで記述する</strong> ための言語です。一般社団法人 日本分析機器工業会（JAIMA, Japan Analytical Instruments Manufacturers' Association）が、経済産業省 委託事業として策定しました。</p>
+          <table style="width:100%;border-collapse:collapse;margin:12px 0;">
+            <tr><th style="text-align:left;padding:6px;border-bottom:1px solid var(--border);">項目</th><th style="text-align:left;padding:6px;border-bottom:1px solid var(--border);">値</th></tr>
+            <tr><td style="padding:6px;">規格</td><td style="padding:6px;"><strong>JIS K 0200</strong>「計測分析装置の分析データ共通フォーマット」</td></tr>
+            <tr><td style="padding:6px;">仕様バージョン</td><td style="padding:6px;">1.0（2024 年）</td></tr>
+            <tr><td style="padding:6px;">ベース技術</td><td style="padding:6px;">XML 1.0</td></tr>
+            <tr><td style="padding:6px;">名前空間</td><td style="padding:6px;"><code>http://www.maiml.org/schemas</code></td></tr>
+            <tr><td style="padding:6px;">拡張子</td><td style="padding:6px;"><code>.maiml</code> / <code>.mai</code> / 同梱は <code>.maiml.zip</code></td></tr>
+            <tr><td style="padding:6px;">発行</td><td style="padding:6px;">一般社団法人 日本分析機器工業会（JAIMA）</td></tr>
+            <tr><td style="padding:6px;">公式ガイドライン</td><td style="padding:6px;">「共通データフォーマット対応ガイドライン Version 1.0」（2024-05-20）</td></tr>
+          </table>
+          <p>名前のとおり「計測 (Measurement)・分析 (Analysis)・装置 (Instrument)」のデータを記述するためのマークアップ言語で、装置メーカーごとに異なるバイナリ・独自 XML を「共通言語」へ橋渡しします。これによりデータの <strong>保存・流通・再利用・統合分析</strong> が可能になります。</p>
+          <p style="margin-top:12px;font-size:13px;color:var(--text-2);">注: MaiML は <strong>記述する言語</strong> であり、処理を行うプログラミング言語ではありません。MaiML への変換コンバータは各ベンダー / 利用者が用意する前提です。</p>
+        `,
+      },
+      {
+        heading: 'なぜ切削加工で関係するか',
+        html: `
+          <p>本リポジトリ machining-fundamentals は <strong>切削加工の入門学習教材</strong> です。「計測分析装置」の話がここに登場する理由は次のとおりです。</p>
+          <ul>
+            <li><strong>章で扱う物性値の出所</strong> — 第 5 章の材料硬度、第 8 章の工具摩耗（VB）、第 9 章の表面粗さ（Ra / Rz）はすべて計測分析装置の出力。MaiML はその出力データの記述形式を標準化する取り組み</li>
+            <li><strong>トレーサビリティ</strong> — 切削条件（Vc / f / ap）と工具寿命の対応データを再現性ある形で残すには、計測値・装置・プロトコルをセットで記録する必要がある。MaiML が想定する <code>&lt;protocol&gt;</code> + <code>&lt;data&gt;</code> + <code>&lt;eventLog&gt;</code> の構成はそのまま生産現場のトレーサビリティ要請に対応</li>
+            <li><strong>JIS / ISO 動向の把握</strong> — 学習者が将来的に研究機関 / 装置メーカー / 大手製造業のデータ基盤に触れる際、MaiML 系のフォーマットに遭遇する可能性がある。基礎概念を押さえておくと無駄になりにくい</li>
+          </ul>
+          <p style="margin-top:12px;padding:10px;background:var(--bg-2);border-left:3px solid var(--accent);font-size:13px;">逆に、本リポジトリの章で <strong>MaiML を直接実装することはありません</strong>。本章は「外の世界でこういう取り組みがある」という参照リンクの位置付けです。</p>
+        `,
+      },
+      {
+        heading: '仕様の骨格',
+        html: `
+          <h4 style="margin-top:0;">第 0〜4 階層のファイル構造</h4>
+          <p>MaiML ファイルは <strong>0 から 4 までの階層</strong>で構成されます。第 0 階層は <code>&lt;maiml&gt;</code> 要素のラッパー、第 1 階層は 4 種の固定要素：</p>
+<pre style="background:var(--bg-2);padding:10px;border-radius:4px;font-size:12px;overflow-x:auto;"><code>&lt;maiml version="1.0" xsi:type="maimlRootType"&gt;     ← 第0階層
+  &lt;document&gt;...&lt;/document&gt;                          ← 第1階層
+  &lt;protocol&gt;...&lt;/protocol&gt;                          ← 第1階層
+  &lt;data&gt;...&lt;/data&gt;                                  ← 第1階層
+  &lt;eventLog&gt;...&lt;/eventLog&gt;                          ← 第1階層
+&lt;/maiml&gt;</code></pre>
+          <table style="width:100%;border-collapse:collapse;margin:8px 0;font-size:13px;">
+            <tr><th style="text-align:left;padding:6px;border-bottom:1px solid var(--border);">第 1 階層要素</th><th style="text-align:left;padding:6px;border-bottom:1px solid var(--border);">担当</th></tr>
+            <tr><td style="padding:6px;"><code>&lt;document&gt;</code></td><td style="padding:6px;">文書メタ情報（作成日、作成者、所有者、タイトル）</td></tr>
+            <tr><td style="padding:6px;"><code>&lt;protocol&gt;</code></td><td style="padding:6px;">計測手順の定義。PNML（Petri Net Markup Language）ベース</td></tr>
+            <tr><td style="padding:6px;"><code>&lt;data&gt;</code></td><td style="padding:6px;">計測結果の実データ（1D / 2D / 3D スペクトル等）</td></tr>
+            <tr><td style="padding:6px;"><code>&lt;eventLog&gt;</code></td><td style="padding:6px;">実行時イベント記録。XES（Extensible Event Stream）ベース</td></tr>
+          </table>
+          <h4 style="margin-top:14px;">汎用データコンテナ</h4>
+          <p>具体的なデータ・メタデータは、タグ名で意味を固定せず <strong>汎用コンテナ + key 属性</strong> で表現します。</p>
+<pre style="background:var(--bg-2);padding:10px;border-radius:4px;font-size:12px;overflow-x:auto;"><code>&lt;property key="material.tensile_strength"&gt;
+  &lt;content xsi:type="decimalContentType" units="MPa"&gt;615.2&lt;/content&gt;
+  &lt;uncertainty&gt;...&lt;/uncertainty&gt;
+&lt;/property&gt;</code></pre>
+          <p>キーになるのは <code>&lt;property&gt;</code> / <code>&lt;content&gt;</code> / <code>&lt;uncertainty&gt;</code> の 3 要素。<code>units</code>（単位）と <code>uncertainty</code>（不確かさ）が標準化されている点が、CSV や Excel との大きな差です。</p>
+          <h4 style="margin-top:14px;">2 種類のルート型</h4>
+          <table style="width:100%;border-collapse:collapse;margin:8px 0;font-size:13px;">
+            <tr><th style="text-align:left;padding:6px;border-bottom:1px solid var(--border);"><code>xsi:type</code></th><th style="text-align:left;padding:6px;border-bottom:1px solid var(--border);">用途</th></tr>
+            <tr><td style="padding:6px;"><code>maimlRootType</code></td><td style="padding:6px;">CASE-1: 計測の全記録（プロトコル + データ + ログ）</td></tr>
+            <tr><td style="padding:6px;"><code>protocolFileRootType</code></td><td style="padding:6px;">CASE-2: プロトコルのみ（実行レシピ配布、実データなし）</td></tr>
+          </table>
+        `,
+      },
+      {
+        heading: '設計原則 8 点',
+        html: `
+          <p>ガイドライン §2.1 に明示される 8 つの設計原則の要約です。</p>
+          <table style="width:100%;border-collapse:collapse;font-size:13px;margin:8px 0;">
+            <tr><th style="text-align:left;padding:6px;border-bottom:1px solid var(--border);">#</th><th style="text-align:left;padding:6px;border-bottom:1px solid var(--border);">原則</th><th style="text-align:left;padding:6px;border-bottom:1px solid var(--border);">要点</th></tr>
+            <tr><td style="padding:6px;">1</td><td style="padding:6px;">データの可読性</td><td style="padding:6px;">バイナリでなくテキスト（XML）</td></tr>
+            <tr><td style="padding:6px;">2</td><td style="padding:6px;">規定フォーマットの利用</td><td style="padding:6px;">XML / PNML / XES に準拠して既存ツールを活用</td></tr>
+            <tr><td style="padding:6px;">3</td><td style="padding:6px;">データの構造化</td><td style="padding:6px;">装置出力をデータレイクに包括格納可能に</td></tr>
+            <tr><td style="padding:6px;">4</td><td style="padding:6px;">プロセスのモデル化</td><td style="padding:6px;">ペトリネットで離散事象として工程記述</td></tr>
+            <tr><td style="padding:6px;">5</td><td style="padding:6px;">用語の名前空間管理</td><td style="padding:6px;">用語そのものは固定せず名前空間で区別</td></tr>
+            <tr><td style="padding:6px;">6</td><td style="padding:6px;">独立可用性</td><td style="padding:6px;">外部ファイル URI 参照可、部分秘匿可</td></tr>
+            <tr><td style="padding:6px;">7</td><td style="padding:6px;">一意性 / 改ざん防止</td><td style="padding:6px;">UUID + XML 署名（親子チェーン）</td></tr>
+            <tr><td style="padding:6px;">8</td><td style="padding:6px;">追跡可能性</td><td style="padding:6px;">XES ベースのイベントログで実行追跡</td></tr>
+          </table>
+          <p style="margin-top:10px;">特に <strong>原則 5「ベンダー用語を MaiML 側で固定しない」</strong> は大きな設計判断です。AnIML 等の先行 XML 標準は装置別タグを定めますが、MaiML は名前空間に委ねることで <strong>進化する用語に長期追従する</strong> 道を選びました。</p>
+        `,
+      },
+      {
+        heading: '切削加工分野の実用パターン',
+        html: `
+          <p>ガイドライン §10 で示される利用シナリオから、本リポジトリの章テーマに関連するものを 4 つ抜粋・翻案しました。</p>
+
+          <h4 style="margin-top:14px;">1. 自社試作品を外部機関で測定</h4>
+          <p>切削工具メーカーが新組成超硬合金を試作 → 第三者機関で組成分析 → 結果を社内に取り込み比較。<br>
+          <strong>MaiML が解く問題</strong>: 第三者機関の出力フォーマットが装置依存（Bruker / Thermo / 島津 等で別形式）のため社内 DB 取り込みが手作業。<br>
+          <strong>MaiML 化後</strong>: プロトコル・装置・結果が共通スキーマで届くため自動取り込みが可能。</p>
+
+          <h4 style="margin-top:14px;">2. 工具寿命試験データの社内・系列横断流通</h4>
+          <p>複数工場 / 複数材料 / 複数工具で取った VB-時間曲線を、同一データレイクで集約・回帰分析。<br>
+          <strong>MaiML 化後</strong>: <code>&lt;property key="cutting.flank_wear_VB"&gt;</code> 形式で揃えて格納、SQL や PySpark から直叩き可能。</p>
+
+          <h4 style="margin-top:14px;">3. 加工後検査データのトレーサビリティ</h4>
+          <p>航空機エンジン部品（タービンディスク等）の旋削後の寸法・粗さデータを、納入先で 10〜30 年検証可能な形で保存。<br>
+          <strong>MaiML 化後</strong>: テキスト + XML 署名で長期保管、改ざん検出まで仕様内に含まれる。</p>
+
+          <h4 style="margin-top:14px;">4. AI/ML 学習用データセットの標準化</h4>
+          <p>材料硬度や工具摩耗を入力に、最適切削条件を出力する機械学習モデルの教師データを多機関から集める。<br>
+          <strong>MaiML 化後</strong>: プロトコル + 不確かさ込みで配信されるため、再現性ある学習データセットを構築できる。</p>
+        `,
+      },
+      {
+        heading: '将来性とハードル',
+        html: `
+          <h4 style="margin-top:0;">想定される将来像</h4>
+          <ul>
+            <li><strong>工具〜加工〜検査の縦断データ流通</strong>: 工具メーカー（材料試験）→ 工作機械（加工条件モニタリング）→ 部品メーカー（後検査）を一本のデータパスで接続</li>
+            <li><strong>ベンダーロックイン解消</strong>: 計測装置の買い替え時に過去データの読み出しが切れない</li>
+            <li><strong>規格・監査対応の自動化</strong>: 航空・医療・原子力など規格認証が重い領域で、トレーサビリティを満たす最小フォーマットとして採用される可能性</li>
+            <li><strong>AI 学習データ標準化</strong>: 「同じ条件で測ったか」を機械可読に確認できるため、Garbage-in を減らす入口</li>
+            <li><strong>デジタルツインの素材</strong>: 加工条件 + 検査結果のペアを大量に蓄えると、加工パラメータ→品質予測モデルの学習データになる</li>
+          </ul>
+          <h4 style="margin-top:14px;">逆に普及のハードル</h4>
+          <ul>
+            <li>XML の verbose さ（HDF5 等のバイナリと比べて容量・速度で劣る）</li>
+            <li>既存装置メーカーが独自フォーマットから移行する動機が弱い</li>
+            <li>海外標準（ASTM の AnIML 等）との競合・棲み分け</li>
+            <li>ツールチェーンが整備途上（汎用ビューア・エディタが少ない）</li>
+          </ul>
+          <p style="margin-top:12px;padding:12px;background:var(--bg-2);border-left:3px solid var(--accent);border-radius:2px;">
+            <strong>本章のキーアイデア</strong><br>
+            切削加工で生まれる材料データ・工具データ・検査データを「30 年後も再現できる形」で残すための標準化基盤として MaiML が動き出した。実装は本リポでは扱わないが、研究や産業界に出る学習者が将来遭遇するフォーマットとして、その思想と構造を押さえておく価値がある。詳細は <code>docs/maiml-overview.md</code> と JIS K 0200 / 公式ガイドラインを参照。
+          </p>
+        `,
+      },
+    ],
+    terms: [
+      { name: 'MaiML', en: 'Measurement Analysis Instrument Markup Language', def: '計測分析装置の分析データを共通の XML フォーマットで記述する言語。JIS K 0200 として規格化、JAIMA が仕様策定。' },
+      { name: 'JIS K 0200', en: 'JIS K 0200', def: '日本工業規格の番号。MaiML データフォーマットを規定する規格として 2024 年に制定。' },
+      { name: 'JAIMA', en: 'Japan Analytical Instruments Manufacturers Association', def: '一般社団法人 日本分析機器工業会。MaiML の仕様策定とガイドライン発行を担当。' },
+      { name: 'PNML', en: 'Petri Net Markup Language', def: 'ペトリネットを XML で表現する国際規格 (ISO/IEC 15909-2)。MaiML の <protocol> 要素で計測工程フローの記述に使われる。' },
+      { name: 'XES', en: 'Extensible Event Stream', def: 'プロセスマイニング向けのイベントログ XML 標準 (IEEE 1849-2016)。MaiML の <eventLog> 要素のベース。' },
+      { name: '名前空間', en: 'XML Namespace', def: 'XML で同名タグの所属を区別する仕組み。MaiML はベンダー用語をこの仕組みで分離管理し、用語の進化に長期追従する設計。' },
+      { name: '独立可用性', en: 'Independent Availability', def: 'MaiML ファイル単独で計測の全情報が取り出せる性質。サイバー空間での流通を前提とした設計概念。' },
+      { name: 'AnIML', en: 'Analytical Information Markup Language', def: 'ASTM E13.15 で策定中の類似目的フォーマット。MaiML はベンダー用語の固定方針が異なる。' },
+    ],
+    further: [
+      'JIS K 0200「計測分析装置の分析データ共通フォーマット (MaiML データフォーマット)」— 日本工業標準調査会 (JISC) で閲覧',
+      'JAIMA『共通データフォーマット対応ガイドライン Version 1.0』（2024-05-20、PDF）— 一次情報源',
+      '公式スキーマ: <code>maiml.xsd</code> ほか 10 個の XSD（<code>xs:include</code> で連結）',
+      'JAIMA 公式: <a href="https://www.jaima.or.jp/" target="_blank" rel="noopener">https://www.jaima.or.jp/</a>',
+      '安永卓生 (九州工業大学)「計測分析を未来につなぐためのデータの在り方と標準化」(計測標準フォーラム第 21 回講演会, 2023-10-24) — 設計思想の背景',
+      '本リポ詳細版: <a href="https://github.com/BoxPistols/machining-fundamentals/blob/main/docs/maiml-overview.md" target="_blank" rel="noopener">docs/maiml-overview.md</a>',
+    ],
+  },
 ];
 
 // =============================================================================
