@@ -15,7 +15,7 @@
 - **ダーク / ライト テーマ切替**
 - **学習進捗の記録**（localStorage）
 
-音声読み上げの初期設定（3 プロバイダ：ブラウザ内蔵 / VOICEVOX / xAI Grok TTS）は **[docs/voice-setup.md](./docs/voice-setup.md)** にまとめています。
+音声読み上げ機能の初期設定手順は **[docs/voice-setup.md](./docs/voice-setup.md)** にまとめています。
 
 ## 免責事項
 
