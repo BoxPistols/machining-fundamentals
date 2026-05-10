@@ -9035,7 +9035,19 @@ async function playSynthesized(item, provider, interruptedFlagClosure) {
         const res = await fetch(reUrl, { cache: 'force-cache' });
         if (isStale()) return;
         if (res.ok) {
-          blob = await res.blob();
+          // 検証: Content-Type が audio 系であること、size が上限以下
+          // 不正な manifest や 404 HTML を audio として扱う事故を防ぐ。
+          const PREBAKE_MAX_BYTES = 50 * 1024 * 1024; // 50 MB
+          const ct = (res.headers.get('Content-Type') || '').toLowerCase();
+          const cl = parseInt(res.headers.get('Content-Length') || '0', 10);
+          const looksAudio = ct.startsWith('audio/') || ct === 'application/octet-stream' || ct === '';
+          if (!looksAudio) {
+            console.warn('Prebake unexpected Content-Type:', ct, 'url=', reUrl);
+          } else if (cl > 0 && cl > PREBAKE_MAX_BYTES) {
+            console.warn('Prebake too large:', cl, 'bytes >', PREBAKE_MAX_BYTES, 'url=', reUrl);
+          } else {
+            blob = await res.blob();
+          }
         } else {
           console.warn('Prebake fetch failed:', res.status, reUrl);
         }
@@ -9591,7 +9603,21 @@ function initVoicePanel(ch) {
   });
 
   // 再生
-  document.getElementById('vc-play').addEventListener('click', () => {
+  document.getElementById('vc-play').addEventListener('click', async () => {
+    // 初回ロード時の race 緩和: prebake manifest がまだ in-flight なら短時間だけ待つ。
+    // これにより「初回訪問者がページ読み込み直後に再生クリック → 直後に prebake が
+    // 解決して provider が突然切り替わる」現象を抑える。最大 800ms で諦めて続行。
+    if (prebake.loadPromise && !prebake.loaded) {
+      const status = document.getElementById('vc-status');
+      if (status) status.textContent = '音声準備中...';
+      try {
+        await Promise.race([
+          prebake.loadPromise,
+          new Promise(r => setTimeout(r, 800)),
+        ]);
+      } catch {}
+      if (status) status.textContent = '';
+    }
     const provider = getActiveProvider();
     // ブラウザ内蔵の一時停止からの再開
     if (provider.id === 'browser' && voice.currentIdx >= 0 &&

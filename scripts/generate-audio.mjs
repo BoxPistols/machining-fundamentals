@@ -40,19 +40,38 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const INDEX_HTML = path.join(ROOT, 'index.html');
 
-// VOICEVOX の SPEAKER_PRESETS と同期して維持。index.html / voicevox-apply-preset.py
-// と 3 ヶ所同じ値を持つ。片方だけ更新するとブラウザ再生と事前生成音声がずれるので注意。
-const SPEAKER_PRESETS = {
-  '126': {
-    speedScale: 1.26,
-    pitchScale: -0.08,
-    intonationScale: 0.79,
-    volumeScale: 1.0,
-    pauseLengthScale: 1.01,
-    prePhonemeLength: 0.10,
-    postPhonemeLength: 0.10,
-  },
-};
+// SPEAKER_PRESETS は index.html を Single Source of Truth として動的に読み出す。
+// 以前は本ファイルにも複製を持っていたが、index.html 側を更新し忘れる drift 事故が
+// 起きやすかったため、parse 経由で 1 ヶ所管理に集約した。
+let SPEAKER_PRESETS = {};
+
+async function loadSpeakerPresets() {
+  const src = await fs.readFile(INDEX_HTML, 'utf8');
+  const start = src.indexOf('const SPEAKER_PRESETS = {');
+  if (start < 0) {
+    console.warn('[warn] index.html: const SPEAKER_PRESETS が見つかりません。プリセット未適用で続行');
+    return {};
+  }
+  // 対応する閉じ } を見つける (素朴な depth 解析)
+  let depth = 0;
+  let i = start + 'const SPEAKER_PRESETS = '.length;
+  for (; i < src.length; i++) {
+    const c = src[i];
+    if (c === '{') depth++;
+    else if (c === '}') {
+      depth--;
+      if (depth === 0) break;
+    }
+  }
+  const literal = src.slice(start + 'const SPEAKER_PRESETS = '.length, i + 1);
+  // Function constructor で安全に評価 (closure 不可、純粋なオブジェクトリテラルのみ想定)
+  try {
+    return Function('"use strict"; return ' + literal)();
+  } catch (e) {
+    console.warn('[warn] SPEAKER_PRESETS の parse 失敗:', e.message, '— プリセット未適用で続行');
+    return {};
+  }
+}
 
 // ---- arg parsing -----------------------------------------------------------
 function parseArgs(argv) {
@@ -111,8 +130,12 @@ const bitrate = String(args.bitrate || '64');
 // index.html を読み、各章の id と voiceSummary を取り出す。
 // 構造: const CHAPTERS = [ { id: '...', ..., voiceSummary: '...', ... }, ... ]
 //   - id は string ('a1') または number (1)
-//   - voiceSummary は単一行のシングルクォート文字列
+//   - voiceSummary は **単一行のシングルクォート文字列**（複数行や template literal は非対応）
 //   - 直前に出てきた id と次に出てくる voiceSummary をペアにする
+//   - シングルクォート内に \' エスケープがあれば許容
+//
+// 制約: voiceSummary を複数行化したい場合は、本パーサもアップデート必要。
+// 末尾の整合性チェックで id 件数と voiceSummary 件数の差を検出して警告する。
 async function loadChapters() {
   const src = await fs.readFile(INDEX_HTML, 'utf8');
   const start = src.indexOf('const CHAPTERS = [');
@@ -130,6 +153,10 @@ async function loadChapters() {
   }
   const block = src.slice(start, i + 1);
   const lines = block.split('\n');
+
+  // 整合性チェック用: 4 スペースインデントの id: 出現数を先に数える (期待件数)
+  const idLineRe = /^\s{4}id:\s+(?:'[^']+'|\d+),\s*$/;
+  const expectedIdCount = lines.filter(l => idLineRe.test(l)).length;
 
   const chapters = [];
   let pendingId = null;
@@ -153,18 +180,29 @@ async function loadChapters() {
       pendingTitle = titleMatch[1];
       continue;
     }
-    const summaryMatch = line.match(/^\s{4}voiceSummary:\s+'(.*)',\s*$/);
+    // voiceSummary: '...'  ← \' エスケープ許容、複数行は非対応
+    const summaryMatch = line.match(/^\s{4}voiceSummary:\s+'((?:\\.|[^'])*)',\s*$/);
     if (summaryMatch && pendingId !== null) {
+      // エスケープ \' を ' に戻す
+      const text = summaryMatch[1].replace(/\\'/g, "'").replace(/\\\\/g, '\\');
       chapters.push({
         id: pendingId,
         num: pendingNum || pendingId,
         title: pendingTitle || '',
-        voiceSummary: summaryMatch[1],
+        voiceSummary: text,
       });
       pendingId = null;
       pendingNum = null;
       pendingTitle = null;
     }
+  }
+  // 整合性チェック: 期待される章数と実際にパースできた件数を突合
+  if (chapters.length !== expectedIdCount) {
+    console.warn(
+      `[warn] CHAPTERS パース不整合: id 件数 ${expectedIdCount} vs voiceSummary 取得済 ${chapters.length}。` +
+      `voiceSummary が複数行化された章があるか、シングルクォート以外で書かれている可能性。` +
+      `現状 voiceSummary が単一行・シングルクォート (\\' エスケープ可) のみサポート。`
+    );
   }
   return chapters;
 }
@@ -279,6 +317,8 @@ async function saveManifest(m) {
 
 // ---- main -----------------------------------------------------------------
 async function main() {
+  // SPEAKER_PRESETS を index.html から動的ロード (drift 防止のため SOT 化)
+  SPEAKER_PRESETS = await loadSpeakerPresets();
   const allChapters = await loadChapters();
   const targets = chapterArg === 'all'
     ? allChapters
