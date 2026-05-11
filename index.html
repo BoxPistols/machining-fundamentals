@@ -8203,23 +8203,79 @@ const providers = {
       if (apiConfig.grokProxySecret) {
         headers['X-Proxy-Secret'] = apiConfig.grokProxySecret;
       }
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          text,
-          voice_id: voiceId,
-          language: opts.lang || 'ja',
-          output_format: { codec: 'mp3', sample_rate: 24000, bit_rate: 128000 },
-        }),
-        signal: opts.signal,
+      const body = JSON.stringify({
+        text,
+        voice_id: voiceId,
+        language: opts.lang || 'ja',
+        output_format: { codec: 'mp3', sample_rate: 24000, bit_rate: 128000 },
       });
-      // レート制限ヘッダ取得 (Shared モードのみ付与される)
-      apiConfig.lastRateLimit = extractRateLimit(res);
-      if (!res.ok) {
-        throw buildGrokError(res);
+
+      // モバイル回線で xAI fetch が黙ってハングする事象への対策:
+      // 25 秒のリクエストタイムアウト + ネットワーク/5xx 起因の自動リトライ (最大 2 回, 指数バックオフ)。
+      // 4xx は即時 throw (リトライしてもムダ)。caller の signal による中断は最優先で尊重する。
+      const REQUEST_TIMEOUT_MS = 25000;
+      const MAX_RETRIES = 2;
+      const RETRY_DELAY_MS = [1000, 2500];
+      let lastErr;
+      for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+        if (opts.signal?.aborted) {
+          throw new DOMException('Aborted', 'AbortError');
+        }
+        const timeoutCtl = new AbortController();
+        let timedOut = false;
+        const timer = setTimeout(() => {
+          timedOut = true;
+          try { timeoutCtl.abort(); } catch {}
+        }, REQUEST_TIMEOUT_MS);
+        const onCallerAbort = () => { try { timeoutCtl.abort(); } catch {} };
+        if (opts.signal) {
+          opts.signal.addEventListener('abort', onCallerAbort, { once: true });
+        }
+        try {
+          const res = await fetch(endpoint, {
+            method: 'POST',
+            headers,
+            body,
+            signal: timeoutCtl.signal,
+          });
+          apiConfig.lastRateLimit = extractRateLimit(res);
+          if (!res.ok) {
+            // 5xx または 408/429 はリトライ可能扱い
+            const retryable = res.status >= 500 || res.status === 408 || res.status === 429;
+            if (retryable && attempt < MAX_RETRIES) {
+              lastErr = buildGrokError(res);
+              await new Promise(r => setTimeout(r, RETRY_DELAY_MS[attempt] || 2500));
+              continue;
+            }
+            throw buildGrokError(res);
+          }
+          return await res.blob();
+        } catch (e) {
+          // caller 由来の中断は即 throw (リトライしない)
+          if (opts.signal?.aborted) {
+            throw new DOMException('Aborted', 'AbortError');
+          }
+          // タイムアウト or ネットワーク失敗: リトライ
+          const isNetwork = e.name === 'TypeError' || timedOut || e.name === 'AbortError';
+          if (isNetwork && attempt < MAX_RETRIES) {
+            lastErr = timedOut
+              ? new Error(`xAI 応答タイムアウト (${REQUEST_TIMEOUT_MS / 1000}s)`)
+              : e;
+            await new Promise(r => setTimeout(r, RETRY_DELAY_MS[attempt] || 2500));
+            continue;
+          }
+          if (timedOut) {
+            throw new Error(`xAI 応答タイムアウト (${REQUEST_TIMEOUT_MS / 1000}s)。回線状況を確認してください。`);
+          }
+          throw e;
+        } finally {
+          clearTimeout(timer);
+          if (opts.signal) {
+            try { opts.signal.removeEventListener('abort', onCallerAbort); } catch {}
+          }
+        }
       }
-      return await res.blob();
+      throw lastErr || new Error('xAI 合成に失敗しました');
     },
   },
 
@@ -8371,6 +8427,17 @@ const voice = {
                              // jumpToChunk / stopSpeech で incr。古い in-flight な
                              // 合成が完了しても自分が outdated と分かれば再生しない
                              // (xAI fetch が signal 未対応の旧経路の保険)
+  // --- iOS Safari バックグラウンド再生 / 自動再接続用 ---
+  audioEl: null,             // 共有 HTML5 Audio 要素 (一度作って使い回す)。
+                             // iOS は新規 Audio() を非ジェスチャ文脈で生成すると
+                             // 拒否するため、最初のユーザー操作で 1 つだけ作成して
+                             // src だけ差し替える方式にする。
+  currentBlobUrl: null,      // 現在 audioEl にセット中の Blob URL (revoke 用)
+  currentItemRetry: 0,       // 現在チャンクのリトライ回数 (network/playback error)
+  resumeIdx: -1,             // リトライ時に「このチャンクの途中から」再開する目印
+  resumeAt: 0,               // 上記チャンク内の currentTime
+  stallTimer: null,          // stalled/waiting → 強制リトライまでの待機タイマー
+  mediaSessionSetup: false,  // Media Session API のハンドラ登録済みフラグ
 };
 
 // VOICEVOX ローカル engine の到達性。dropdown / 起動ガイド表示の判定に使用。
@@ -8562,20 +8629,115 @@ function splitLongText(text, maxLen) {
   return result.length > 0 ? result : [text];
 }
 
-// 現在の HTML5 Audio を停止し、Blob URL を解放する。
-// playSynthesized() の ended/error リスナーも同じ URL を revoke するが、
+// 共有 HTML5 Audio 要素を返す (なければ初回ユーザージェスチャ中に生成)。
+// iOS Safari は「ユーザー操作の延長」でない new Audio() の play() を拒否するため、
+// チャンクごとに新規生成せず、1 つを使い回して src だけ差し替える。
+// これによりバックグラウンド/ロック画面でも継続再生が可能になる。
+function getAudioEl() {
+  if (voice.audioEl) return voice.audioEl;
+  const a = new Audio();
+  a.preload = 'auto';
+  // iOS のフルスクリーン化を抑止 (PWA バックグラウンド再生に必須)
+  a.playsInline = true;
+  a.setAttribute('playsinline', '');
+  a.setAttribute('webkit-playsinline', '');
+  voice.audioEl = a;
+  return a;
+}
+
+// audioEl にアタッチした handlers を全部外す。
+function detachAudioHandlers(a) {
+  if (!a || !a._voiceHandlers) return;
+  for (const [name, fn] of Object.entries(a._voiceHandlers)) {
+    a.removeEventListener(name, fn);
+  }
+  a._voiceHandlers = null;
+}
+
+// 現在の HTML5 Audio 再生を停止し、Blob URL を解放する。
 // pause 経由の停止 (jumpToChunk / restartCurrentIfPlaying / stopSpeech) では
 // ended が発火しないため、明示的に解放する必要がある。
+// 注意: voice.audioEl 本体は破棄しない (iOS 再生継続のため使い回す)。
 // URL.revokeObjectURL は冪等なので二重呼び出しは安全。
 function disposeCurrentAudio() {
-  if (!voice.currentAudio) return;
-  try { voice.currentAudio.pause(); } catch {}
-  try {
-    const src = voice.currentAudio.src;
-    if (src && src.startsWith('blob:')) URL.revokeObjectURL(src);
-  } catch {}
-  try { voice.currentAudio.src = ''; } catch {}
+  if (voice.stallTimer) {
+    clearTimeout(voice.stallTimer);
+    voice.stallTimer = null;
+  }
+  const a = voice.currentAudio || voice.audioEl;
+  if (a) {
+    detachAudioHandlers(a);
+    try { a.pause(); } catch {}
+    try {
+      a.removeAttribute('src');
+      a.load();
+    } catch {}
+  }
+  if (voice.currentBlobUrl) {
+    try { URL.revokeObjectURL(voice.currentBlobUrl); } catch {}
+    voice.currentBlobUrl = null;
+  }
   voice.currentAudio = null;
+  voice.currentItemRetry = 0;
+  voice.resumeIdx = -1;
+  voice.resumeAt = 0;
+}
+
+// Media Session API: ロック画面/通知センターに「再生中」を表示し、
+// 物理ボタン (ヘッドホン・Bluetooth) や OS 側の再生コントロールを受け取る。
+// iOS PWA でバックグラウンド再生を維持するためにも、メタデータ設定が事実上必須。
+function setupMediaSession() {
+  if (!('mediaSession' in navigator) || voice.mediaSessionSetup) return;
+  voice.mediaSessionSetup = true;
+  try {
+    navigator.mediaSession.setActionHandler('play', () => {
+      if (voice.currentAudio && voice.currentAudio.paused) {
+        voice.playing = true;
+        voice.currentAudio.play().catch(() => {});
+        updateVoiceUI();
+      }
+    });
+    navigator.mediaSession.setActionHandler('pause', () => {
+      if (voice.currentAudio && !voice.currentAudio.paused) {
+        voice.currentAudio.pause();
+        voice.playing = false;
+        updateVoiceUI();
+      }
+    });
+    navigator.mediaSession.setActionHandler('previoustrack', () => {
+      if (voice.queue.length === 0) return;
+      jumpToChunk(voice.currentIdx - 1);
+    });
+    navigator.mediaSession.setActionHandler('nexttrack', () => {
+      if (voice.queue.length === 0) return;
+      jumpToChunk(voice.currentIdx + 1);
+    });
+    navigator.mediaSession.setActionHandler('stop', () => stopSpeech());
+  } catch (e) {
+    console.warn('MediaSession setup error:', e);
+  }
+}
+
+function updateMediaSessionMetadata(item) {
+  if (!('mediaSession' in navigator)) return;
+  try {
+    const ch = (typeof CHAPTERS !== 'undefined')
+      ? CHAPTERS.find(c => String(c.id) === String(item?.chapterId))
+      : null;
+    const title = ch
+      ? `第${parseInt(ch.num, 10)}章 ${ch.title}`
+      : '機械加工の基礎';
+    const total = voice.queue.length;
+    const pos = voice.currentIdx + 1;
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title,
+      artist: total > 0 ? `${pos} / ${total}` : '',
+      album: '機械加工の基礎',
+    });
+    navigator.mediaSession.playbackState = voice.playing ? 'playing' : 'paused';
+  } catch (e) {
+    console.warn('MediaSession metadata error:', e);
+  }
 }
 
 function stopSpeech() {
@@ -9600,8 +9762,20 @@ async function playSynthesized(item, provider, interruptedFlagClosure) {
       if (voice.currentSynthAbort === myAbort) voice.currentSynthAbort = null;
       if (e.name === 'AbortError' || isStale()) return;
       console.error('TTS synthesize error:', e);
-      alert(`音声生成に失敗しました：${e.message}`);
-      stopSpeech();
+      // 1 つのチャンクの失敗で全体を止めない: ステータス表示のみ行い、次へ進める。
+      // (provider 側で既にタイムアウト/リトライを尽くしているので、ここに来た時点で
+      //  当該チャンクは諦めて続行するのが UX 上ベター)
+      if (status) status.textContent = `生成失敗(スキップ): ${e.message || 'エラー'}`;
+      // 1 チャンクも再生していなければ初期失敗として alert (設定不備など)
+      if (voice.currentIdx <= 0 && !voice.audioEl?.currentTime) {
+        alert(`音声生成に失敗しました：${e.message}`);
+        stopSpeech();
+        return;
+      }
+      // 進めるが、状態をクリアして次に備える
+      setTimeout(() => {
+        if (voice.playing) playQueue();
+      }, 600);
       return;
     }
   }
@@ -9609,37 +9783,123 @@ async function playSynthesized(item, provider, interruptedFlagClosure) {
   // 中断チェック（生成中に停止された場合）
   if (isStale() || !voice.playing) return;
 
-  // Audio で再生
+  // Audio で再生 (iOS バックグラウンド継続のため共有要素を使い回す)
+  setupMediaSession();
+  const audio = getAudioEl();
+  detachAudioHandlers(audio);
+  // 直前の Blob URL を解放してから新しい src を割り当てる
+  if (voice.currentBlobUrl) {
+    try { URL.revokeObjectURL(voice.currentBlobUrl); } catch {}
+    voice.currentBlobUrl = null;
+  }
   const url = URL.createObjectURL(blob);
-  const audio = new Audio(url);
-  audio.playbackRate = voice.rate;
+  voice.currentBlobUrl = url;
   voice.currentAudio = audio;
+  audio.playbackRate = voice.rate;
 
-  audio.addEventListener('play', () => {
-    voice.playing = true;
-    updateVoiceUI();
-    updateHighlight(item);
-  });
-  audio.addEventListener('ended', () => {
-    URL.revokeObjectURL(url);
-    if (voice.currentAudio === audio) voice.currentAudio = null;
+  // リトライ時のシーク先を決定 (このチャンクで前回ストールした位置)
+  const wantResume = (voice.resumeIdx === voice.currentIdx) ? (voice.resumeAt || 0) : 0;
+  voice.resumeIdx = -1;
+  voice.resumeAt = 0;
+
+  // 自動再接続: 同一チャンクで最大 RETRY_MAX 回まで、currentTime を保持して
+  // 再合成→続きから再生 する。指数バックオフ。
+  const RETRY_MAX = 3;
+  const RETRY_WAIT_MS = [800, 1600, 3200];
+
+  const clearStall = () => {
+    if (voice.stallTimer) {
+      clearTimeout(voice.stallTimer);
+      voice.stallTimer = null;
+    }
+  };
+
+  const scheduleRetry = (reason) => {
     if (isStale() || !voice.playing) return;
-    playQueue();
-  });
-  audio.addEventListener('error', (e) => {
-    URL.revokeObjectURL(url);
-    if (voice.currentAudio === audio) voice.currentAudio = null;
-    if (isStale() || !voice.playing) return;
-    console.warn('Audio playback error:', e);
-    playQueue();
-  });
+    if (voice.currentAudio !== audio) return;
+    clearStall();
+    if (voice.currentItemRetry >= RETRY_MAX) {
+      // 諦めて次チャンクへ
+      console.warn(`Audio retry exhausted (${reason}), advancing to next chunk`);
+      voice.currentItemRetry = 0;
+      playQueue();
+      return;
+    }
+    const attempt = voice.currentItemRetry++;
+    const wait = RETRY_WAIT_MS[Math.min(attempt, RETRY_WAIT_MS.length - 1)];
+    // 現在位置を覚えて、同じチャンクの speakCurrent を再呼び出し
+    voice.resumeIdx = voice.currentIdx;
+    voice.resumeAt = Math.max(0, audio.currentTime - 0.3); // 少し巻き戻して継ぎ目を自然に
+    const status = document.getElementById('vc-status');
+    if (status) status.textContent = `再接続中... (${attempt + 1}/${RETRY_MAX})`;
+    setTimeout(() => {
+      if (!voice.playing || isStale()) return;
+      speakCurrent();
+    }, wait);
+  };
+
+  const handlers = {
+    play: () => {
+      voice.playing = true;
+      voice.currentItemRetry = 0;
+      clearStall();
+      updateVoiceUI();
+      updateHighlight(item);
+      updateMediaSessionMetadata(item);
+    },
+    ended: () => {
+      clearStall();
+      if (voice.currentAudio === audio && voice.currentBlobUrl === url) {
+        try { URL.revokeObjectURL(url); } catch {}
+        voice.currentBlobUrl = null;
+      }
+      if (isStale() || !voice.playing) return;
+      voice.currentItemRetry = 0;
+      playQueue();
+    },
+    error: (e) => {
+      console.warn('Audio playback error:', e?.target?.error || e);
+      scheduleRetry('error');
+    },
+    stalled: () => {
+      // 5 秒進展がなければリトライ
+      if (voice.stallTimer) return;
+      voice.stallTimer = setTimeout(() => {
+        voice.stallTimer = null;
+        if (!voice.playing || voice.currentAudio !== audio) return;
+        if (audio.readyState >= 3 && !audio.paused) return;
+        scheduleRetry('stalled');
+      }, 5000);
+    },
+    waiting: () => {
+      if (voice.stallTimer) return;
+      voice.stallTimer = setTimeout(() => {
+        voice.stallTimer = null;
+        if (!voice.playing || voice.currentAudio !== audio) return;
+        if (audio.readyState >= 3 && !audio.paused) return;
+        scheduleRetry('waiting');
+      }, 5000);
+    },
+    playing: () => clearStall(),
+  };
+  audio._voiceHandlers = handlers;
+  for (const [name, fn] of Object.entries(handlers)) {
+    audio.addEventListener(name, fn);
+  }
 
   try {
+    audio.src = url;
+    audio.load();
+    if (wantResume > 0) {
+      audio.addEventListener('loadedmetadata', () => {
+        try { audio.currentTime = wantResume; } catch {}
+      }, { once: true });
+    }
     await audio.play();
   } catch (e) {
-    URL.revokeObjectURL(url);
     if (e.name === 'AbortError') return;
     console.warn('Audio play failed:', e);
+    scheduleRetry('play-rejected');
   }
 }
 
@@ -10292,8 +10552,26 @@ function initVoicePanel(ch) {
   updateVoiceUI();
 }
 
-// ページ切替・離脱時は必ず停止
+// ページ完全離脱時のみ停止 (タブ切替/バックグラウンド遷移では停止しない)
 window.addEventListener('beforeunload', () => stopSpeech());
+
+// iOS Safari は backgrounding 直後にメディアを suspend することがある。
+// 復帰時に再生中のはずなのに pause 状態だったら自動で再開する。
+// (Audio 要素を破棄せず使い回しているので src は残っており play() で続きから再開可能)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  if (!voice.playing) return;
+  const a = voice.currentAudio;
+  if (a && a.paused && a.src) {
+    a.play().catch(e => {
+      console.warn('Resume on visibilitychange failed:', e);
+      // 再開不能ならリトライ機構に委ねる: stalled イベント相当として扱う
+      if (a._voiceHandlers?.stalled) {
+        try { a._voiceHandlers.stalled(); } catch {}
+      }
+    });
+  }
+});
 
 // =============================================================================
 // テキスト書き出し機能（他の音声読み上げツール向け）
