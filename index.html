@@ -8463,6 +8463,26 @@ probeVoicevoxEngine().then(() => {
   if (typeof populateProviderSelect === 'function') populateProviderSelect();
 });
 
+// dropdown focus / window 復帰時に再 probe。後から VOICEVOX を起動したケースで状態を追従させる。
+let voicevoxProbeInFlight = null;
+let voicevoxLastProbeAt = 0;
+const VOICEVOX_PROBE_THROTTLE_MS = 1500;
+function refreshVoicevoxEngineState() {
+  if (voicevoxProbeInFlight) return voicevoxProbeInFlight;
+  if (Date.now() - voicevoxLastProbeAt < VOICEVOX_PROBE_THROTTLE_MS) return Promise.resolve(voicevoxEngineState);
+  voicevoxProbeInFlight = probeVoicevoxEngine().then(state => {
+    voicevoxLastProbeAt = Date.now();
+    voicevoxProbeInFlight = null;
+    if (typeof populateProviderSelect === 'function') populateProviderSelect();
+    return state;
+  });
+  return voicevoxProbeInFlight;
+}
+// タブをバックグラウンドから復帰した瞬間も再確認
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') refreshVoicevoxEngineState();
+});
+
 // 保存された設定を復元
 try {
   const saved = localStorage.getItem('cfd-voice');
@@ -10324,7 +10344,11 @@ function initVoicePanel(ch) {
 
   // プロバイダー選択
   populateProviderSelect();
-  document.getElementById('vc-provider').addEventListener('change', (e) => {
+  const _provSel = document.getElementById('vc-provider');
+  // dropdown を開く瞬間に engine 再確認。option ラベル更新までは間に合わなくても次回開閉で反映される
+  _provSel.addEventListener('mousedown', refreshVoicevoxEngineState);
+  _provSel.addEventListener('focus', refreshVoicevoxEngineState);
+  _provSel.addEventListener('change', (e) => {
     const newProvider = e.target.value;
     // APIキー未設定のプロバイダーに切り替えようとしたら確認
     const p = providers[newProvider];
