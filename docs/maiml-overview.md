@@ -188,7 +188,7 @@ CASE-1 は「測定して結果を共有する」、CASE-2 は「測定方法を
 | **XES** | IEEE 1849-2016。`<eventLog>` 内のイベント記述に使用 |
 | **AnIML** | ASTM E13.15 で策定中の類似目的フォーマット。MaiML はベンダー用語固定方針が異なる |
 | **mzML / netCDF / HDF5** | 各分野固有のフォーマット。MaiML から外部ファイルとして引用可 |
-| **ISO 化** | **ISO 23495** として ISO/TC 201 (Surface chemical analysis) / SC 10 配下で国際標準化が進行中。JIS K 0200:2024 制定済み・ISO 化はその国際展開フェーズに位置付けられる |
+| **ISO 化** | **ISO 番号は未割当 (pre-proposal 段階)**。担当予定は **ISO/TC 201 (Surface chemical analysis) / SC 3**。JAIMA は 2026 年の ISO/TC 201 総会 SC3 会議で **NWIP (New Work Item Proposal)** 提出を予定。並行して **VAMAS/TWA2 Project A45** で評価が進行中。JIS K 0200:2024 が ISO 提案のベースとなる (出典: JAIMA 公式 <https://www.maiml.org/index_en.html>) |
 
 ---
 
