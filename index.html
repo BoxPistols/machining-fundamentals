@@ -10140,8 +10140,49 @@ function openVoicevoxGuideModal() {
   const body = document.createElement('div');
   body.className = 'dialog-body';
 
+  // 最頻の原因 (実測でユーザーが詰まったポイント): ブラウザ拡張機能による block。
+  // CORS / 起動状態より優先して最上部に表示する。
+  const extBox = document.createElement('div');
+  extBox.style.cssText = 'border:1px solid #f59e0b;background:rgba(245,158,11,0.08);padding:0.8em 1em;border-radius:8px;margin-bottom:1em;';
+  const extTitle = document.createElement('p');
+  extTitle.style.cssText = 'margin:0 0 0.4em 0;font-weight:bold;color:#f59e0b;';
+  extTitle.textContent = '🚨 まず最初に: ブラウザ拡張機能が原因の可能性が最も高いです';
+  extBox.appendChild(extTitle);
+  const extDesc = document.createElement('p');
+  extDesc.style.margin = '0 0 0.5em 0';
+  extDesc.textContent = 'DevTools (F12) → Console に「ERR_BLOCKED_BY_CLIENT」が出ている場合、サーバ側ではなく拡張機能が localhost:50021 への通信を遮断しています。最頻の犯人:';
+  extBox.appendChild(extDesc);
+  const extUl = document.createElement('ul');
+  extUl.style.cssText = 'margin:0 0 0.5em 1.2em;line-height:1.6;';
+  ['uBlock Origin / AdGuard / AdBlock Plus (広告ブロッカー)',
+   'Privacy Badger / Ghostery / DuckDuckGo Privacy Essentials',
+   'Brave Shields (Brave ブラウザの場合)',
+   '企業 MDM / セキュリティソフト (ESET, Symantec, Little Snitch 等)']
+    .forEach(t => { const li = document.createElement('li'); li.textContent = t; extUl.appendChild(li); });
+  extBox.appendChild(extUl);
+  const extCheck = document.createElement('p');
+  extCheck.style.cssText = 'margin:0.4em 0 0 0;font-size:0.9em;';
+  const extCheckBold = document.createElement('strong');
+  extCheckBold.textContent = '一発検証: ';
+  extCheck.appendChild(extCheckBold);
+  extCheck.appendChild(document.createTextNode('シークレットウィンドウ (Cmd+Shift+N) で本ページを開いて動けば、拡張機能が確定犯人です。'));
+  extBox.appendChild(extCheck);
+  const extFix = document.createElement('p');
+  extFix.style.cssText = 'margin:0.3em 0 0 0;font-size:0.9em;';
+  const extFixBold = document.createElement('strong');
+  extFixBold.textContent = '対処: ';
+  extFix.appendChild(extFixBold);
+  extFix.appendChild(document.createTextNode('chrome://extensions/ で該当拡張を OFF、または除外設定に '));
+  const extCode = document.createElement('code');
+  extCode.style.cssText = 'background:rgba(0,0,0,0.4);padding:0.1em 0.4em;border-radius:3px;font-family:"JetBrains Mono",monospace;';
+  extCode.textContent = 'localhost:50021';
+  extFix.appendChild(extCode);
+  extFix.appendChild(document.createTextNode(' を追加してください。'));
+  extBox.appendChild(extFix);
+  body.appendChild(extBox);
+
   const p1 = document.createElement('p');
-  p1.textContent = 'ローカルの VOICEVOX エンジンに接続できません。お手元で次の手順を確認してください。';
+  p1.textContent = '上記に該当しない場合、以下の手順を確認してください:';
   body.appendChild(p1);
 
   const ol = document.createElement('ol');
