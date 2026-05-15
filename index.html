@@ -10152,6 +10152,59 @@ function openVoicevoxGuideModal() {
   ol.appendChild(step3);
   body.appendChild(ol);
 
+  // HTTPS デプロイ (localhost / 127.0.0.1 以外) からアクセスしている場合、CORS 許可設定が必要
+  const host = location.hostname;
+  const isLocalHost = host === 'localhost' || host === '127.0.0.1' || host === '';
+  if (!isLocalHost) {
+    const corsHead = document.createElement('p');
+    corsHead.style.marginTop = '1em';
+    const strong = document.createElement('strong');
+    strong.textContent = '⚠️ HTTPS で開いている場合は VOICEVOX 側で CORS 許可が必要です';
+    corsHead.appendChild(strong);
+    body.appendChild(corsHead);
+
+    const corsDesc = document.createElement('p');
+    corsDesc.textContent = `現在 ${location.origin} から閲覧中。VOICEVOX のデフォルト CORS は localhost 由来のみ許可するため、本サイトからのアクセスは弾かれます。次のいずれかの方法で許可してください。`;
+    body.appendChild(corsDesc);
+
+    // 方法 A: 設定 UI
+    const aHead = document.createElement('p');
+    const aStrong = document.createElement('strong');
+    aStrong.textContent = '方法 A (推奨・GUI 完結)';
+    aHead.appendChild(aStrong);
+    body.appendChild(aHead);
+    const aList = document.createElement('ol');
+    const aStep1 = document.createElement('li');
+    aStep1.appendChild(document.createTextNode('VOICEVOX を起動した状態で '));
+    const settingLink = document.createElement('a');
+    settingLink.href = 'http://127.0.0.1:50021/setting';
+    settingLink.target = '_blank';
+    settingLink.rel = 'noopener';
+    settingLink.textContent = 'http://127.0.0.1:50021/setting';
+    aStep1.appendChild(settingLink);
+    aStep1.appendChild(document.createTextNode(' を開く'));
+    aList.appendChild(aStep1);
+    const aStep2 = document.createElement('li');
+    aStep2.textContent = 'CORS Policy Mode を "all" に変更 → Save → VOICEVOX を再起動';
+    aList.appendChild(aStep2);
+    body.appendChild(aList);
+
+    // 方法 B: コマンドライン
+    const bHead = document.createElement('p');
+    const bStrong = document.createElement('strong');
+    bStrong.textContent = '方法 B (コマンドライン起動)';
+    bHead.appendChild(bStrong);
+    body.appendChild(bHead);
+    const bDesc = document.createElement('p');
+    bDesc.style.fontSize = '0.9em';
+    bDesc.textContent = 'VOICEVOX を一度終了してから、ターミナルで以下のように起動 (macOS の例):';
+    body.appendChild(bDesc);
+    const pre = document.createElement('pre');
+    pre.style.cssText = 'background:rgba(0,0,0,0.4);padding:0.6em 0.8em;border-radius:6px;font-family:"JetBrains Mono",monospace;font-size:0.85em;overflow-x:auto;user-select:all;';
+    pre.textContent = `/Applications/VOICEVOX.app/Contents/MacOS/run --allow_origin ${location.origin}`;
+    body.appendChild(pre);
+  }
+
   const status = document.createElement('div');
   status.className = 'settings-field-status';
   status.id = 'voicevox-guide-status';
