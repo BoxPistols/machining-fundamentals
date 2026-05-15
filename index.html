@@ -8442,6 +8442,8 @@ const voice = {
 
 // VOICEVOX ローカル engine の到達性。dropdown / 起動ガイド表示の判定に使用。
 let voicevoxEngineState = 'unknown'; // 'unknown' | 'reachable' | 'unreachable'
+// 直近の失敗理由。'cors' / 'timeout' / 'network' / null。HTTPS 環境では大抵 'cors'
+let voicevoxLastFailKind = null;
 
 // 1秒タイムアウトで /version を叩き engine 起動有無を判定。失敗は unreachable 扱い。
 async function probeVoicevoxEngine() {
@@ -8452,8 +8454,16 @@ async function probeVoicevoxEngine() {
     const res = await fetch(`${url}/version`, { signal: ctl.signal });
     clearTimeout(timer);
     voicevoxEngineState = res.ok ? 'reachable' : 'unreachable';
-  } catch {
+    if (res.ok) voicevoxLastFailKind = null;
+  } catch (err) {
     voicevoxEngineState = 'unreachable';
+    // AbortError → timeout、TypeError → CORS 拒否 or ネット不可 (区別は origin で推定)
+    if (err && err.name === 'AbortError') voicevoxLastFailKind = 'timeout';
+    else if (err && err.name === 'TypeError') {
+      const h = location.hostname;
+      const isLocal = h === 'localhost' || h === '127.0.0.1' || h === '[::1]' || h === '';
+      voicevoxLastFailKind = isLocal ? 'network' : 'cors';
+    } else voicevoxLastFailKind = 'network';
   }
   return voicevoxEngineState;
 }
@@ -8461,6 +8471,26 @@ async function probeVoicevoxEngine() {
 // 起動時に non-blocking で engine 検出 → 完了後 dropdown を再描画
 probeVoicevoxEngine().then(() => {
   if (typeof populateProviderSelect === 'function') populateProviderSelect();
+});
+
+// dropdown focus / window 復帰時に再 probe。後から VOICEVOX を起動したケースで状態を追従させる。
+let voicevoxProbeInFlight = null;
+let voicevoxLastProbeAt = 0;
+const VOICEVOX_PROBE_THROTTLE_MS = 800;
+function refreshVoicevoxEngineState() {
+  if (voicevoxProbeInFlight) return voicevoxProbeInFlight;
+  if (Date.now() - voicevoxLastProbeAt < VOICEVOX_PROBE_THROTTLE_MS) return Promise.resolve(voicevoxEngineState);
+  voicevoxProbeInFlight = probeVoicevoxEngine().then(state => {
+    voicevoxLastProbeAt = Date.now();
+    voicevoxProbeInFlight = null;
+    if (typeof populateProviderSelect === 'function') populateProviderSelect();
+    return state;
+  });
+  return voicevoxProbeInFlight;
+}
+// タブをバックグラウンドから復帰した瞬間も再確認
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') refreshVoicevoxEngineState();
 });
 
 // 保存された設定を復元
@@ -10132,6 +10162,70 @@ function openVoicevoxGuideModal() {
   ol.appendChild(step3);
   body.appendChild(ol);
 
+  // HTTPS デプロイ (localhost 系以外) からアクセスしている場合、CORS 許可設定が必要
+  const host = location.hostname;
+  const isLocalHost = ['localhost', '127.0.0.1', '[::1]', ''].includes(host);
+  if (!isLocalHost) {
+    const corsHead = document.createElement('p');
+    corsHead.style.marginTop = '1em';
+    const strong = document.createElement('strong');
+    strong.textContent = '⚠️ HTTPS で開いている場合は VOICEVOX 側で CORS 許可が必要です';
+    corsHead.appendChild(strong);
+    body.appendChild(corsHead);
+
+    const corsDesc = document.createElement('p');
+    corsDesc.textContent = `現在 ${location.origin} から閲覧中。VOICEVOX のデフォルト CORS は localhost 由来のみ許可するため、本サイトからのアクセスは弾かれます。次のいずれかの方法で許可してください。`;
+    body.appendChild(corsDesc);
+
+    const corsNote = document.createElement('p');
+    corsNote.style.fontSize = '0.85em';
+    corsNote.style.opacity = '0.8';
+    corsNote.textContent = '※ Vercel Preview Deploy など URL が毎回変わる環境では方法 A (Policy Mode = all) を推奨します。';
+    body.appendChild(corsNote);
+
+    // 方法 A: 設定 UI
+    const aHead = document.createElement('p');
+    const aStrong = document.createElement('strong');
+    aStrong.textContent = '方法 A (推奨・GUI 完結)';
+    aHead.appendChild(aStrong);
+    body.appendChild(aHead);
+    const aList = document.createElement('ol');
+    const aStep1 = document.createElement('li');
+    aStep1.appendChild(document.createTextNode('VOICEVOX を起動した状態で '));
+    const settingLink = document.createElement('a');
+    settingLink.href = 'http://127.0.0.1:50021/setting';
+    settingLink.target = '_blank';
+    settingLink.rel = 'noopener';
+    settingLink.textContent = 'http://127.0.0.1:50021/setting';
+    aStep1.appendChild(settingLink);
+    aStep1.appendChild(document.createTextNode(' を開く'));
+    aList.appendChild(aStep1);
+    const aStep2 = document.createElement('li');
+    aStep2.textContent = 'CORS Policy Mode を "all" に変更 → Save → VOICEVOX を再起動';
+    aList.appendChild(aStep2);
+    body.appendChild(aList);
+
+    // 方法 B: コマンドライン
+    const bHead = document.createElement('p');
+    const bStrong = document.createElement('strong');
+    bStrong.textContent = '方法 B (コマンドライン起動)';
+    bHead.appendChild(bStrong);
+    body.appendChild(bHead);
+    const bDesc = document.createElement('p');
+    bDesc.style.fontSize = '0.9em';
+    bDesc.textContent = 'VOICEVOX を一度終了してから、ターミナルで以下のように起動:';
+    body.appendChild(bDesc);
+    const preStyle = 'background:rgba(0,0,0,0.4);padding:0.6em 0.8em;border-radius:6px;font-family:"JetBrains Mono",monospace;font-size:0.85em;overflow-x:auto;user-select:all;margin-bottom:0.4em;';
+    const preMac = document.createElement('pre');
+    preMac.style.cssText = preStyle;
+    preMac.textContent = `# macOS\n/Applications/VOICEVOX.app/Contents/MacOS/run --allow_origin ${location.origin}`;
+    body.appendChild(preMac);
+    const preWin = document.createElement('pre');
+    preWin.style.cssText = preStyle;
+    preWin.textContent = `# Windows (PowerShell)\n& "$env:LOCALAPPDATA\\Programs\\VOICEVOX\\VOICEVOX.exe" --allow_origin ${location.origin}`;
+    body.appendChild(preWin);
+  }
+
   const status = document.createElement('div');
   status.className = 'settings-field-status';
   status.id = 'voicevox-guide-status';
@@ -10157,7 +10251,12 @@ function openVoicevoxGuideModal() {
       status.textContent = '✓ VOICEVOX エンジンを検出しました。';
     } else {
       status.className = 'settings-field-status ng';
-      status.textContent = '✗ まだ接続できません。アプリが起動しているか確認してください。';
+      const msgByKind = {
+        cors: '✗ VOICEVOX には到達できましたが CORS で拒否されています。上記の方法 A / B で許可設定を行ってください。',
+        timeout: '✗ 応答がタイムアウトしました。VOICEVOX が起動中の場合は数秒待って再試行してください。',
+        network: '✗ まだ接続できません。アプリが起動しているか確認してください。',
+      };
+      status.textContent = msgByKind[voicevoxLastFailKind] || msgByKind.network;
     }
     reprobeBtn.disabled = false;
   });
@@ -10324,7 +10423,11 @@ function initVoicePanel(ch) {
 
   // プロバイダー選択
   populateProviderSelect();
-  document.getElementById('vc-provider').addEventListener('change', (e) => {
+  const provSel = document.getElementById('vc-provider');
+  // dropdown を開く瞬間に engine 再確認。option ラベル更新までは間に合わなくても次回開閉で反映される
+  provSel.addEventListener('mousedown', refreshVoicevoxEngineState);
+  provSel.addEventListener('focus', refreshVoicevoxEngineState);
+  provSel.addEventListener('change', (e) => {
     const newProvider = e.target.value;
     // APIキー未設定のプロバイダーに切り替えようとしたら確認
     const p = providers[newProvider];
