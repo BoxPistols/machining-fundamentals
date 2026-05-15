@@ -10180,8 +10180,35 @@ function openVoicevoxGuideModal() {
     const corsNote = document.createElement('p');
     corsNote.style.fontSize = '0.85em';
     corsNote.style.opacity = '0.8';
-    corsNote.textContent = '※ Vercel Preview Deploy など URL が毎回変わる環境では方法 A (Policy Mode = all) を推奨します。';
+    corsNote.textContent = '※ ブラウザのセキュリティ制約により、サイト側から VOICEVOX 設定を自動書換することはできません。下のボタンで 1〜2 クリックで完了します。Vercel Preview Deploy など URL が毎回変わる環境では方法 A 推奨。';
     body.appendChild(corsNote);
+
+    // 共通: トースト風フィードバック
+    const showCopyToast = (btn, ok) => {
+      const orig = btn.textContent;
+      btn.textContent = ok ? '✓ コピーしました' : '✗ コピー失敗';
+      btn.disabled = true;
+      setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 1500);
+    };
+    const copyToClipboard = async (text, btn) => {
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+        }
+        showCopyToast(btn, true);
+      } catch {
+        showCopyToast(btn, false);
+      }
+    };
 
     // 方法 A: 設定 UI
     const aHead = document.createElement('p');
@@ -10191,19 +10218,22 @@ function openVoicevoxGuideModal() {
     body.appendChild(aHead);
     const aList = document.createElement('ol');
     const aStep1 = document.createElement('li');
-    aStep1.appendChild(document.createTextNode('VOICEVOX を起動した状態で '));
-    const settingLink = document.createElement('a');
-    settingLink.href = 'http://127.0.0.1:50021/setting';
-    settingLink.target = '_blank';
-    settingLink.rel = 'noopener';
-    settingLink.textContent = 'http://127.0.0.1:50021/setting';
-    aStep1.appendChild(settingLink);
-    aStep1.appendChild(document.createTextNode(' を開く'));
+    aStep1.textContent = '下のボタンで VOICEVOX 設定 UI を新しいタブで開く';
     aList.appendChild(aStep1);
     const aStep2 = document.createElement('li');
-    aStep2.textContent = 'CORS Policy Mode を "all" に変更 → Save → VOICEVOX を再起動';
+    aStep2.textContent = '「CORS Policy Mode」を "all" に変更 → 保存 → VOICEVOX を再起動';
     aList.appendChild(aStep2);
     body.appendChild(aList);
+
+    const openSettingBtn = document.createElement('button');
+    openSettingBtn.type = 'button';
+    openSettingBtn.className = 'dialog-btn primary';
+    openSettingBtn.style.cssText = 'margin:0.4em 0 1em 0;';
+    openSettingBtn.textContent = '🔧 VOICEVOX 設定 UI を開く';
+    openSettingBtn.addEventListener('click', () => {
+      window.open('http://127.0.0.1:50021/setting', '_blank', 'noopener');
+    });
+    body.appendChild(openSettingBtn);
 
     // 方法 B: コマンドライン
     const bHead = document.createElement('p');
@@ -10213,17 +10243,41 @@ function openVoicevoxGuideModal() {
     body.appendChild(bHead);
     const bDesc = document.createElement('p');
     bDesc.style.fontSize = '0.9em';
-    bDesc.textContent = 'VOICEVOX を一度終了してから、ターミナルで以下のように起動:';
+    bDesc.textContent = 'VOICEVOX を一度終了してから、お使いの OS のコマンドをコピーして実行:';
     body.appendChild(bDesc);
-    const preStyle = 'background:rgba(0,0,0,0.4);padding:0.6em 0.8em;border-radius:6px;font-family:"JetBrains Mono",monospace;font-size:0.85em;overflow-x:auto;user-select:all;margin-bottom:0.4em;';
+
+    const preStyle = 'background:rgba(0,0,0,0.4);padding:0.6em 0.8em;border-radius:6px;font-family:"JetBrains Mono",monospace;font-size:0.85em;overflow-x:auto;user-select:all;margin:0;';
+    const cmdRowStyle = 'display:flex;gap:0.5em;align-items:flex-start;margin-bottom:0.6em;';
+    const macCmd = `/Applications/VOICEVOX.app/Contents/MacOS/run --allow_origin ${location.origin}`;
+    const winCmd = `& "$env:LOCALAPPDATA\\Programs\\VOICEVOX\\VOICEVOX.exe" --allow_origin ${location.origin}`;
+
+    const macRow = document.createElement('div');
+    macRow.style.cssText = cmdRowStyle;
     const preMac = document.createElement('pre');
-    preMac.style.cssText = preStyle;
-    preMac.textContent = `# macOS\n/Applications/VOICEVOX.app/Contents/MacOS/run --allow_origin ${location.origin}`;
-    body.appendChild(preMac);
+    preMac.style.cssText = preStyle + 'flex:1;';
+    preMac.textContent = `# macOS\n${macCmd}`;
+    macRow.appendChild(preMac);
+    const copyMacBtn = document.createElement('button');
+    copyMacBtn.type = 'button';
+    copyMacBtn.className = 'dialog-btn';
+    copyMacBtn.textContent = '📋 コピー';
+    copyMacBtn.addEventListener('click', () => copyToClipboard(macCmd, copyMacBtn));
+    macRow.appendChild(copyMacBtn);
+    body.appendChild(macRow);
+
+    const winRow = document.createElement('div');
+    winRow.style.cssText = cmdRowStyle;
     const preWin = document.createElement('pre');
-    preWin.style.cssText = preStyle;
-    preWin.textContent = `# Windows (PowerShell)\n& "$env:LOCALAPPDATA\\Programs\\VOICEVOX\\VOICEVOX.exe" --allow_origin ${location.origin}`;
-    body.appendChild(preWin);
+    preWin.style.cssText = preStyle + 'flex:1;';
+    preWin.textContent = `# Windows (PowerShell)\n${winCmd}`;
+    winRow.appendChild(preWin);
+    const copyWinBtn = document.createElement('button');
+    copyWinBtn.type = 'button';
+    copyWinBtn.className = 'dialog-btn';
+    copyWinBtn.textContent = '📋 コピー';
+    copyWinBtn.addEventListener('click', () => copyToClipboard(winCmd, copyWinBtn));
+    winRow.appendChild(copyWinBtn);
+    body.appendChild(winRow);
   }
 
   const status = document.createElement('div');
