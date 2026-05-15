@@ -25,7 +25,7 @@
 | 仕様バージョン | 1.0 |
 | ベース技術 | XML 1.0 |
 | 名前空間 | `http://www.maiml.org/schemas` |
-| 拡張子 | `.maiml`、`.mai`（外部ファイル同梱の ZIP は `.maizip`、ISO/IEC 21320-1 準拠） |
+| 拡張子 | `.maiml`、`.mai`。外部ファイル (TIFF 画像 / 生データ等) 同梱用に `.maizip` も定義 (命名は JIS K 0200:2024 規定)。`.maizip` の中身は **ISO/IEC 21320-1 (Document Container File) 準拠の ZIP** で、ODF / OOXML / EPUB の慣例に倣い第 1 エントリは `mimetype` (STORED 圧縮なし) |
 | 発行 | 一般社団法人 日本分析機器工業会 (JAIMA) |
 | 助成 | 経済産業省 委託事業 |
 | ガイドライン公開 | 2024-05-20 |
