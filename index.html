@@ -10225,14 +10225,16 @@ function openVoicevoxGuideModal() {
     aList.appendChild(aStep2);
     body.appendChild(aList);
 
-    const openSettingBtn = document.createElement('button');
-    openSettingBtn.type = 'button';
+    // window.open は HTTPS context から http への navigation が一部 Chromium 系で抑止されることが
+    // あるため、より確実な <a target="_blank"> を採用。link 化することでブラウザの popup blocker
+    // も「ユーザー操作によるリンククリック」と認識して通常通り新タブを開く。
+    const openSettingBtn = document.createElement('a');
+    openSettingBtn.href = 'http://127.0.0.1:50021/setting';
+    openSettingBtn.target = '_blank';
+    openSettingBtn.rel = 'noopener noreferrer';
     openSettingBtn.className = 'dialog-btn primary';
-    openSettingBtn.style.cssText = 'margin:0.4em 0 1em 0;';
+    openSettingBtn.style.cssText = 'margin:0.4em 0 1em 0;display:inline-block;text-decoration:none;text-align:center;cursor:pointer;';
     openSettingBtn.textContent = '🔧 VOICEVOX 設定 UI を開く';
-    openSettingBtn.addEventListener('click', () => {
-      window.open('http://127.0.0.1:50021/setting', '_blank', 'noopener');
-    });
     body.appendChild(openSettingBtn);
 
     // 方法 B: コマンドライン
@@ -10321,6 +10323,20 @@ function openVoicevoxGuideModal() {
   backdrop.appendChild(dialog);
   document.body.appendChild(backdrop);
 
+  // モーダルを開いている間は 3 秒ごとに自動再検出 (engine 起動 / CORS 設定変更後すぐに反映される)
+  const autoProbeTimer = setInterval(async () => {
+    const prevState = voicevoxEngineState;
+    await probeVoicevoxEngine();
+    if (voicevoxEngineState !== prevState) {
+      populateProviderSelect();
+      if (voicevoxEngineState === 'reachable') {
+        status.className = 'settings-field-status ok';
+        status.textContent = '✓ VOICEVOX エンジンを検出しました。このダイアログを閉じて再生してください。';
+      }
+    }
+  }, 3000);
+  backdrop._autoProbeTimer = autoProbeTimer;
+
   backdrop.addEventListener('click', (e) => {
     if (e.target === backdrop) closeVoicevoxGuideModal();
   });
@@ -10336,6 +10352,9 @@ function closeVoicevoxGuideModal() {
   if (!dialog) return;
   if (dialog._escHandler) {
     document.removeEventListener('keydown', dialog._escHandler);
+  }
+  if (dialog._autoProbeTimer) {
+    clearInterval(dialog._autoProbeTimer);
   }
   dialog.remove();
 }
