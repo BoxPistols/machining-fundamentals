@@ -10243,13 +10243,13 @@ function openVoicevoxGuideModal() {
     body.appendChild(bHead);
     const bDesc = document.createElement('p');
     bDesc.style.fontSize = '0.9em';
-    bDesc.textContent = 'VOICEVOX を一度終了してから、お使いの OS のコマンドをコピーして実行:';
+    bDesc.textContent = 'GUI 版 VOICEVOX を一度終了してから、お使いの OS のコマンドをコピーして実行 (engine 単体を CLI 起動):';
     body.appendChild(bDesc);
 
     const preStyle = 'background:rgba(0,0,0,0.4);padding:0.6em 0.8em;border-radius:6px;font-family:"JetBrains Mono",monospace;font-size:0.85em;overflow-x:auto;user-select:all;margin:0;';
     const cmdRowStyle = 'display:flex;gap:0.5em;align-items:flex-start;margin-bottom:0.6em;';
-    const macCmd = `/Applications/VOICEVOX.app/Contents/MacOS/run --allow_origin ${location.origin}`;
-    const winCmd = `& "$env:LOCALAPPDATA\\Programs\\VOICEVOX\\VOICEVOX.exe" --allow_origin ${location.origin}`;
+    const macCmd = `/Applications/VOICEVOX.app/Contents/Resources/vv-engine/run --allow_origin ${location.origin}`;
+    const winCmd = `& "$env:LOCALAPPDATA\\Programs\\VOICEVOX\\resources\\vv-engine\\run.exe" --allow_origin ${location.origin}`;
 
     const macRow = document.createElement('div');
     macRow.style.cssText = cmdRowStyle;
