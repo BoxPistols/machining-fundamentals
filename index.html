@@ -10221,9 +10221,52 @@ function openVoicevoxGuideModal() {
     aStep1.textContent = '下のボタンで VOICEVOX 設定 UI を新しいタブで開く';
     aList.appendChild(aStep1);
     const aStep2 = document.createElement('li');
-    aStep2.textContent = '「CORS Policy Mode」を "all" に変更 → 保存 → VOICEVOX を再起動';
+    aStep2.textContent = '「CORS Policy Mode」を "all" に変更 → 保存';
     aList.appendChild(aStep2);
+    const aStep3 = document.createElement('li');
+    aStep3.appendChild(document.createTextNode('VOICEVOX を '));
+    const restartStrong = document.createElement('strong');
+    restartStrong.textContent = '完全終了';
+    aStep3.appendChild(restartStrong);
+    aStep3.appendChild(document.createTextNode(' → 再起動 (詳しい手順は下の「再起動の正しい手順」参照)'));
+    aList.appendChild(aStep3);
     body.appendChild(aList);
+
+    // 再起動詳細 (折りたたみ)
+    const restartDetails = document.createElement('details');
+    restartDetails.style.cssText = 'margin:0.4em 0 0.6em 0;font-size:0.9em;';
+    const restartSummary = document.createElement('summary');
+    restartSummary.textContent = '🔁 VOICEVOX 再起動の正しい手順 (クリックで展開)';
+    restartSummary.style.cursor = 'pointer';
+    restartDetails.appendChild(restartSummary);
+    const restartBody = document.createElement('div');
+    restartBody.style.cssText = 'margin-top:0.5em;line-height:1.6;';
+    const restartP1 = document.createElement('p');
+    restartP1.textContent = '※ ウィンドウの ✕ で閉じるだけでは engine プロセスが残り、設定変更が反映されません。Dock からも消すか、以下のいずれかで完全終了してください。';
+    restartBody.appendChild(restartP1);
+    const restartUl = document.createElement('ul');
+    const restartLi1 = document.createElement('li');
+    restartLi1.textContent = 'macOS: VOICEVOX をアクティブにして Cmd+Q (または Dock 上で右クリック →「終了」)';
+    restartUl.appendChild(restartLi1);
+    const restartLi2 = document.createElement('li');
+    restartLi2.textContent = 'Windows: タスクトレイの VOICEVOX アイコン → 終了';
+    restartUl.appendChild(restartLi2);
+    restartBody.appendChild(restartUl);
+    const restartP2 = document.createElement('p');
+    restartP2.style.marginTop = '0.5em';
+    restartP2.textContent = '残留プロセスを確実に止めたい場合は、ターミナルで以下を実行 (macOS / Linux):';
+    restartBody.appendChild(restartP2);
+    const restartPreStyle = 'background:rgba(0,0,0,0.4);padding:0.5em 0.7em;border-radius:6px;font-family:"JetBrains Mono",monospace;font-size:0.85em;overflow-x:auto;user-select:all;margin:0;';
+    const restartPre = document.createElement('pre');
+    restartPre.style.cssText = restartPreStyle;
+    restartPre.textContent = 'pkill -f "vv-engine/run"\nosascript -e \'quit app "VOICEVOX"\'';
+    restartBody.appendChild(restartPre);
+    const restartP3 = document.createElement('p');
+    restartP3.style.marginTop = '0.5em';
+    restartP3.textContent = '終了後、Launchpad / Dock から VOICEVOX を起動し直すと CORS 設定が反映されます。';
+    restartBody.appendChild(restartP3);
+    restartDetails.appendChild(restartBody);
+    body.appendChild(restartDetails);
 
     // window.open は HTTPS context から http への navigation が一部 Chromium 系で抑止されることが
     // あるため、より確実な <a target="_blank"> を採用。link 化することでブラウザの popup blocker
