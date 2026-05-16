@@ -1,0 +1,29 @@
+# Vercel デプロイ成果物から除外
+# 学習サイト本体 (index.html / assets / robots.txt / sitemap.xml) 以外は配信不要
+
+# Cloudflare Workers 用のサーバサイドスクリプト (本番 Vercel に置く意味なし)
+worker-proxy.js
+
+# ビルド / 開発スクリプト群
+scripts/
+
+# パッケージ / ロックファイル / 設定ファイル
+package.json
+pnpm-lock.yaml
+.env.example
+
+# ドキュメント (本番配信不要)
+docs/
+README.md
+CLAUDE.md
+*.md
+
+# Git / GitHub
+.git/
+.github/
+.gitignore
+
+# エディタ / OS
+.vscode/
+.idea/
+.DS_Store

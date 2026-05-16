@@ -1,0 +1,12 @@
+# robots.txt — 切削加工入門
+# 全クローラに公開を許可
+
+User-agent: *
+Allow: /
+
+# 注: ここでの Disallow はクロール制御であり、ファイル自体の外部アクセスを
+# 防ぐものではありません。秘匿が必要なファイルは .vercelignore でデプロイ成果物
+# から除外しています。本サイトは静的学習教材のみで、公開を避けたいファイルは
+# そもそも配信されない構成です。
+
+Sitemap: https://machining-fundamentals.vercel.app/sitemap.xml
