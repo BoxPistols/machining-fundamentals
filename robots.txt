@@ -1,0 +1,15 @@
+# robots.txt — 切削加工入門
+# 全クローラに公開を許可
+
+User-agent: *
+Allow: /
+
+# 学習に無関係なバックエンド/設定ファイル
+Disallow: /worker-proxy.js
+Disallow: /vercel.json
+Disallow: /package.json
+Disallow: /pnpm-lock.yaml
+Disallow: /.env.example
+Disallow: /scripts/
+
+Sitemap: https://machining-fundamentals.vercel.app/sitemap.xml
