@@ -6229,7 +6229,7 @@ const CHAPTERS = [
 
           <h4 style="margin-top:14px;">課題 4：トレーサビリティ要請（ISO 9001 / 21 CFR Part 11）</h4>
           <p><strong>現状</strong>：航空・医療・原子力で要求される「誰が・いつ・何を・どの装置で測ったか」が手書き台帳ベース。<br>
-          <strong>MaiML の解</strong>：<code>&lt;eventLog&gt;</code> に <strong>XES（IEEE 1849-2016）</strong> 準拠でイベント記録。<code>schedule</code> / <code>start</code> / <code>complete</code> など 12 種の lifecycle 状態遷移を機械可読に残す。<strong>ISO 9001 のプロセスアプローチ要件と直接整合</strong>。<br>
+          <strong>MaiML の解</strong>：<code>&lt;eventLog&gt;</code> に <strong>XES（IEEE 1849-2016、後継 IEEE 1849-2023）</strong> 準拠でイベント記録。<code>schedule</code> / <code>start</code> / <code>complete</code> など 12 種の lifecycle 状態遷移を機械可読に残す。<strong>ISO 9001 のプロセスアプローチ要件と直接整合</strong>。<br>
           <strong>残る限界</strong>：装置 → MaiML への自動ロギング機構の実装が必要。</p>
 
           <h4 style="margin-top:14px;">課題 5：改ざん検知と監査要件</h4>
@@ -6270,7 +6270,7 @@ const CHAPTERS = [
       { name: 'JIS K 0200', en: 'JIS K 0200:2024', def: '日本産業規格。MaiML データフォーマットを規定。和文 128 ページ・税込 6,930 円・JSA Webdesk で販売、暫定英訳版は JAIMA 公式から無償。' },
       { name: 'JAIMA', en: 'Japan Analytical Instruments Manufacturers Association', def: '一般社団法人 日本分析機器工業会。MaiML の仕様策定とガイドライン発行を担当。会長: 足立正之（堀場製作所）。' },
       { name: '独立可用性', en: 'Independent Availability', def: 'MaiML ファイル単独で計測の全情報が取り出せる性質。藤本俊幸ら（産総研）が 2023 年に提唱。データを「パスポートを持つ旅人」に喩える。' },
-      { name: 'FAIR 原則', en: 'FAIR Principles', def: 'Findable / Accessible / Interoperable / Reusable の科学データ管理原則 (Wilkinson et al., Sci Data 3, 160018, 2016)。MaiML はこれをデータベース前提でなくファイル単体で達成する。' },
+      { name: 'FAIR 原則', en: 'FAIR Principles', def: 'Findable / Accessible / Interoperable / Reusable の科学データ管理原則 (Wilkinson et al., Sci Data 3, 160018, 2016, DOI: 10.1038/sdata.2016.18)。MaiML はこれをデータベース前提でなくファイル単体で達成する。' },
       { name: '城壁内環境', en: '(within-wall environment)', def: '装置メーカー独自バイナリや LIMS の内側でしか意味が成立しないデータ環境。藤本ら 2023 が独立可用性の対概念として導入。' },
     ],
     further: [
@@ -6302,7 +6302,7 @@ const CHAPTERS = [
             <tr><th style="text-align:left;padding:6px;border-bottom:1px solid var(--border);">柱</th><th style="text-align:left;padding:6px;border-bottom:1px solid var(--border);">技術</th><th style="text-align:left;padding:6px;border-bottom:1px solid var(--border);">対応課題</th></tr>
             <tr><td style="padding:6px;"><strong>1. 名前空間とオントロジー</strong></td><td style="padding:6px;">XML Namespace + RDF/OWL（附属書 A・B）</td><td style="padding:6px;">課題 1, 7</td></tr>
             <tr><td style="padding:6px;"><strong>2. PNML 工程モデル化</strong></td><td style="padding:6px;">ISO/IEC 15909-2</td><td style="padding:6px;">課題 3, 8</td></tr>
-            <tr><td style="padding:6px;"><strong>3. XES イベントログ</strong></td><td style="padding:6px;">IEEE 1849-2016</td><td style="padding:6px;">課題 4, 8</td></tr>
+            <tr><td style="padding:6px;"><strong>3. XES イベントログ</strong></td><td style="padding:6px;">IEEE 1849-2016（後継 1849-2023）</td><td style="padding:6px;">課題 4, 8</td></tr>
             <tr><td style="padding:6px;"><strong>4. UUID 必須化</strong></td><td style="padding:6px;">RFC 4122 (後継 RFC 9562)</td><td style="padding:6px;">課題 5, 8</td></tr>
             <tr><td style="padding:6px;"><strong>5. XML Signature + ハッシュチェーン</strong></td><td style="padding:6px;">W3C XMLDSig 1.1 + SHA-256</td><td style="padding:6px;">課題 5</td></tr>
             <tr><td style="padding:6px;"><strong>6. XML Encryption（要素単位）</strong></td><td style="padding:6px;">W3C XMLEnc 1.1</td><td style="padding:6px;">課題 6</td></tr>
@@ -6445,13 +6445,13 @@ const CHAPTERS = [
     ],
     terms: [
       { name: 'PNML', en: 'Petri Net Markup Language', def: 'ペトリネットを XML で表現する国際規格 (ISO/IEC 15909-2)。MaiML の <protocol> 要素で計測工程フローの記述に使われる。トランジション = 操作、プレース = 試料・条件・結果。' },
-      { name: 'XES', en: 'Extensible Event Stream', def: 'プロセスマイニング向けのイベントログ XML 標準 (IEEE 1849-2016)。MaiML の <eventLog> 要素のベース。schedule / start / complete 等 12 種の lifecycle 状態遷移を定義。' },
+      { name: 'XES', en: 'Extensible Event Stream', def: 'プロセスマイニング向けのイベントログ XML 標準 (IEEE 1849-2016、2023 年に IEEE 1849-2023 として改訂)。MaiML の <eventLog> 要素のベース。schedule / start / complete 等 12 種の lifecycle 状態遷移を定義。' },
       { name: 'UUID', en: 'Universally Unique Identifier', def: 'RFC 4122（後継 RFC 9562）準拠の 128 ビット一意識別子。MaiML では各 material / condition / result に必須付与。サイバー空間での同一性保証の要。' },
       { name: 'XML Signature', en: 'W3C XMLDSig 1.1', def: 'XML 文書の電子署名仕様。MaiML では文書全体の改ざん検知に enveloped signature 形式で適用。SHA-256 + RSA-SHA256 が推奨。' },
       { name: 'XML Encryption', en: 'W3C XMLEnc 1.1', def: 'XML 要素の暗号化仕様。MaiML では特定グローバル要素単位で AES-256-GCM 等を適用、機密領域と公開領域を 1 文書内に共存させる。' },
       { name: '名前空間', en: 'XML Namespace', def: 'XML で同名タグの所属を区別する仕組み。MaiML はベンダー用語をこの仕組みで分離管理し、用語の進化に長期追従する設計。' },
       { name: '汎用データコンテナ', en: 'Generic Data Container', def: 'MaiML の <property> / <content> / <uncertainty> 要素群。タグ名で意味を固定せず、key 属性で意味を担保する設計。新規計測法への拡張がスキーマ改訂なしで可能。' },
-      { name: 'AnIML', en: 'Analytical Information Markup Language', def: 'ASTM E13.15 で策定中の類似目的フォーマット。MaiML はベンダー用語の固定方針が異なる。Allotrope Foundation 主導で 2014 年に 1.0.0 リリース。' },
+      { name: 'AnIML', en: 'Analytical Information Markup Language', def: 'ASTM 国際 E13.15 副委員会が主導する類似目的の XML 標準。Core schema は現在も draft 段階で、正式な ASTM 規格としての公開には至っていない（GitHub 配布の draft が事実上の参照実装）。MaiML はベンダー用語の固定方針が異なる。Allotrope Foundation は別組織で Allotrope Data Format（ADF）を策定。' },
       { name: 'Allotrope ADF', en: 'Allotrope Data Format', def: 'Allotrope Foundation 策定。HDF5 + RDF ベース。製薬業界デファクト。MaiML から外部参照で補完関係。' },
       { name: 'HDF5 / NeXus', en: 'HDF5 / NeXus', def: 'NIAC / HDF Group が標準化するバイナリ科学データフォーマット。MaiML から <insertion> 要素で参照可。大容量並列 I/O の強み。' },
     ],
@@ -6459,7 +6459,7 @@ const CHAPTERS = [
       '公式スキーマ: <code>maiml.xsd</code> ほか 14 個の XSD（<code>xs:include</code> で連結、ZIP 約 16KB、JAIMA 公式から無償）',
       '重藤知夫・安永卓生・永富隆清・藤本俊幸・一村信吾「計測分析プラットフォーム実現のための共通データフォーマットの標準化」<strong>顕微鏡 59(1), 20-27 (2024)</strong>（DOI: 10.11410/kenbikyo.59.1_20）— MaiML 設計の決定版解説',
       'PNML 公式: <a href="http://www.pnml.org/" target="_blank" rel="noopener">http://www.pnml.org/</a>（ISO/IEC 15909-2 仕様）',
-      'XES 公式: <a href="https://xes-standard.org/" target="_blank" rel="noopener">https://xes-standard.org/</a>（IEEE 1849-2016）',
+      'XES 公式: <a href="https://xes-standard.org/" target="_blank" rel="noopener">https://xes-standard.org/</a>（IEEE 1849-2016 / 後継 IEEE 1849-2023）',
       'W3C XML Signature 1.1: <a href="https://www.w3.org/TR/xmldsig-core1/" target="_blank" rel="noopener">w3.org/TR/xmldsig-core1/</a>',
       'W3C XML Encryption 1.1: <a href="https://www.w3.org/TR/xmlenc-core1/" target="_blank" rel="noopener">w3.org/TR/xmlenc-core1/</a>',
       '前章: <a href="#/chapter/c2">第 C2 章「MaiML — 背景と 8 つの本質課題」</a> / 次章: <a href="#/chapter/c4">第 C4 章「MaiML — 動向・実用・未来」</a>',
@@ -6481,12 +6481,12 @@ const CHAPTERS = [
           <h4 style="margin-top:0;">JIS K 0200 制定までの経緯</h4>
           <ul>
             <li><strong>2014〜2017</strong>：日本学術振興会研究開発専門委員会で構想開始（当初は XMAIL という名称）</li>
-            <li><strong>2019〜2020</strong>：NEDO 技術先導プログラム（約 4.95 億円規模、PL: 一村信吾）で実装</li>
+            <li><strong>2019〜2020</strong>：NEDO 技術先導研究プログラム（PL: 一村信吾、産総研／早稲田大学）で実装。データフォーマット共通化・統合データ解析プラットフォーム構築を目的（具体予算規模は NEDO 成果報告書データベースで要確認）</li>
             <li><strong>2020〜2022</strong>：経済産業省「戦略的国際標準化加速事業」で策定支援</li>
             <li><strong>2023 年 1 月</strong>：姉妹規格 <strong>JIS K 0199</strong>（同一視野位置合わせ）公示</li>
             <li><strong>2024 年 5 月 20 日</strong>：<strong>JIS K 0200 本体公示</strong>。世界初の計測分析データ共通フォーマットのデジュール標準</li>
             <li><strong>2025 年 5 月 25 日</strong>：<strong>VAMAS TWA2 Project A45</strong> 立ち上げ。安永卓生（九工大）プロジェクトリーダー、Manchester 大の Alex Henderson 共同連絡担当</li>
-            <li><strong>2026 年 2 月 6 日</strong>：AIST Solutions と JAIMA が普及推進パートナーシップを正式締結</li>
+            <li><strong>2026 年 2 月 1 日</strong>：AIST Solutions と JAIMA が普及推進パートナーシップを正式締結（プレスリリース掲載 2026 年 2 月 6 日）</li>
             <li><strong>2026 年予定</strong>：ISO/TC201/SC3 経由で <strong>NWIP（New Work Item Proposal）正式提出</strong></li>
             <li><strong>2028〜2029 年見込み</strong>：ISO 規格として発行</li>
           </ul>
@@ -6497,7 +6497,7 @@ const CHAPTERS = [
             <tr><td style="padding:6px;"><strong>JAIMA</strong>（一般社団法人 日本分析機器工業会）</td><td style="padding:6px;">仕様策定・ガイドライン発行・普及推進。会長: 足立正之（堀場製作所）</td></tr>
             <tr><td style="padding:6px;"><strong>AIST Solutions</strong></td><td style="padding:6px;">産総研 100% 子会社。マテリアル DX プラットフォーム事業として産業展開</td></tr>
             <tr><td style="padding:6px;"><strong>NIMS</strong></td><td style="padding:6px;">ARIM（マテリアル先端リサーチインフラ事業）でデータ構造化・共有事業を展開</td></tr>
-            <tr><td style="padding:6px;"><strong>JSCA</strong>（表面化学分析技術国際標準化委員会）</td><td style="padding:6px;">ISO/TC201・TC202 国内審議団体。代表理事: 藤田大介（NIMS 名誉研究員）</td></tr>
+            <tr><td style="padding:6px;"><strong>JSCA</strong>（表面化学分析技術国際標準化委員会）</td><td style="padding:6px;">ISO/TC201・TC202 国内審議団体。代表理事: 藤田大介（NIMS 先進材料解析研究拠点 拠点長、日本表面科学会フェロー、VAMAS 日本代表）</td></tr>
             <tr><td style="padding:6px;"><strong>大学</strong></td><td style="padding:6px;">九州工業大学 安永卓生研究室、東京大学 一杉研究室（dLab）</td></tr>
           </table>
 
@@ -6506,9 +6506,9 @@ const CHAPTERS = [
 
           <h4 style="margin-top:14px;">産業適用の先行事例</h4>
           <ul>
-            <li><strong>東京大学 一杉研究室 dLab</strong>：自動・自律実験のデジタルラボ。リチウムイオン電池正極薄膜の自律合成・評価で MaiML を採用（Digital Discovery, RSC, 2025, DOI: 10.1039/D4DD00326H）</li>
-            <li><strong>住友ゴム工業</strong>：「ADVANCED 4D NANO DESIGN」で SPring-8 / J-PARC 計測データを統合解析。トヨタ自動車 WAVEBASE 連携でゴム材料解析時間を 1/100 に短縮</li>
-            <li><strong>旭化成</strong>：MI-Hub 環境で 630 名以上を育成</li>
+            <li><strong>東京大学 / 東京科学大学 一杉太郎研究室 dLab</strong>：自動・自律実験のデジタルラボ。一杉教授は東大化学専攻 教授・東京科学大学 特任を兼任。リチウムイオン電池正極薄膜の自律合成・評価で MaiML を採用（Digital Discovery 4, 1734-1742, 2025, DOI: 10.1039/D4DD00326H）</li>
+            <li><strong>住友ゴム工業</strong>：「ADVANCED 4D NANO DESIGN」で SPring-8 / J-PARC / スーパーコンピュータ「京」を連携活用したタイヤ用新材料開発技術を確立。トヨタ自動車 WAVEBASE 連携でゴム材料解析時間を 1/100 以下に短縮</li>
+            <li><strong>旭化成</strong>：MI-Hub 教育システムで 2019〜2021 年度の 3 年間で MI 人材 630 名を育成（初級 500 / 中級 100 / 上級 30）</li>
             <li><strong>NIMS ARIM</strong>：マテリアル先端リサーチインフラ事業（2021 年度〜）でセンターハブ機能</li>
           </ul>
         `,
@@ -6564,7 +6564,7 @@ const CHAPTERS = [
           <h4 style="margin-top:14px;">軸 2：制度的課題</h4>
           <ul>
             <li><strong>装置メーカーの移行インセンティブ</strong>：独自フォーマットがロックイン要因なので、移行に積極的でない。<br>→ 解決方向：JIS / ISO 化と、製薬・航空・原子力など規格認証が重い業界での「MaiML 必須化」の制度的圧力。</li>
-            <li><strong>国際標準（ASTM AnIML）との棲み分け</strong>：AnIML は Allotrope Foundation 主導で 2014 年に 1.0.0 がリリース済の一方、ASTM での標準化は長期化している。MaiML は JIS 制定（2024）→ ISO 化を先行する戦略。<br>→ 解決方向：VAMAS TWA2 Project A45 で AnIML 側との比較研究を蓄積、AnIML ↔ MaiML 双方向変換器を OSS で提供して相互運用性を確保。</li>
+            <li><strong>国際標準（ASTM AnIML）との棲み分け</strong>：AnIML は ASTM 国際 E13.15 副委員会が 2003 年から策定を進める XML 標準だが、Core schema は現在も draft 段階で正式 ASTM 規格としての公開には至っていない。MaiML は JIS 制定（2024）→ ISO 化を先行する戦略。<br>→ 解決方向：VAMAS TWA2 Project A45 で AnIML 側との比較研究を蓄積、AnIML ↔ MaiML 双方向変換器を OSS で提供して相互運用性を確保。</li>
             <li><strong>規格認証への組み込み</strong>：ISO 9001 / ISO/IEC 17025 / FDA 21 CFR Part 11 / EU GMP Annex 11 / PMDA 電磁的記録要件への適合宣言。<br>→ 解決方向：JIS 規格 + XML Signature + ハッシュチェーンの組合せで「監査トレーサビリティを満たす最小フォーマット」として認定取得。</li>
           </ul>
 
@@ -6616,7 +6616,7 @@ const CHAPTERS = [
     ],
     terms: [
       { name: 'VAMAS A45', en: 'VAMAS TWA2 Project A45', def: '2025 年 5 月立ち上げの国際 Round Robin。安永卓生（九工大）プロジェクトリーダー。AFM+SEM、AES+XPS、GC-MS 等で MaiML の独立可用性を国際実証。' },
-      { name: 'AIST Solutions', en: 'AIST Solutions Co., Ltd.', def: '産総研 100% 子会社。2026-02-06 JAIMA と普及推進パートナーシップ締結。マテリアル DX プラットフォーム事業として MaiML を産業展開。' },
+      { name: 'AIST Solutions', en: 'AIST Solutions Co., Ltd.', def: '産総研 100% 子会社（2023 年 4 月設立）。2026-02-01 JAIMA と普及推進パートナーシップ締結（プレスリリース 2026-02-06）。マテリアル DX プラットフォーム事業として MaiML を産業展開。' },
       { name: 'NIMS ARIM', en: 'NIMS Advanced Research Infrastructure for Materials and Nanotechnology', def: 'マテリアル先端リサーチインフラ事業（2021 年度〜）。NIMS がセンターハブとして全国 26 機関のデータ構造化・共有を推進。' },
       { name: 'JIS K 0199', en: 'JIS K 0199', def: '姉妹規格。同一視野位置合わせの規格として 2023 年 1 月公示。MaiML と組み合わせて「同一試料を複数機関で測定」を機械判定する仕組みの基礎。' },
       { name: 'NWIP', en: 'New Work Item Proposal', def: 'ISO 規格化の最初のステップ。MaiML は ISO/TC201/SC3 経由で 2026 年提出予定。NP → WD → CD → DIS → FDIS → IS の標準スケジュールで 36〜48 か月。' },
@@ -6626,8 +6626,8 @@ const CHAPTERS = [
     further: [
       '安永卓生 (九州工業大学)「計測分析を未来につなぐためのデータの在り方と標準化」(計測標準フォーラム第 21 回講演会, 2023-10-24) — 設計思想の背景',
       'VAMAS TWA2 Project A45（2025 年 5 月立ち上げ）— 国際 Round Robin Test、ISO 化への布石',
-      'AIST Solutions × JAIMA パートナーシップ協定（2026-02-06）— 産業適用の制度面',
-      '東京大学 一杉研究室 dLab — リチウムイオン電池正極薄膜の自律合成・評価で MaiML を採用（Digital Discovery, RSC, 2025, DOI: 10.1039/D4DD00326H）',
+      'AIST Solutions × JAIMA パートナーシップ協定（2026-02-01 締結 / プレスリリース 2026-02-06）— 産業適用の制度面',
+      '東京大学 / 東京科学大学 一杉太郎研究室 dLab — Nishio, Aiba, ..., Hitosugi 他「A digital laboratory with a modular measurement system and standardized data format」<strong>Digital Discovery 4, 1734-1742 (2025)</strong>（DOI: 10.1039/D4DD00326H）— MaiML 採用の代表事例',
       'NIMS ARIM（マテリアル先端リサーチインフラ事業）公式: <a href="https://nanonet.mext.go.jp/arim/" target="_blank" rel="noopener">nanonet.mext.go.jp/arim/</a>',
       '本リポ詳細版: <a href="https://github.com/BoxPistols/machining-fundamentals/blob/main/docs/maiml-overview.md" target="_blank" rel="noopener">docs/maiml-overview.md</a>',
       '前章: <a href="#/chapter/c3">第 C3 章「MaiML — 仕様の骨格」</a> / <a href="#/chapter/c2">第 C2 章「MaiML — 背景と 8 つの本質課題」</a>',

@@ -8,7 +8,7 @@
 
 - **JIS K 0200**: 計測分析装置の分析データ共通フォーマット (MaiML データフォーマット)
 - **共通データフォーマット対応ガイドライン Version 1.0**（2024 年 5 月 20 日 / 一般社団法人 日本分析機器工業会 = JAIMA / 経済産業省 委託事業）
-- **MaiML スキーマ Version 1.0**: `maiml.xsd` 他 10 個の XSD ファイル群
+- **MaiML スキーマ Version 1.0**: `maiml.xsd` 他 14 個の XSD ファイル群（MaiML 固有 11 + W3C 系 3）
 - **JAIMA 公式**: <https://www.jaima.or.jp/>
 
 本書は上記ガイドラインの **要約と再構成** にすぎず、規範文書ではない。準拠実装を作る場合は必ず JIS K 0200 とガイドライン本体を参照すること。
@@ -219,12 +219,12 @@ CASE-1 は「測定して結果を共有する」、CASE-2 は「測定方法を
 |---|---|
 | 規格本体 | JIS K 0200 (日本産業標準調査会 / JISC で閲覧) |
 | 公式ガイドライン | JAIMA 発行「共通データフォーマット対応ガイドライン Version 1.0」 PDF |
-| スキーマ | `maiml.xsd` ほか 10 個の XSD (公式配布、`xs:include` で連結) |
+| スキーマ | `maiml.xsd` ほか 14 個の XSD (公式配布、`xs:include` で連結) |
 | 検証ツール | JAIMA 提供 LINQPad ベース MaiMLChecker、または汎用 XSD バリデータ |
 | 関連研究発表 | 計測標準フォーラム講演「計測分析を未来につなぐためのデータの在り方と標準化」(2023, 安永卓生 / 九州工業大学) |
 | 一次関係者 | 日本分析機器工業会 JAIMA、ISA (国際計測連合)、各装置メーカーの標準化部会 |
 
-スキーマファイルは `maiml.xsd` をエントリポイントに `xs:include` で 10 個の XSD を読み込む構成。汎用 XML エディタ (Oxygen / VS Code XML 拡張等) でスキーマ補完可能。
+スキーマファイルは `maiml.xsd` をエントリポイントに `xs:include` / `xs:import` で 14 個の XSD（MaiML 固有 11 個 + W3C 系 `xmldsig-core-schema.xsd` / `xenc-schema.xsd` / `xenc-schema-11.xsd`）を読み込む構成。汎用 XML エディタ (Oxygen / VS Code XML 拡張等) でスキーマ補完可能。
 
 ---
 
