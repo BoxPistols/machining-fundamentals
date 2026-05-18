@@ -6451,7 +6451,7 @@ const CHAPTERS = [
       { name: 'XML Encryption', en: 'W3C XMLEnc 1.1', def: 'XML 要素の暗号化仕様。MaiML では特定グローバル要素単位で AES-256-GCM 等を適用、機密領域と公開領域を 1 文書内に共存させる。' },
       { name: '名前空間', en: 'XML Namespace', def: 'XML で同名タグの所属を区別する仕組み。MaiML はベンダー用語をこの仕組みで分離管理し、用語の進化に長期追従する設計。' },
       { name: '汎用データコンテナ', en: 'Generic Data Container', def: 'MaiML の <property> / <content> / <uncertainty> 要素群。タグ名で意味を固定せず、key 属性で意味を担保する設計。新規計測法への拡張がスキーマ改訂なしで可能。' },
-      { name: 'AnIML', en: 'Analytical Information Markup Language', def: 'ASTM 国際 E13.15 副委員会が主導する類似目的の XML 標準。Core schema は現在も draft 段階で、正式な ASTM 規格としての公開には至っていない（GitHub 配布の draft が事実上の参照実装）。MaiML はベンダー用語の固定方針が異なる。Allotrope Foundation は別組織で Allotrope Data Format（ADF）を策定。' },
+      { name: 'AnIML', en: 'Analytical Information Markup Language', def: 'ASTM E13.15 副委員会（Analytical Data、2003 年設立）が主導する類似目的の XML 標準。Core schema は現在も draft 段階（v0.90、2024 年時点）で、正式な ASTM 規格としての公開には至っていない（GitHub 配布の draft が事実上の参照実装）。MaiML はベンダー用語の固定方針が異なる。Allotrope Foundation は別組織で Allotrope Data Format（ADF）を策定。' },
       { name: 'Allotrope ADF', en: 'Allotrope Data Format', def: 'Allotrope Foundation 策定。HDF5 + RDF ベース。製薬業界デファクト。MaiML から外部参照で補完関係。' },
       { name: 'HDF5 / NeXus', en: 'HDF5 / NeXus', def: 'NIAC / HDF Group が標準化するバイナリ科学データフォーマット。MaiML から <insertion> 要素で参照可。大容量並列 I/O の強み。' },
     ],
@@ -6497,8 +6497,8 @@ const CHAPTERS = [
             <tr><td style="padding:6px;"><strong>JAIMA</strong>（一般社団法人 日本分析機器工業会）</td><td style="padding:6px;">仕様策定・ガイドライン発行・普及推進。会長: 足立正之（堀場製作所）</td></tr>
             <tr><td style="padding:6px;"><strong>AIST Solutions</strong></td><td style="padding:6px;">産総研 100% 子会社。マテリアル DX プラットフォーム事業として産業展開</td></tr>
             <tr><td style="padding:6px;"><strong>NIMS</strong></td><td style="padding:6px;">ARIM（マテリアル先端リサーチインフラ事業）でデータ構造化・共有事業を展開</td></tr>
-            <tr><td style="padding:6px;"><strong>JSCA</strong>（表面化学分析技術国際標準化委員会）</td><td style="padding:6px;">ISO/TC201・TC202 国内審議団体。代表理事: 藤田大介（NIMS 先進材料解析研究拠点 拠点長、日本表面科学会フェロー、VAMAS 日本代表）</td></tr>
-            <tr><td style="padding:6px;"><strong>大学</strong></td><td style="padding:6px;">九州工業大学 安永卓生研究室、東京大学 一杉研究室（dLab）</td></tr>
+            <tr><td style="padding:6px;"><strong>JSCA</strong>（表面化学分析技術国際標準化委員会）</td><td style="padding:6px;">ISO/TC201・TC202 国内審議団体。代表理事: 藤田大介（NIMS 先端材料解析研究拠点 拠点長、日本表面科学会フェロー、VAMAS 日本代表）</td></tr>
+            <tr><td style="padding:6px;"><strong>大学</strong></td><td style="padding:6px;">九州工業大学 安永卓生研究室、東京科学大学 / 東京大学 一杉太郎研究室（dLab）</td></tr>
           </table>
 
           <h4 style="margin-top:14px;">参画装置メーカー</h4>
@@ -6506,7 +6506,7 @@ const CHAPTERS = [
 
           <h4 style="margin-top:14px;">産業適用の先行事例</h4>
           <ul>
-            <li><strong>東京大学 / 東京科学大学 一杉太郎研究室 dLab</strong>：自動・自律実験のデジタルラボ。一杉教授は東大化学専攻 教授・東京科学大学 特任を兼任。リチウムイオン電池正極薄膜の自律合成・評価で MaiML を採用（Digital Discovery 4, 1734-1742, 2025, DOI: 10.1039/D4DD00326H）</li>
+            <li><strong>東京科学大学 / 東京大学 一杉太郎研究室 dLab</strong>：自動・自律実験のデジタルラボ。一杉教授は東京科学大学 物質理工学院（旧 東京工業大学）と東京大学 化学専攻に所属。リチウムイオン電池正極薄膜の自律合成・評価で MaiML を採用（Digital Discovery 4, 1734-1742, 2025, DOI: 10.1039/D4DD00326H — 著者所属は Institute of Science Tokyo / The University of Tokyo）</li>
             <li><strong>住友ゴム工業</strong>：「ADVANCED 4D NANO DESIGN」で SPring-8 / J-PARC / スーパーコンピュータ「京」を連携活用したタイヤ用新材料開発技術を確立。トヨタ自動車 WAVEBASE 連携でゴム材料解析時間を 1/100 以下に短縮</li>
             <li><strong>旭化成</strong>：MI-Hub 教育システムで 2019〜2021 年度の 3 年間で MI 人材 630 名を育成（初級 500 / 中級 100 / 上級 30）</li>
             <li><strong>NIMS ARIM</strong>：マテリアル先端リサーチインフラ事業（2021 年度〜）でセンターハブ機能</li>
@@ -6564,7 +6564,7 @@ const CHAPTERS = [
           <h4 style="margin-top:14px;">軸 2：制度的課題</h4>
           <ul>
             <li><strong>装置メーカーの移行インセンティブ</strong>：独自フォーマットがロックイン要因なので、移行に積極的でない。<br>→ 解決方向：JIS / ISO 化と、製薬・航空・原子力など規格認証が重い業界での「MaiML 必須化」の制度的圧力。</li>
-            <li><strong>国際標準（ASTM AnIML）との棲み分け</strong>：AnIML は ASTM 国際 E13.15 副委員会が 2003 年から策定を進める XML 標準だが、Core schema は現在も draft 段階で正式 ASTM 規格としての公開には至っていない。MaiML は JIS 制定（2024）→ ISO 化を先行する戦略。<br>→ 解決方向：VAMAS TWA2 Project A45 で AnIML 側との比較研究を蓄積、AnIML ↔ MaiML 双方向変換器を OSS で提供して相互運用性を確保。</li>
+            <li><strong>国際標準（ASTM AnIML）との棲み分け</strong>：AnIML は ASTM E13.15 副委員会が 2003 年から策定を進める XML 標準だが、Core schema は現在も draft 段階（v0.90、2024 年時点）で正式 ASTM 規格としての公開には至っていない。MaiML は JIS 制定（2024）→ ISO 化を先行する戦略。<br>→ 解決方向：VAMAS TWA2 Project A45 で AnIML 側との比較研究を蓄積、AnIML ↔ MaiML 双方向変換器を OSS で提供して相互運用性を確保。</li>
             <li><strong>規格認証への組み込み</strong>：ISO 9001 / ISO/IEC 17025 / FDA 21 CFR Part 11 / EU GMP Annex 11 / PMDA 電磁的記録要件への適合宣言。<br>→ 解決方向：JIS 規格 + XML Signature + ハッシュチェーンの組合せで「監査トレーサビリティを満たす最小フォーマット」として認定取得。</li>
           </ul>
 
@@ -6627,7 +6627,7 @@ const CHAPTERS = [
       '安永卓生 (九州工業大学)「計測分析を未来につなぐためのデータの在り方と標準化」(計測標準フォーラム第 21 回講演会, 2023-10-24) — 設計思想の背景',
       'VAMAS TWA2 Project A45（2025 年 5 月立ち上げ）— 国際 Round Robin Test、ISO 化への布石',
       'AIST Solutions × JAIMA パートナーシップ協定（2026-02-01 締結 / プレスリリース 2026-02-06）— 産業適用の制度面',
-      '東京大学 / 東京科学大学 一杉太郎研究室 dLab — Nishio, Aiba, ..., Hitosugi 他「A digital laboratory with a modular measurement system and standardized data format」<strong>Digital Discovery 4, 1734-1742 (2025)</strong>（DOI: 10.1039/D4DD00326H）— MaiML 採用の代表事例',
+      '東京科学大学 / 東京大学 一杉太郎研究室 dLab — Nishio, Aiba, ..., Hitosugi 他「A digital laboratory with a modular measurement system and standardized data format」<strong>Digital Discovery 4, 1734-1742 (2025)</strong>（DOI: 10.1039/D4DD00326H）— MaiML 採用の代表事例',
       'NIMS ARIM（マテリアル先端リサーチインフラ事業）公式: <a href="https://nanonet.mext.go.jp/arim/" target="_blank" rel="noopener">nanonet.mext.go.jp/arim/</a>',
       '本リポ詳細版: <a href="https://github.com/BoxPistols/machining-fundamentals/blob/main/docs/maiml-overview.md" target="_blank" rel="noopener">docs/maiml-overview.md</a>',
       '前章: <a href="#/chapter/c3">第 C3 章「MaiML — 仕様の骨格」</a> / <a href="#/chapter/c2">第 C2 章「MaiML — 背景と 8 つの本質課題」</a>',
