@@ -4510,7 +4510,7 @@ const CHAPTERS = [
       '教科書：<strong>機械工作法（朝倉書店、コロナ社などの標準教科書）</strong>の冒頭章',
       '<strong>Trent & Wright「Metal Cutting」(4th ed.)</strong> 第1章 — 英語標準教科書、歴史も詳しい',
       'Webサイト：<strong>Sandvik Coromant「Machining Application Guide」</strong>（無料 PDF）',
-      'JIS規格：<strong>JIS B 0170 工作機械—切削及び研削用語</strong>',
+      'JIS規格：<strong>JIS B 0170:2020 切削工具用語（基本）</strong>、<strong>JIS B 0105:2012 工作機械—名称に関する用語</strong>、<strong>JIS B 0106:2016 工作機械—部品及び工作方法—用語</strong>',
     ],
   },
   {
@@ -5671,9 +5671,9 @@ const CHAPTERS = [
         `,
       },
       {
-        heading: '表面粗さの基本指標 (ISO 4287)',
+        heading: '表面粗さの基本指標 (ISO 21920-2 / 旧 ISO 4287)',
         html: `
-          <p>表面は完全な平面にはなりません。刃先が残す痕跡 (<strong>工具マーク</strong>) や微小な凹凸があります。これを数値化したものが<strong>表面粗さ</strong>で、国際規格 ISO 4287 (JIS B 0601) で定義されています。</p>
+          <p>表面は完全な平面にはなりません。刃先が残す痕跡 (<strong>工具マーク</strong>) や微小な凹凸があります。これを数値化したものが<strong>表面粗さ</strong>で、国際規格 <strong>ISO 21920-2:2021</strong>（旧 ISO 4287:1997、JIS B 0601）で定義されています。現場では従来名「ISO 4287」で参照されることも多い指標群です。</p>
           <table style="width:100%;border-collapse:collapse;font-size:12px;margin:12px 0;">
             <thead>
               <tr style="background:var(--bg-3);">
@@ -5760,7 +5760,7 @@ const CHAPTERS = [
     terms: [
       { name: '公差', en: 'Tolerance', def: '寸法や形状に許される誤差の範囲。図面で指定される。' },
       { name: 'IT 等級', en: 'IT Grade (ISO 286)', def: 'ISO 286 で定められた寸法公差等級。IT01 (最高精度) 〜 IT18。一般機械 IT7-IT10、航空宇宙 IT4-IT6。' },
-      { name: '表面粗さ', anchor: 'Ra', en: 'Surface Roughness (Ra / Rz)', def: '表面の微小な凹凸の大きさ。ISO 4287 に基づき Ra（算術平均粗さ）や Rz（最大高さ）で数値化。旋削の理論式: Ra ≈ f² / (32·r_ε)。' },
+      { name: '表面粗さ', anchor: 'Ra', en: 'Surface Roughness (Ra / Rz)', def: '表面の微小な凹凸の大きさ。ISO 21920-2:2021（旧 ISO 4287:1997）に基づき Ra（算術平均粗さ）や Rz（最大高さ）で数値化。旋削の理論式: Ra ≈ f² / (32·r_ε)。' },
       { name: '算術平均粗さ (Ra)', en: 'Arithmetic Mean Roughness', def: '表面の凹凸を平均化した指標。もっとも一般的に使われる。単位は μm。' },
       { name: '最大高さ (Rz)', en: 'Maximum Height', def: '基準長さ内の最大山高+最大谷深。疲労起点評価で重要、Ra より厳しめに反応。' },
       { name: '理論粗さ式', en: 'Theoretical Roughness', def: '旋削: Ra ≈ f²/(32·r_ε)。送り f を半分にすると理論粗さは 1/4。' },
@@ -5768,7 +5768,7 @@ const CHAPTERS = [
       { name: 'コーナ R', en: 'Corner Radius', def: '工具刃先の角丸半径。大きいほど表面粗さは良くなるが切削力 (特に径方向) が増えて振動誘発可能性。' },
     ],
     further: [
-      '<strong>JIS B 0601 / ISO 4287</strong>（表面性状の測定）— 規格の基礎',
+      '<strong>JIS B 0601:2013 / ISO 21920-2:2021</strong>（表面性状の測定、旧 ISO 4287:1997 を置換）— 規格の基礎',
       '<strong>JIS B 0610 / ISO 12085</strong>（モチーフパラメータ）',
       '<strong>JIS B 0671 / ISO 13565</strong>（プラトー構造解析、摺動面評価）',
       '<strong>ISO 286</strong>（IT 等級）',
@@ -14531,9 +14531,9 @@ const FALLBACK_BANK = [
   { keys: ['VB'], chapter: '8',
     answer: 'VB (逃げ面摩耗幅 mm) の限界は加工種別で変わります: 仕上げ加工 VB < 0.3 mm、荒加工 VB < 0.6 mm、ドリル/タップは異なる尺度。VB は時間と共に初期摩耗 → 安定摩耗 → 急激摩耗と進行し、急激摩耗手前が「寿命」。実機では音響・振動・電流値から推定します。' },
   { keys: ['Ra'], chapter: '9',
-    answer: '理論 Ra は旋削で Ra ≒ f² / (32 × r_ε) (r_ε はノーズ半径 mm、f は送り mm/rev)。f を半分にすると Ra は 1/4 に改善しますが、生産性は半減します。Ra と Rz の使い分け: Ra は平均粗さで意匠/シール面に、Rz は 10 点平均で摺動・疲労面に使うのが実務標準 (ISO 4287)。' },
+    answer: '理論 Ra は旋削で Ra ≒ f² / (32 × r_ε) (r_ε はノーズ半径 mm、f は送り mm/rev)。f を半分にすると Ra は 1/4 に改善しますが、生産性は半減します。Ra と Rz の使い分け: Ra は平均粗さで意匠/シール面に、Rz は最大高さ (peak-to-valley) で摺動・疲労面に使うのが実務標準 (ISO 21920-2:2021 / 旧 ISO 4287:1997)。「10 点平均粗さ」は旧 JIS B 0601:1994 の定義で、現行は Rzjis として区別されます。' },
   { keys: ['Rz'], chapter: '9',
-    answer: 'Rz は ISO 4287 の「最大高さ」で、基準長さ内の最高山と最深谷の差。Ra (算術平均) より外れ値に敏感なので、摺動/疲労/シール面などピーク応力が問題になる用途で使います。Ra と Rz は相関しますが比例定数は一定でない (粗さ波形の形状依存)。' },
+    answer: 'Rz は ISO 21920-2:2021（旧 ISO 4287:1997）の「最大高さ」で、基準長さ内の最高山と最深谷の差。Ra (算術平均) より外れ値に敏感なので、摺動/疲労/シール面などピーク応力が問題になる用途で使います。Ra と Rz は相関しますが比例定数は一定でない (粗さ波形の形状依存)。旧 JIS B 0601:1994 では Rz が「10 点平均粗さ」を指していたので、古い図面では Rzjis として読み替えが必要です。' },
   { keys: ['BCC', 'FCC'], chapter: 'a3',
     answer: 'BCC (体心立方) と FCC (面心立方) は結晶構造の違い。FCC はすべり系 12、充填率 0.74 で延性が高く (Al, Cu, SUS304)、BCC はすべり系 48 だが温度依存で DBTT (延性脆性遷移) を持つ (炭素鋼)。HCP はすべり系 3 のみで極めて異方性が強い (Ti, Mg)。この差が切削性の連続切屑か不連続切屑かを左右します。' },
   { keys: ['HCP', 'Ti'], chapter: 'a3',
