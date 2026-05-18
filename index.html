@@ -6451,7 +6451,7 @@ const CHAPTERS = [
       { name: 'XML Encryption', en: 'W3C XMLEnc 1.1', def: 'XML 要素の暗号化仕様。MaiML では特定グローバル要素単位で AES-256-GCM 等を適用、機密領域と公開領域を 1 文書内に共存させる。' },
       { name: '名前空間', en: 'XML Namespace', def: 'XML で同名タグの所属を区別する仕組み。MaiML はベンダー用語をこの仕組みで分離管理し、用語の進化に長期追従する設計。' },
       { name: '汎用データコンテナ', en: 'Generic Data Container', def: 'MaiML の <property> / <content> / <uncertainty> 要素群。タグ名で意味を固定せず、key 属性で意味を担保する設計。新規計測法への拡張がスキーマ改訂なしで可能。' },
-      { name: 'AnIML', en: 'Analytical Information Markup Language', def: 'ASTM E13.15 副委員会（Analytical Data、2003 年設立）が主導する類似目的の XML 標準。Core schema は現在も draft 段階（v0.90、2024 年時点）で、正式な ASTM 規格としての公開には至っていない（GitHub 配布の draft が事実上の参照実装）。MaiML はベンダー用語の固定方針が異なる。Allotrope Foundation は別組織で Allotrope Data Format（ADF）を策定。' },
+      { name: 'AnIML', en: 'Analytical Information Markup Language', def: 'ASTM E13.15 副委員会（Analytical Data、2003 年設立）が主導する類似目的の XML 標準。Core schema は現在も draft 段階（v0.90、2024 年時点、GitHub AnIML/schemas の README 確認）で、正式な ASTM 規格としての公開には至っていない（GitHub 配布の draft が事実上の参照実装）。MaiML はベンダー用語の固定方針が異なる。Allotrope Foundation は別組織で Allotrope Data Format（ADF）を策定。' },
       { name: 'Allotrope ADF', en: 'Allotrope Data Format', def: 'Allotrope Foundation 策定。HDF5 + RDF ベース。製薬業界デファクト。MaiML から外部参照で補完関係。' },
       { name: 'HDF5 / NeXus', en: 'HDF5 / NeXus', def: 'NIAC / HDF Group が標準化するバイナリ科学データフォーマット。MaiML から <insertion> 要素で参照可。大容量並列 I/O の強み。' },
     ],
@@ -6507,8 +6507,8 @@ const CHAPTERS = [
           <h4 style="margin-top:14px;">産業適用の先行事例</h4>
           <ul>
             <li><strong>東京科学大学 / 東京大学 一杉太郎研究室 dLab</strong>：自動・自律実験のデジタルラボ。一杉教授は東京科学大学 物質理工学院（旧 東京工業大学）と東京大学 化学専攻に所属。リチウムイオン電池正極薄膜の自律合成・評価で MaiML を採用（Digital Discovery 4, 1734-1742, 2025, DOI: 10.1039/D4DD00326H — 著者所属は Institute of Science Tokyo / The University of Tokyo）</li>
-            <li><strong>住友ゴム工業</strong>：「ADVANCED 4D NANO DESIGN」で SPring-8 / J-PARC / スーパーコンピュータ「京」を連携活用したタイヤ用新材料開発技術を確立。トヨタ自動車 WAVEBASE 連携でゴム材料解析時間を 1/100 以下に短縮</li>
-            <li><strong>旭化成</strong>：MI-Hub 教育システムで 2019〜2021 年度の 3 年間で MI 人材 630 名を育成（初級 500 / 中級 100 / 上級 30）</li>
+            <li><strong>住友ゴム工業</strong>：「ADVANCED 4D NANO DESIGN」で SPring-8 / J-PARC / スーパーコンピュータ「京」を連携活用したタイヤ用新材料開発技術を確立（2015 年プレスリリース）。トヨタ自動車 WAVEBASE 連携でゴム材料解析時間を 1/100 以下に短縮（2022-04 住友ゴム工業 newsrelease）</li>
+            <li><strong>旭化成</strong>：MI-Hub 教育システムで 2019〜2021 年度の 3 年間で MI 人材 630 名を育成（初級 500 / 中級 100 / 上級 30。日経 xTECH「旭化成が『MI人材』を 600 人育成へ、材料開発を AI で加速」2021 報）</li>
             <li><strong>NIMS ARIM</strong>：マテリアル先端リサーチインフラ事業（2021 年度〜）でセンターハブ機能</li>
           </ul>
         `,
@@ -6626,7 +6626,7 @@ const CHAPTERS = [
     further: [
       '安永卓生 (九州工業大学)「計測分析を未来につなぐためのデータの在り方と標準化」(計測標準フォーラム第 21 回講演会, 2023-10-24) — 設計思想の背景',
       'VAMAS TWA2 Project A45（2025 年 5 月立ち上げ）— 国際 Round Robin Test、ISO 化への布石',
-      'AIST Solutions × JAIMA パートナーシップ協定（2026-02-01 締結 / プレスリリース 2026-02-06）— 産業適用の制度面',
+      'AIST Solutions × JAIMA パートナーシップ協定（2026-02-01 締結 / プレスリリース 2026-02-06）: <a href="https://www.jaima.or.jp/jp/news_detail/press_20260206/" target="_blank" rel="noopener">JAIMA 発表</a> / <a href="https://prtimes.jp/main/html/rd/p/000000074.000146304.html" target="_blank" rel="noopener">AIST Solutions プレスリリース</a> — 産業適用の制度面',
       '東京科学大学 / 東京大学 一杉太郎研究室 dLab — Nishio, Aiba, ..., Hitosugi 他「A digital laboratory with a modular measurement system and standardized data format」<strong>Digital Discovery 4, 1734-1742 (2025)</strong>（DOI: 10.1039/D4DD00326H）— MaiML 採用の代表事例',
       'NIMS ARIM（マテリアル先端リサーチインフラ事業）公式: <a href="https://nanonet.mext.go.jp/arim/" target="_blank" rel="noopener">nanonet.mext.go.jp/arim/</a>',
       '本リポ詳細版: <a href="https://github.com/BoxPistols/machining-fundamentals/blob/main/docs/maiml-overview.md" target="_blank" rel="noopener">docs/maiml-overview.md</a>',
