@@ -4461,13 +4461,13 @@ const CHAPTERS = [
           <p>切削加工の体系化は産業革命以降の機械化と並走してきました。主要マイルストーン:</p>
           <ul style="font-family:'JetBrains Mono', monospace; font-size: 12px; line-height: 2;">
             <li><strong>1797</strong>: Henry Maudslay が現代旋盤の原型 (送り台付き) を製作 — ネジの規格化を可能に</li>
-            <li><strong>1862</strong>: Frederick W. Howe が万能フライス盤 (Brown & Sharpe) — 平面加工の機械化</li>
+            <li><strong>1862</strong>: Joseph R. Brown (Brown & Sharpe) が世界初の万能フライス盤を製作 — Providence Tool の Frederick W. Howe からの twist drill 製造機械の依頼が起点。1865 年に B&S が特許取得</li>
             <li><strong>1898</strong>: Frederick W. Taylor + Maunsel White がハイス (高速度鋼) を発明 — 切削速度を 4 倍に</li>
             <li><strong>1907</strong>: Taylor が「On the Art of Cutting Metals」発表、Vc·T<sup>n</sup>=C の経験式を確立</li>
             <li><strong>1923</strong>: Krupp 社が WC-Co 超硬合金 (商品名 Widia) を商品化 — 切削速度を更に 5 倍に</li>
             <li><strong>1945</strong>: Eugene Merchant が切削力学の幾何モデル (Merchant 円) を発表</li>
-            <li><strong>1958</strong>: Tlusty が再生型びびり理論を発表 — Stability Lobe の祖</li>
-            <li><strong>1969</strong>: 日本の MITSUBISHI 等が CVD コーティング (TiC) を商品化</li>
+            <li><strong>1957/58</strong>: Tlusty (1957) と Tobias (1958) が独立に再生型びびり理論を発表、1963 年に Tlusty & Polacek (ASME) で決定版モデル — Stability Lobe の祖</li>
+            <li><strong>1969</strong>: ドイツ WIDIA (Krupp 系) が世界初の CVD-TiC コーティング超硬を商品化、数ヶ月遅れで Sandvik Coromant も上市、日本では三菱マテリアル等が追随</li>
             <li><strong>1980 年代</strong>: NC → CNC 化、CAD/CAM の普及、PVD コーティング多層化</li>
             <li><strong>2000 年代</strong>: 5 軸同時制御の標準化、AlTiN/AlCrN 高耐熱コーティング、PCD/CBN の本格普及</li>
             <li><strong>2010 年代〜</strong>: 機械学習による工具寿命予測、クライオ加工、UAM (超音波援用) の研究加速</li>
@@ -5387,7 +5387,7 @@ const CHAPTERS = [
         html: `
           <p>航空機の難削材加工で<strong>内部給油</strong>と<strong>高圧クーラント</strong>が必須となる物理的理由は、第A2章で見たチタン・インコネルの<strong>熱伝導率の低さ</strong>です。</p>
           <ul>
-            <li>Ti-6Al-4V: 熱伝導率 約 7-22 W/(m·K)（鋼の 1/4〜1/10）</li>
+            <li>Ti-6Al-4V: 熱伝導率 約 6.7 W/(m·K)（室温、500°C 付近で 11.8 W/(m·K) まで上昇）。純 Ti は 21.9 W/(m·K) なので合金化で半減以下。鋼の 1/12〜1/7</li>
             <li>Inconel 718: 約 11 W/(m·K)（鋼の 1/7）</li>
             <li>→ 切削で発生した熱がワークにも切屑にも逃げず、<strong>工具刃先に集中</strong></li>
             <li>→ 表面冷却（フラッド）では刃先まで届かない。刃の隙間から内部給油で<strong>直接刃先を冷やす</strong>必要がある</li>
