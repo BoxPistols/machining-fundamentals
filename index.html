@@ -7133,20 +7133,31 @@ function highlightXmlText(src) {
     }
     // タグ <... > or </... >
     if (src[i] === '<') {
-      const end = src.indexOf('>', i);
+      // クォート内の '>' を誤検出しないよう、シングル/ダブルクォート状態を追跡しながら閉じ '>' を探す
+      let end = -1, q = '';
+      for (let j = i + 1; j < src.length; j++) {
+        const ch = src[j];
+        if (q) { if (ch === q) q = ''; continue; }
+        if (ch === '"' || ch === "'") { q = ch; continue; }
+        if (ch === '>') { end = j; break; }
+      }
       if (end === -1) { out += esc(src.slice(i)); break; }
       const inner = src.slice(i + 1, end);
       const isClose = inner.startsWith('/');
       const nameMatch = inner.match(/^\/?([\w:.\-]+)/);
       const tagName = nameMatch ? nameMatch[1] : '';
       const rest = nameMatch ? inner.slice(nameMatch[0].length) : inner;
-      const selfClose = rest.endsWith('/');
-      const attrPart = selfClose ? rest.slice(0, -1) : rest;
-      // 属性部分を `name="value"` で分解
+      // 末尾空白を含む自己閉じ (`<material />`) も検出
+      const selfClose = /\/\s*$/.test(rest);
+      const attrPart = selfClose ? rest.replace(/\/\s*$/, '') : rest;
+      // 属性部分を `name="value"` / `name='value'` / 値なし属性 の順で分解
       const attrsHtml = attrPart.replace(
-        /(\s+)([\w:.\-]+)(\s*=\s*)("[^"]*"|'[^']*')/g,
-        (_m, sp, name, eq, val) =>
-          sp + '<span class="tok-attr">' + esc(name) + '</span>' + esc(eq) + '<span class="tok-str">' + esc(val) + '</span>'
+        /(\s+)([\w:.\-]+)(?:(\s*=\s*)("[^"]*"|'[^']*'))?/g,
+        (_m, sp, name, eq, val) => {
+          const head = sp + '<span class="tok-attr">' + esc(name) + '</span>';
+          if (eq === undefined) return head;
+          return head + esc(eq) + '<span class="tok-str">' + esc(val) + '</span>';
+        }
       );
       out +=
         '<span class="tok-punct">&lt;' + (isClose ? '/' : '') + '</span>' +
