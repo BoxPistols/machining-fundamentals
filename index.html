@@ -6,7 +6,7 @@
 <title>切削加工入門 — 学習ロードマップ</title>
 
 <!-- Description / Author -->
-<meta name="description" content="航空機やエンジンなど、精密な金属部品を作る切削加工を、材料科学 a1-a6 + 切削基礎 1-10 + 研究実例 c1-c4 の全20章で体系的に概観する学習教材です。初学者向けの概説・用語集・SVG図解・音声読み上げ・3Dシミュレーター付き。">
+<meta name="description" content="航空機やエンジンなど、精密な金属部品を作る切削加工を、材料科学 a1-a6 + 切削基礎 1-11 + 研究実例 c1-c4 の全21章で体系的に概観する学習教材です。初学者向けの概説・用語集・SVG図解・音声読み上げ・3Dシミュレーター付き。">
 <meta name="author" content="Built with Claude">
 <meta name="theme-color" content="#0a0d10">
 <meta name="keywords" content="切削加工,機械加工,金属加工,旋盤,フライス盤,CNC,工作機械,切削工具,冷却液,CFD,シミュレーター,材料科学,学習教材,教育,Machining,Metal Cutting,Education">
@@ -26,21 +26,21 @@
 <meta property="og:site_name" content="切削加工入門">
 <meta property="og:url" content="https://machining-fundamentals.vercel.app/">
 <meta property="og:title" content="切削加工入門 — 学習ロードマップ">
-<meta property="og:description" content="航空機部品など精密な金属部品を作る切削加工を、材料科学 a1-a6 + 切削基礎 1-10 + 研究実例 c1-c4 の全20章で体系的に概観。SVG図解・音声読み上げ・3D CFD シミュレーター付き。">
+<meta property="og:description" content="航空機部品など精密な金属部品を作る切削加工を、材料科学 a1-a6 + 切削基礎 1-11 + 研究実例 c1-c4 の全21章で体系的に概観。SVG図解・音声読み上げ・3D CFD シミュレーター付き。">
 <meta property="og:image" content="https://machining-fundamentals.vercel.app/og-image.png">
 <meta property="og:image:secure_url" content="https://machining-fundamentals.vercel.app/og-image.png">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="切削加工入門 — 学習ロードマップ (全20章 + 3D CFD シミュレーター)">
+<meta property="og:image:alt" content="切削加工入門 — 学習ロードマップ (全21章 + 3D CFD シミュレーター)">
 <meta property="og:locale" content="ja_JP">
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="切削加工入門 — 学習ロードマップ">
-<meta name="twitter:description" content="航空機部品など精密な金属部品を作る切削加工を、材料科学 a1-a6 + 切削基礎 1-10 + 研究実例 c1-c4 の全20章で体系的に概観。SVG図解・音声読み上げ・3D CFD シミュレーター付き。">
+<meta name="twitter:description" content="航空機部品など精密な金属部品を作る切削加工を、材料科学 a1-a6 + 切削基礎 1-11 + 研究実例 c1-c4 の全21章で体系的に概観。SVG図解・音声読み上げ・3D CFD シミュレーター付き。">
 <meta name="twitter:image" content="https://machining-fundamentals.vercel.app/og-image.png">
-<meta name="twitter:image:alt" content="切削加工入門 — 学習ロードマップ (全20章 + 3D CFD シミュレーター)">
+<meta name="twitter:image:alt" content="切削加工入門 — 学習ロードマップ (全21章 + 3D CFD シミュレーター)">
 
 <!-- 構造化データ (JSON-LD) -->
 <script type="application/ld+json">
@@ -68,7 +68,7 @@
       "@type": "LearningResource",
       "@id": "https://machining-fundamentals.vercel.app/#learning-resource",
       "name": "切削加工入門 — 学習ロードマップ",
-      "description": "材料科学 a1-a6 + 切削基礎 1-10 + 研究実例 c1-c4 の全20章で構成する、切削加工の初学者向け学習教材。SVG図解・音声読み上げ・3D CFD シミュレーター付き。",
+      "description": "材料科学 a1-a6 + 切削基礎 1-11 + 研究実例 c1-c4 の全21章で構成する、切削加工の初学者向け学習教材。SVG図解・音声読み上げ・3D CFD シミュレーター付き。",
       "url": "https://machining-fundamentals.vercel.app/",
       "image": "https://machining-fundamentals.vercel.app/og-image.png",
       "inLanguage": "ja",
@@ -5918,6 +5918,109 @@ const CHAPTERS = [
       '経済産業省・NEDO の航空機産業レポートに業界動向',
     ],
   },
+  {
+    id: 11,
+    num: '11',
+    title: '材料評価のための加工 — 試料調製と表面仕上げの応用',
+    summary: '切削・研削・研磨技術が、研究室や試験室の試料調製でどう使われるか。金属組織観察 (光学・SEM) と機械試験のための加工を、JIS・ASTM・教科書ベースで概観。',
+    voiceSummary: '本章は Part B の総まとめとして、切削加工技術が研究や試験の現場で果たす役割を扱います。組織観察用の試料切断、樹脂への埋込、機械研磨から鏡面仕上げまでの一連は、Part B で学んだ「切る・削る・磨く」の応用です。SEM や光学顕微鏡で観察するには鏡面に近い表面が必要で、Part B 第 9 章の表面粗さ Ra の議論よりさらに微小なスケールでの仕上げが求められます。また、加工後の部品を引張・硬さ・クリープといった機械試験で評価する流れは、加工技術と材料評価が双方向に情報をやり取りするフィードバックループを形成しています。本章は ASTM E3 や JIS H 0501、ASM Handbook Volume 9 などの公開規格・教科書を出典として整理し、興味のある読者が一次資料に進める導線を示します。',
+    readTime: '5分',
+    hasSim: false,
+    lead: 'Part B では機能部品を作るための切削加工を扱ってきましたが、同じ「切る・削る・磨く」技術は研究室や試験室の <strong>試料調製</strong>でも中心的な役割を担います。本章では、金属組織観察や機械試験のために加工技術がどう応用されるかを、公開規格・教科書ベースで概観します。Part B のフィナーレとして、切削技術が機能部品製造の枠を越えて材料研究全体を支えていることを見ます。',
+    sections: [
+      {
+        heading: 'なぜ研究室にも「切る・削る・磨く」が要るか',
+        html: `
+          <p>金属材料の研究・評価では、対象材料を観察・計測できるサイズと形に整える <strong>試料調製 (specimen preparation / metallographic sample preparation)</strong> が、すべての出発点になります。生まれたままの素材ブロックを電子顕微鏡に乗せても、内部組織は見えません。観察・計測のためには、Part B で学んだ加工技術を <strong>機能部品を作るのではなく「見るための面」を作る</strong>方向に振り直す必要があります。</p>
+          <ul>
+            <li><strong>切断</strong> — 観察したい部位を露出させるため、ブロックから 1〜数 mm 厚の薄片を取り出す</li>
+            <li><strong>埋込</strong> — 取り扱いと研磨作業性のため、樹脂で固定する</li>
+            <li><strong>研磨</strong> — 切断や前工程で生じた変質層を除去し、内部組織が光学・電子線で見える鏡面に近い状態まで仕上げる</li>
+          </ul>
+          <p>この 3 段は ASTM の標準ガイド <strong>ASTM E3 “Standard Guide for Preparation of Metallographic Specimens”</strong> に共通枠組みが示されており、ASM Handbook Vol 9 や Vander Voort の <em>Metallography: Principles and Practice</em> でも基本構成として扱われます。</p>
+        `,
+      },
+      {
+        heading: '試料切断 — 観察したい部位をどう取り出すか',
+        html: `
+          <p>機能部品製造のための切断 (第 2 章「3 つの基本方式」や第 3 章「切削の 3 要素」で扱った旋削・フライス・ドリル) と、試料調製のための切断は <strong>「速く・安く・歩留まり高く」よりも「変質層を最小限にしたい」</strong>を優先する点が異なります。</p>
+          <ul>
+            <li><strong>砥石による精密切断 (precision abrasive cutting)</strong> — メタログラフィー用カットオフソーで低速・連続冷却。切断面の加工変質層を浅く抑える</li>
+            <li><strong>ワイヤー放電加工 (WEDM)</strong> — 機械的応力をほぼかけずに切れるため、脆性材料や残留応力を保持したい場合に有用</li>
+            <li><strong>精密ダイヤモンドソー</strong> — セラミクスや硬質材料用</li>
+          </ul>
+          <p style="font-size:13px;">Part B 前半で扱った「機能部品製造としての切断」と比較すると、目的が <strong>「材料を成形する」</strong>ではなく <strong>「内部を露わにする」</strong>に変わっており、評価指標も MRR (Material Removal Rate) ではなく <strong>切断面の加工変質層深さ</strong>と <strong>反り・残留応力</strong>に切り替わります。</p>
+        `,
+      },
+      {
+        heading: '研磨と鏡面仕上げ — Ra のさらに下のスケール',
+        html: `
+          <p>第 9 章で扱った表面粗さ Ra は、機能部品では数 μm 〜 サブ μm 程度が問題になります。一方、金属組織観察では <strong>Ra 数 nm 〜 数十 nm の鏡面</strong>が必要です。スケールが 2〜3 桁違うため、加工方法も異なります。</p>
+          <p>典型的なメタログラフィー研磨は段階的に番手を細かくしていきます (公開規格 ASTM E3 / JIS H 0501 にプロセス例)。</p>
+          <ol>
+            <li><strong>機械研磨 (粗研磨)</strong> — SiC 研磨紙 (#80 → #400 → #800 → #1500 → #2000 程度) で順次仕上げ</li>
+            <li><strong>仕上げ研磨</strong> — ダイヤモンドペースト (9 μm → 3 μm → 1 μm) を布パッドに塗布</li>
+            <li><strong>最終仕上げ</strong> — コロイダルシリカ (~ 0.04 μm) または化学・電解研磨</li>
+          </ol>
+          <p style="font-size:13px;">研磨は工程ごとに <strong>研磨液 / 研磨時間 / 圧力</strong>を組み合わせて条件化します。条件は材料種・観察目的ごとに教科書 (ASM Handbook Vol 9, Vander Voort) や規格 (ASTM E3, ASTM E407 エッチング) にレシピが整理されており、最初は標準条件を参照するのが定石です。最終工程の <strong>エッチング</strong>は組織を浮かび上がらせるため、ASTM E407 で材料系ごとに多数のエッチャント (例: Nital, Kalling 系) が登録されています。</p>
+        `,
+      },
+      {
+        heading: '観察・計測機器との接続',
+        html: `
+          <p>調製した試料は、用途に応じて次のような観察・計測機器に乗ります。本リポでは詳細は扱いませんが、加工技術がどこにつながるかの地図として：</p>
+          <ul>
+            <li><strong>光学顕微鏡 (OM)</strong> — 倍率 ~ 1000 倍、結晶粒度や偏析を観察 (JIS G 0551 「鋼-結晶粒度の顕微鏡試験方法」)</li>
+            <li><strong>走査型電子顕微鏡 (SEM)</strong> — 加速電圧 1〜30 kV、二次電子・反射電子像で表面形状や相分布を観察。倍率 ~ 100,000 倍まで</li>
+            <li><strong>X 線回折 (XRD)</strong> — 結晶構造同定、残留応力測定 (sin²ψ 法。関連規格は ASTM E915 系 / ISO 21432。ひずみゲージ穴あけ法の ASTM E837 とは別系統)</li>
+            <li><strong>硬さ試験</strong> — ロックウェル (JIS Z 2245)、ビッカース (JIS Z 2244)、ヌープ (JIS Z 2251)。微小硬さは局所相の硬さ分布測定にも</li>
+          </ul>
+          <p style="font-size:13px;">SEM 像 1 枚には倍率・加速電圧・取得日・座標などの <strong>装置メタデータ</strong>が伴います。装置メーカーごとに専用フォーマットで出力されるため、研究機関を超えた共有では NIMS RDE 等の公開メタデータ基盤や、第 C3 章で扱った MaiML のような共通フォーマットの役割が大きくなります (詳細は <a href="#/chapter/c4">第 C4 章</a> 参照)。</p>
+        `,
+      },
+      {
+        heading: '機械試験との接続 — 切削加工 ↔ 材料評価のフィードバック',
+        html: `
+          <p>加工した部品や試料は、実環境を模した <strong>機械試験</strong>でも評価されます。代表的な試験と公開規格を列挙します (詳細は専門書および規格本体へ)。</p>
+          <ul>
+            <li><strong>引張試験</strong> — JIS Z 2241 / ISO 6892-1。降伏点・引張強さ・伸び・絞り</li>
+            <li><strong>硬さ試験</strong> — JIS Z 2244 / Z 2245 / Z 2251 / ISO 6507。表面の機械的応答の指標</li>
+            <li><strong>シャルピー衝撃試験</strong> — JIS Z 2242 / ISO 148-1。靱性・脆性遷移温度</li>
+            <li><strong>疲労試験</strong> — JIS Z 2273 / ISO 12107。繰返し荷重下の破壊寿命</li>
+            <li><strong>クリープ試験</strong> — JIS Z 2271 / ISO 204。高温長時間負荷下のひずみ・破断挙動 (タービン部品等の寿命評価で必須)</li>
+          </ul>
+          <p style="font-size:13px;">機械試験の結果は、再び <strong>切削加工側にフィードバック</strong>されます。例えば「Part B 第 9 章で議論した加工面の Ra や残留応力が疲労寿命をどう左右するか」は、疲労試験データなしには判定できません。<strong>切削加工 → 試料調製 → 観察・試験 → 切削加工へのフィードバック</strong>というループが、製造業の品質保証と材料研究の双方を支えています。</p>
+        `,
+      },
+      {
+        heading: 'Part B 全体のキーアイデア',
+        html: `
+          <p style="padding:12px;background:var(--bg-2);border-left:3px solid var(--accent);border-radius:2px;">
+            切削・研削・研磨という技術は、機能部品を作るためだけでなく、<strong>研究や品質保証の現場で「材料を見るための面」を作る</strong>役割も担います。試料調製・観察・機械試験で得られた知見は、再び切削加工側にフィードバックされ、より良い工具・条件・工程が生まれます。Part C ではこの研究と加工の往復関係を、データ基盤と国際標準の側から扱います。
+          </p>
+        `,
+      },
+    ],
+    terms: [
+      { name: '試料調製', anchor: 'specimen-prep', en: 'Specimen Preparation / Metallographic Sample Preparation', def: '観察・計測のために材料を整える工程の総称。切断 → 埋込 → 研磨 → エッチングが標準シーケンス。公開規格として ASTM E3 (Standard Guide for Preparation of Metallographic Specimens) と ASTM E407 (Microetching) がある。' },
+      { name: 'メタログラフィー', anchor: 'metallography', en: 'Metallography', def: '金属組織を観察する技術体系。顕微鏡観察に適した試料を作るための加工 (試料調製) と、観察・解析を含む。標準教科書として Vander Voort 著 "Metallography: Principles and Practice"、ASM Handbook Volume 9。' },
+      { name: '加工変質層', anchor: 'damaged-layer', en: 'Surface Damaged Layer / Beilby Layer', def: '機械加工で生じる、組織が乱れた表層。試料調製では研磨の段階を細かく刻むことで除去する。機能部品では疲労寿命に影響するため Part B 第 9 章の表面粗さ・残留応力と並ぶ評価対象。' },
+      { name: 'エッチング', anchor: 'etching', en: 'Etching', def: '化学溶液で組織を浮かび上がらせる工程。材料系ごとに ASTM E407 で多数のエッチャント (例: Nital, Kalling) が公開されている。' },
+      { name: 'クリープ試験', anchor: 'creep-test', en: 'Creep Test', def: '高温で一定荷重を長時間かけ、ひずみと破断時間を計測する試験。JIS Z 2271 / ISO 204。航空エンジンのタービン部品など、高温で長期使用される材料の寿命評価に必須。' },
+    ],
+    further: [
+      'ASTM E3 — Standard Guide for Preparation of Metallographic Specimens (ASTM International, <a href="https://www.astm.org/e0003-11r17.html" target="_blank" rel="noopener">astm.org/e0003</a>)',
+      'ASTM E407 — Standard Practice for Microetching Metals and Alloys (材料系ごとのエッチャントを多数収録)',
+      'ASM Handbook Volume 9 — Metallography and Microstructures (ASM International)',
+      'Vander Voort, G.F. — "Metallography: Principles and Practice" (ASM International) メタログラフィーの定番教科書',
+      'JIS H 0501 — 伸銅品結晶粒度試験方法 (試料調製方法を含む)',
+      'JIS G 0551 — 鋼-結晶粒度の顕微鏡試験方法',
+      'JIS Z 2241 / 2244 / 2245 / 2271 — 機械試験 (引張・ビッカース・ロックウェル・クリープ) の JIS 規格群',
+      'ISO 6892-1 — Metallic materials — Tensile testing — Method of test at room temperature',
+      '日本鉄鋼協会『鉄鋼便覧』 — 試験・観察の規格と実例',
+      '次章: <a href="#/chapter/c1">第 C1 章「金属加工研究の実例集」</a> で研究の地形図と一次資料へ',
+    ],
+  },
 
   // ===========================================================================
   // Part C: 研究の最前線 — 実例と原典への導線
@@ -5966,6 +6069,27 @@ const CHAPTERS = [
             <li><strong>航空エンジン</strong>: GE Aviation、Pratt & Whitney、Rolls-Royce、IHI、川崎重工</li>
           </ul>
           <p style="margin-top:12px;font-size:12px;color:var(--text-2);">※ 名前は 2024-2026 時点の情報。教授が異動したり研究室が改組されたりするので、最新情報は各機関の公式サイトで確認してください。</p>
+        `,
+      },
+      {
+        heading: 'PSPP フレームワーク — 材料研究を貫く 4 要素',
+        html: `
+          <p>切削研究も含む材料系研究の共通言語として、近年急速に定着しつつあるのが <strong>PSPP フレームワーク</strong>です。材料を 4 つの要素に分解し、その因果連鎖で研究を捉えます。</p>
+          <table style="width:100%;border-collapse:collapse;font-size:13px;margin:10px 0;">
+            <tr>
+              <th style="text-align:left;padding:6px;border-bottom:1px solid var(--border);">要素</th>
+              <th style="text-align:left;padding:6px;border-bottom:1px solid var(--border);">意味</th>
+              <th style="text-align:left;padding:6px;border-bottom:1px solid var(--border);">本リポでの対応</th>
+            </tr>
+            <tr><td style="padding:6px;"><strong>Process（プロセス）</strong></td><td style="padding:6px;">組成・製造方法・熱処理条件など、材料を「どう作るか / どう加工するか」</td><td style="padding:6px;">Part B 全章（切削加工そのものが Process）</td></tr>
+            <tr><td style="padding:6px;"><strong>Structure（構造）</strong></td><td style="padding:6px;">相構成・結晶構造・結晶粒・析出物など、材料内部の「ありさま」</td><td style="padding:6px;">Part A a3-a5（結晶構造・転位・相変態）</td></tr>
+            <tr><td style="padding:6px;"><strong>Property（特性）</strong></td><td style="padding:6px;">硬さ・強度・耐食性・熱伝導など、構造から決まる「性質」</td><td style="padding:6px;">Part A a2, a6, Part B 第 5-6 章</td></tr>
+            <tr><td style="padding:6px;"><strong>Performance（性能）</strong></td><td style="padding:6px;">工具寿命・部品寿命・破断挙動など、実環境での「ふるまい」</td><td style="padding:6px;">Part B 第 8-10 章（工具寿命・粗さ・難削材）</td></tr>
+          </table>
+          <p>4 要素は <strong>Process → Structure → Property → Performance</strong> の順に因果連鎖を持ち、これを辿るのが「順解析（性能予測）」、逆方向に辿るのが「逆解析（プロセス最適化）」です。マテリアルズ・インフォマティクスとプロセスインフォマティクスはこの連鎖を <strong>データ駆動で逆に解く</strong>取り組み、と表現できます。</p>
+          <p style="font-size:13px;">思想的な起源は <strong>Olson (1997, Science)</strong> の階層構造材料設計論にあり、その後 <strong>米国 Materials Genome Initiative（2011 年立ち上げ）</strong> と <strong>ICME（Integrated Computational Materials Engineering）</strong> の文献群を通じて、Process-Structure-Property-Performance の 4 連関を <strong>"PSPP"</strong> という英語アクロニムで扱う表記が広まりました。日本では NIMS と東京大学が運営する <strong>MInt（Materials Integration）システム</strong> が「プロセス・構造・特性・性能」のワークフローを中核に据え、材料分野の共通フレームとして広まっています。</p>
+          <p style="font-size:13px;">学習者の視点では、この 4 要素を意識すると「いま自分が読んでいる論文が 4 要素のどこを扱っているか」「Part A のどこと Part B のどこを繋ぐ話なのか」が見えやすくなります。Part C 残り章で扱う MaiML / RDE 等のデータ基盤も、究極的には 4 要素のデータを <strong>機械可読・再現可能</strong>に流通させるための仕組みです。</p>
+          <p style="font-size:12px;color:var(--text-2);">公式参照: MInt システム公式 — <a href="https://www.mintsys.jp/" target="_blank" rel="noopener">mintsys.jp</a>（NIMS / 東京大学運営、ワークフロー区分: プロセス／構造／特性／性能）／Materials Genome Initiative (U.S.) — <a href="https://www.mgi.gov/" target="_blank" rel="noopener">mgi.gov</a>／Olson, G. B. "Computational Design of Hierarchically Structured Materials," <em>Science</em> 277, 1237-1242 (1997), DOI: 10.1126/science.277.5330.1237</p>
         `,
       },
       {
@@ -6313,6 +6437,9 @@ const CHAPTERS = [
       {
         heading: '4 階層データモデル — 切削加工の例で',
         html: `
+          <p style="padding:8px 10px;background:var(--bg-2);border-left:3px solid var(--accent);border-radius:2px;font-size:13px;margin-bottom:10px;">
+            <strong>本節の前置き：</strong> MaiML の「構造」を構成する軸は 1 つではありません。<strong>(a) ファイル全体の階層（本節）</strong> / <strong>(b) 汎用データコンテナ（次節の <code>property</code> / <code>content</code> / <code>uncertainty</code>）</strong> / <strong>(c) テンプレート要素 / <code>templateRef</code> によるキー集合の再利用機構（後述）</strong> / <strong>(d) ペトリネット工程記述（PNML）</strong> の 4 軸が、それぞれ直交した役割を持って 1 枚の MaiML ファイルに同居します。混同しやすいので、まず軸を分けて理解するのが近道です。
+          </p>
           <p>MaiML ファイルは <strong>0〜4 階層</strong>で構成されます。第 0 階層は <code>&lt;maiml&gt;</code> 要素のラッパー、第 1 階層は <code>&lt;document&gt;</code> / <code>&lt;protocol&gt;</code> / <code>&lt;data&gt;</code> / <code>&lt;eventLog&gt;</code> の 4 種固定。</p>
 <pre style="background:var(--bg-2);padding:10px;border-radius:4px;font-size:12px;overflow-x:auto;"><code>&lt;maiml version="1.0" xsi:type="maimlRootType"&gt;     ← 第 0 階層
   &lt;document&gt;...&lt;/document&gt;                          ← 第 1 階層 / 文書メタ
@@ -6405,6 +6532,12 @@ const CHAPTERS = [
             <li><code>maiml-refTypes.xsd</code> / <code>-simpleTypes.xsd</code> / <code>-helper.xsd</code> — 型・参照・ヘルパ</li>
             <li><code>xmldsig-core-schema.xsd</code> / <code>xenc-schema.xsd</code> / <code>xenc-schema-11.xsd</code> — 外部 W3C 仕様</li>
           </ul>
+
+          <h4 style="margin-top:18px;">テンプレート要素と templateRef — キー集合の再利用</h4>
+          <p>公式ガイドライン (Ver.1.0, 2024.5.20) の <strong>§9.7「テンプレート要素又は &lt;templateRef&gt; 要素の命名」</strong> では、複数の <code>&lt;protocol&gt;</code> / <code>&lt;data&gt;</code> 間で <strong>キー属性の集まり (=キー集合) を再利用する仕組み</strong>が示されています。同一の測定項目セットを試験ランごとに繰り返し書く必要がなくなり、文書サイズの抑制と一貫性確保に寄与します。</p>
+          <p style="font-size:13px;">工具寿命試験を例にすると、「Vc / f / ap / 被削材 / 冷却」というキー集合をテンプレート側で 1 度定義しておき、各試験ランは値だけを差し替え、テンプレートは <code>templateRef</code> で参照する形にできます (具体的な要素名・属性名は公式 XSD と §9.7 を参照)。</p>
+          <p style="font-size:13px;margin-top:8px;">ファイル構造の 4 階層（<code>document</code> / <code>protocol</code> / <code>data</code> / <code>eventLog</code>）が <strong>「どの層に書くか」</strong>を定めるのに対し、テンプレート機構は <strong>「キー集合をどう再利用するか」</strong>を定める直交した設計軸です。両者を別レイヤーとして捉えると、要素の役割が混乱しません。</p>
+          <p style="font-size:12px;color:var(--text-2);">出典: 一般社団法人 日本分析機器工業会 (JAIMA)「共通データフォーマット対応ガイドライン Ver.1.0」§9.7 (2024.5.20 公開)。原典は JAIMA / 公式 MaiML サイト <a href="https://www.maiml.org/" target="_blank" rel="noopener">maiml.org</a> で配布。</p>
         `,
       },
       {
@@ -6451,6 +6584,7 @@ const CHAPTERS = [
       { name: 'XML Encryption', en: 'W3C XMLEnc 1.1', def: 'XML 要素の暗号化仕様。MaiML では特定グローバル要素単位で AES-256-GCM 等を適用、機密領域と公開領域を 1 文書内に共存させる。' },
       { name: '名前空間', en: 'XML Namespace', def: 'XML で同名タグの所属を区別する仕組み。MaiML はベンダー用語をこの仕組みで分離管理し、用語の進化に長期追従する設計。' },
       { name: '汎用データコンテナ', en: 'Generic Data Container', def: 'MaiML の <property> / <content> / <uncertainty> 要素群。タグ名で意味を固定せず、key 属性で意味を担保する設計。新規計測法への拡張がスキーマ改訂なしで可能。' },
+      { name: 'テンプレート要素 / templateRef', anchor: 'template-ref', en: 'Template Elements / templateRef', def: '公式ガイドライン §9.7 で定義される再利用機構。複数の protocol / data から同一のキー集合を参照することで、文書サイズと一貫性を両立する。具体仕様は公式 XSD と §9.7 を参照。' },
       { name: 'AnIML', en: 'Analytical Information Markup Language', def: 'ASTM E13.15 副委員会（Analytical Data、2003 年設立）が主導する類似目的の XML 標準。Core schema は現在も draft 段階（v0.90、2024 年時点、GitHub AnIML/schemas の README 確認）で、正式な ASTM 規格としての公開には至っていない（GitHub 配布の draft が事実上の参照実装）。MaiML はベンダー用語の固定方針が異なる。Allotrope Foundation は別組織で Allotrope Data Format（ADF）を策定。' },
       { name: 'Allotrope ADF', en: 'Allotrope Data Format', def: 'Allotrope Foundation 策定。HDF5 + RDF ベース。製薬業界デファクト。MaiML から外部参照で補完関係。' },
       { name: 'HDF5 / NeXus', en: 'HDF5 / NeXus', def: 'NIAC / HDF Group が標準化するバイナリ科学データフォーマット。MaiML から <insertion> 要素で参照可。大容量並列 I/O の強み。' },
@@ -6547,6 +6681,11 @@ const CHAPTERS = [
           <p><strong>現状</strong>：切削工具メーカーが新組成超硬合金を試作 → 第三者機関（NIMS / 産総研 / 大学）で精密分析 → 結果を社内に取り込み比較。第三者機関の出力が装置依存（Bruker / Thermo / 島津）で取り込み手作業。<br>
           <strong>MaiML 化後</strong>：<code>&lt;material&gt;</code> の <code>&lt;uuid&gt;</code> を共有することで「同一試料を複数機関で測定」を機械判定。<strong>サイバー空間上の仮想統合計測</strong>が成立。姉妹規格 JIS K 0199（同一視野位置合わせ）と組み合わせて使う。<br>
           <strong>採用障壁</strong>：機関間の UUID 採番ガバナンス。</p>
+
+          <h4 style="margin-top:18px;">周辺の公開データ基盤 — RDE との関係</h4>
+          <p>MaiML を取り囲む公開エコシステムとして、NIMS が運用する <strong>RDE（Research Data Express）</strong> があります。RDE は物質・材料研究データのオンライン登録基盤で、公式ページによれば登録データに対して「データの分類、メタデータの付与、用語の翻訳、フォーマット変換、数値データの可視化、統計処理、特徴量抽出」を自動で行い、機械学習に適した形でクラウドに蓄積する仕組みを提供しています。データテンプレートはあらかじめ用意されたものと、RDEToolKit 等を用いて研究グループが自作するものの 2 系統が公開されています。</p>
+          <p style="font-size:13px;">MaiML が「データの構造そのもの（手順・実体・結果・履歴を 1 ファイルにまとめる）」を担うのに対し、RDE は「データを集めて公開する流通基盤」を担う、という役割分担と捉えられます。両者は <strong>競合ではなく補完関係</strong>にあり、ARIM 事業を含む NIMS の公開メタデータ規約を、MaiML の <code>key</code> 名前空間と揃える試みは今後の整合点になります。学習者の視点では、「公的に整備されたデータ登録基盤の現実例」として RDE を参照しておくと、MaiML の <code>key</code> 設計や流通設計の感覚がつかみやすくなります。</p>
+          <p style="font-size:13px;color:var(--text-2);">出典: NIMS RDE 公式ページ — <a href="https://dice.nims.go.jp/services/RDE/" target="_blank" rel="noopener">dice.nims.go.jp/services/RDE/</a>（NIMS DICE プラットフォーム配下、データの自動構造化処理とテンプレート 2 系統の記述は同公式ページに掲載）</p>
         `,
       },
       {
@@ -6618,6 +6757,7 @@ const CHAPTERS = [
       { name: 'VAMAS A45', en: 'VAMAS TWA2 Project A45', def: '2025 年 5 月立ち上げの国際 Round Robin。安永卓生（九工大）プロジェクトリーダー。AFM+SEM、AES+XPS、GC-MS 等で MaiML の独立可用性を国際実証。' },
       { name: 'AIST Solutions', en: 'AIST Solutions Co., Ltd.', def: '産総研 100% 子会社（2023 年 4 月設立）。2026-02-01 JAIMA と普及推進パートナーシップ締結（プレスリリース 2026-02-06）。マテリアル DX プラットフォーム事業として MaiML を産業展開。' },
       { name: 'NIMS ARIM', en: 'NIMS Advanced Research Infrastructure for Materials and Nanotechnology', def: 'マテリアル先端リサーチインフラ事業（2021 年度〜）。NIMS がセンターハブとして全国 26 機関のデータ構造化・共有を推進。' },
+      { name: 'NIMS RDE', anchor: 'nims-rde', en: 'Research Data Express', def: '物質・材料研究データのオンライン登録基盤。NIMS DICE プラットフォーム配下で運用。分析機器の生データ・メタデータの自動構造化、データテンプレートと変換ツールの公開を担う。MaiML との関係は補完（RDE = 流通基盤 / MaiML = データ構造）。' },
       { name: 'JIS K 0199', en: 'JIS K 0199', def: '姉妹規格。同一視野位置合わせの規格として 2023 年 1 月公示。MaiML と組み合わせて「同一試料を複数機関で測定」を機械判定する仕組みの基礎。' },
       { name: 'NWIP', en: 'New Work Item Proposal', def: 'ISO 規格化の最初のステップ。MaiML は ISO/TC201/SC3 経由で 2026 年提出予定。NP → WD → CD → DIS → FDIS → IS の標準スケジュールで 36〜48 か月。' },
       { name: 'MCP', en: 'Model Context Protocol', def: '2024 年 11 月 Anthropic 公開、2025 年仕様標準化が進む AI エージェント向けプロトコル。MaiML を AI が直接読み書きする maiml-mcp Server 構想の基盤。' },
@@ -6629,6 +6769,7 @@ const CHAPTERS = [
       'AIST Solutions × JAIMA パートナーシップ協定（2026-02-01 締結 / プレスリリース 2026-02-06）: <a href="https://www.jaima.or.jp/jp/news_detail/press_20260206/" target="_blank" rel="noopener">JAIMA 発表</a> / <a href="https://prtimes.jp/main/html/rd/p/000000074.000146304.html" target="_blank" rel="noopener">AIST Solutions プレスリリース</a> — 産業適用の制度面',
       '東京科学大学 / 東京大学 一杉太郎研究室 dLab — Nishio, Aiba, ..., Hitosugi 他「A digital laboratory with a modular measurement system and standardized data format」<strong>Digital Discovery 4, 1734-1742 (2025)</strong>（DOI: 10.1039/D4DD00326H）— MaiML 採用の代表事例',
       'NIMS ARIM（マテリアル先端リサーチインフラ事業）公式: <a href="https://nanonet.mext.go.jp/arim/" target="_blank" rel="noopener">nanonet.mext.go.jp/arim/</a>',
+      'NIMS RDE（Research Data Express）公式: <a href="https://dice.nims.go.jp/services/RDE/" target="_blank" rel="noopener">dice.nims.go.jp/services/RDE/</a> — 公開メタデータ語彙の参照先',
       '本リポ詳細版: <a href="https://github.com/BoxPistols/machining-fundamentals/blob/main/docs/maiml-overview.md" target="_blank" rel="noopener">docs/maiml-overview.md</a>',
       '前章: <a href="#/chapter/c3">第 C3 章「MaiML — 仕様の骨格」</a> / <a href="#/chapter/c2">第 C2 章「MaiML — 背景と 8 つの本質課題」</a>',
     ],
@@ -7106,13 +7247,13 @@ function renderHome() {
     <section class="hero">
       <h1>切削加工を<span class="accent">はじめて学ぶ</span>人のための<br>学習ロードマップ</h1>
       <p class="lead">
-        航空機やエンジンなど、精密な金属部品を作る<strong>切削加工</strong>を、原子レベルの材料科学から研究実例まで <strong>17 章</strong> で体系的に学べる教材です。
+        航空機やエンジンなど、精密な金属部品を作る<strong>切削加工</strong>を、原子レベルの材料科学から研究実例まで <strong>21 章</strong> で体系的に学べる教材です。
         各章は <strong>SVG 図解 + 対話型ビジュアライザー</strong>で、用語集と参考資料を完備。確認テストで知識の定着を確認できます。
       </p>
       <div class="meta">
         <div class="meta-pill"><span class="label">対象</span><span>切削加工の初学者</span></div>
         <div class="meta-pill"><span class="label">構成</span><span>Part A 材料科学 / Part B 切削基礎 / Part C 研究実例</span></div>
-        <div class="meta-pill"><span class="label">分量</span><span class="value">全 17 章 / 約 2 時間</span></div>
+        <div class="meta-pill"><span class="label">分量</span><span class="value">全 21 章 / 約 2.5 時間</span></div>
       </div>
     </section>
 
@@ -7441,7 +7582,7 @@ function renderAbout() {
 
         <h3>構成</h3>
         <ul>
-          <li><strong>全10章の概説</strong>：切削加工とは何かから、航空機部品加工の特殊性まで</li>
+          <li><strong>全 21 章の概説</strong>：Part A 材料科学 (a1-a6) / Part B 切削基礎 (1-11) / Part C 研究実例 (c1-c4) を体系的にカバー</li>
           <li><strong>用語集</strong>：各章で出てきた専門用語の日英対訳と定義</li>
           <li><strong>参考資料リンク</strong>：さらに深く学ぶための教科書・規格・メーカー資料</li>
           <li><strong>体験シミュレーター</strong>：現在は第7章「冷却液の役割」に溝切削の3Dシミュレーターを用意</li>
@@ -11011,14 +11152,14 @@ function buildChapterText(ch, opts) {
   return parts.join('\n').replace(/\n{3,}/g, '\n\n').trim();
 }
 
-// 全10章をまとめる
+// 全 21 章 (Part A a1-a6 / Part B 1-11 / Part C c1-c4) をまとめる
 function buildAllChaptersText(opts) {
   const header = [
     '切削加工入門',
     'Machining Fundamentals — 学習ロードマップ',
     '',
     '金属切削加工の全体像を概観するための教材です。',
-    'はじめて学ぶ人を対象に、全10章で構成しています。',
+    'はじめて学ぶ人を対象に、Part A 材料科学 (a1-a6) / Part B 切削基礎 (1-11) / Part C 研究実例 (c1-c4) の全 21 章で構成しています。',
     '',
     '----------------------------------------',
     '',
