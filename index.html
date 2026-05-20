@@ -165,6 +165,13 @@ body {
 }
 code, .mono { font-family: 'JetBrains Mono', monospace; }
 
+/* XML / HTML 風コードブロックの簡易ハイライト (依存ゼロ、両テーマ対応) */
+pre code .tok-tag   { color: var(--cyan); }
+pre code .tok-attr  { color: var(--ylw); }
+pre code .tok-str   { color: var(--grn); }
+pre code .tok-punct { color: var(--text-1); }
+pre code .tok-comment { color: var(--text-2); font-style: italic; }
+
 /* === ヘッダー === */
 .topbar {
   height: var(--topbar-height);
@@ -7107,6 +7114,78 @@ const _searchIndex = (() => {
 function stripTagsForSearch(html) {
   return String(html).replace(/<[^>]+>/g, ' ').replace(/&[a-z]+;/gi, ' ').replace(/\s+/g, ' ').trim();
 }
+
+// XML / HTML 風コードの簡易シンタックスハイライト
+// 依存ゼロ。textContent を取って token を <span class="tok-*"> でラップした innerHTML に書き戻す。
+// 章本文の <pre><code> は MaiML XML 例が中心なのでこの軽量実装で十分。
+function highlightXmlText(src) {
+  const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  let out = '';
+  let i = 0;
+  while (i < src.length) {
+    // XML コメント <!-- ... -->
+    if (src.startsWith('<!--', i)) {
+      const end = src.indexOf('-->', i + 4);
+      const close = end === -1 ? src.length : end + 3;
+      out += '<span class="tok-comment">' + esc(src.slice(i, close)) + '</span>';
+      i = close;
+      continue;
+    }
+    // タグ <... > or </... >
+    if (src[i] === '<') {
+      // クォート内の '>' を誤検出しないよう、シングル/ダブルクォート状態を追跡しながら閉じ '>' を探す
+      let end = -1, q = '';
+      for (let j = i + 1; j < src.length; j++) {
+        const ch = src[j];
+        if (q) { if (ch === q) q = ''; continue; }
+        if (ch === '"' || ch === "'") { q = ch; continue; }
+        if (ch === '>') { end = j; break; }
+      }
+      if (end === -1) { out += esc(src.slice(i)); break; }
+      const inner = src.slice(i + 1, end);
+      const isClose = inner.startsWith('/');
+      const nameMatch = inner.match(/^\/?([\w:.\-]+)/);
+      const tagName = nameMatch ? nameMatch[1] : '';
+      const rest = nameMatch ? inner.slice(nameMatch[0].length) : inner;
+      // 末尾空白を含む自己閉じ (`<material />`) も検出
+      const selfClose = /\/\s*$/.test(rest);
+      const attrPart = selfClose ? rest.replace(/\/\s*$/, '') : rest;
+      // 属性部分を `name="value"` / `name='value'` / 値なし属性 の順で分解
+      const attrsHtml = attrPart.replace(
+        /(\s+)([\w:.\-]+)(?:(\s*=\s*)("[^"]*"|'[^']*'))?/g,
+        (_m, sp, name, eq, val) => {
+          const head = sp + '<span class="tok-attr">' + esc(name) + '</span>';
+          if (eq === undefined) return head;
+          return head + esc(eq) + '<span class="tok-str">' + esc(val) + '</span>';
+        }
+      );
+      out +=
+        '<span class="tok-punct">&lt;' + (isClose ? '/' : '') + '</span>' +
+        '<span class="tok-tag">' + esc(tagName) + '</span>' +
+        attrsHtml +
+        '<span class="tok-punct">' + (selfClose ? '/' : '') + '&gt;</span>';
+      i = end + 1;
+      continue;
+    }
+    // テキスト (次の < まで)
+    const next = src.indexOf('<', i);
+    const cut = next === -1 ? src.length : next;
+    out += esc(src.slice(i, cut));
+    i = cut;
+  }
+  return out;
+}
+function applyCodeHighlight(root) {
+  if (!root) return;
+  root.querySelectorAll('pre > code').forEach((codeEl) => {
+    if (codeEl.dataset.tokenized === '1') return;
+    const src = codeEl.textContent;
+    // XML 風 (<tag) を含む場合のみハイライト適用 (誤検知防止)
+    if (!/<\w/.test(src)) return;
+    codeEl.innerHTML = highlightXmlText(src);
+    codeEl.dataset.tokenized = '1';
+  });
+}
 function searchAll(query) {
   const q = String(query || '').trim().toLowerCase();
   if (!q) return [];
@@ -7507,6 +7586,9 @@ function renderChapter() {
       ${navHtml}
     </div>
   `;
+
+  // <pre><code> ブロックに簡易 XML シンタックスハイライトを適用 (依存ゼロ)
+  applyCodeHighlight(mainEl);
 
   // 各セクション内の top-level ブロック (p, ul, ol, h4, table, blockquote 等) に
   // data-voice-block-id を付与。TTS 再生中の paragraph 単位 highlight + scroll に使う。
