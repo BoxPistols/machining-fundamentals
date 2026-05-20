@@ -4461,13 +4461,13 @@ const CHAPTERS = [
           <p>切削加工の体系化は産業革命以降の機械化と並走してきました。主要マイルストーン:</p>
           <ul style="font-family:'JetBrains Mono', monospace; font-size: 12px; line-height: 2;">
             <li><strong>1797</strong>: Henry Maudslay が現代旋盤の原型 (送り台付き) を製作 — ネジの規格化を可能に</li>
-            <li><strong>1862</strong>: Frederick W. Howe が万能フライス盤 (Brown & Sharpe) — 平面加工の機械化</li>
+            <li><strong>1862</strong>: Joseph R. Brown (Brown & Sharpe) が世界初の万能フライス盤を製作 — Providence Tool の Frederick W. Howe からの twist drill 製造機械の依頼が起点。1865 年に B&S が特許取得</li>
             <li><strong>1898</strong>: Frederick W. Taylor + Maunsel White がハイス (高速度鋼) を発明 — 切削速度を 4 倍に</li>
             <li><strong>1907</strong>: Taylor が「On the Art of Cutting Metals」発表、Vc·T<sup>n</sup>=C の経験式を確立</li>
             <li><strong>1923</strong>: Krupp 社が WC-Co 超硬合金 (商品名 Widia) を商品化 — 切削速度を更に 5 倍に</li>
             <li><strong>1945</strong>: Eugene Merchant が切削力学の幾何モデル (Merchant 円) を発表</li>
-            <li><strong>1958</strong>: Tlusty が再生型びびり理論を発表 — Stability Lobe の祖</li>
-            <li><strong>1969</strong>: 日本の MITSUBISHI 等が CVD コーティング (TiC) を商品化</li>
+            <li><strong>1957/58</strong>: Tlusty (1957) と Tobias (1958) が独立に再生型びびり理論を発表、1963 年に Tlusty & Polacek (ASME) で決定版モデル — Stability Lobe の祖</li>
+            <li><strong>1969</strong>: ドイツ WIDIA (Krupp 系) が世界初の CVD-TiC コーティング超硬を商品化、数ヶ月遅れで Sandvik Coromant も上市、日本では三菱マテリアル等が追随</li>
             <li><strong>1980 年代</strong>: NC → CNC 化、CAD/CAM の普及、PVD コーティング多層化</li>
             <li><strong>2000 年代</strong>: 5 軸同時制御の標準化、AlTiN/AlCrN 高耐熱コーティング、PCD/CBN の本格普及</li>
             <li><strong>2010 年代〜</strong>: 機械学習による工具寿命予測、クライオ加工、UAM (超音波援用) の研究加速</li>
@@ -4510,7 +4510,7 @@ const CHAPTERS = [
       '教科書：<strong>機械工作法（朝倉書店、コロナ社などの標準教科書）</strong>の冒頭章',
       '<strong>Trent & Wright「Metal Cutting」(4th ed.)</strong> 第1章 — 英語標準教科書、歴史も詳しい',
       'Webサイト：<strong>Sandvik Coromant「Machining Application Guide」</strong>（無料 PDF）',
-      'JIS規格：<strong>JIS B 0170 工作機械—切削及び研削用語</strong>',
+      'JIS規格：<strong>JIS B 0170:2020 切削工具用語（基本）</strong>、<strong>JIS B 0105:2012 工作機械—名称に関する用語</strong>、<strong>JIS B 0106:2016 工作機械—部品及び工作方法—用語</strong>',
     ],
   },
   {
@@ -5387,7 +5387,7 @@ const CHAPTERS = [
         html: `
           <p>航空機の難削材加工で<strong>内部給油</strong>と<strong>高圧クーラント</strong>が必須となる物理的理由は、第A2章で見たチタン・インコネルの<strong>熱伝導率の低さ</strong>です。</p>
           <ul>
-            <li>Ti-6Al-4V: 熱伝導率 約 7-22 W/(m·K)（鋼の 1/4〜1/10）</li>
+            <li>Ti-6Al-4V: 熱伝導率 約 6.7 W/(m·K)（室温、500°C 付近で 11.8 W/(m·K) まで上昇）。純 Ti は 21.9 W/(m·K) なので合金化で半減以下。鋼の 1/12〜1/7</li>
             <li>Inconel 718: 約 11 W/(m·K)（鋼の 1/7）</li>
             <li>→ 切削で発生した熱がワークにも切屑にも逃げず、<strong>工具刃先に集中</strong></li>
             <li>→ 表面冷却（フラッド）では刃先まで届かない。刃の隙間から内部給油で<strong>直接刃先を冷やす</strong>必要がある</li>
@@ -5638,12 +5638,12 @@ const CHAPTERS = [
     ],
     terms: [
       { name: '工具寿命', en: 'Tool Life', def: '工具が切削に使えなくなるまでの時間。摩耗量や加工品質で判定。' },
-      { name: '逃げ面摩耗', anchor: 'VB', en: 'Flank Wear (VB)', def: '工具の逃げ面に生じる摩耗。工具寿命の主要な指標。ISO 3685 の標準限界は仕上げ 0.3 mm、荒加工 0.6 mm。' },
+      { name: '逃げ面摩耗', anchor: 'VB', en: 'Flank Wear (VB)', def: '工具の逃げ面に生じる摩耗。工具寿命の主要な指標。ISO 3685:1993 では平均 VBavg ≒ 0.3 mm / 最大 VBmax ≒ 0.6 mm を寿命基準値として規定。実務では仕上げ加工で 0.3 mm 寄り、荒加工で 0.6 mm 寄りに運用。' },
       { name: 'テイラーの工具寿命式', anchor: 'Taylor', en: "Taylor's Tool Life Equation", def: '切削速度 Vc と工具寿命 T の関係を表す経験式 Vc·T^n = C。n は工具材種依存（HSS 0.1, 超硬 0.22, セラミクス 0.45, CBN 0.5, PCD 0.6）。' },
       { name: 'チッピング', en: 'Chipping', def: '刃先が微小に欠ける現象。切削負荷の急変で発生。' },
     ],
     further: [
-      'ISO 3685（工具寿命試験）、JIS B 4011 が寿命試験の標準規格',
+      'ISO 3685:1993（工具寿命試験 — 一点旋削工具）が国際標準。日本の旧 JIS B 4011（超硬バイト切削試験方法、1971 制定 / 1999 改訂）は廃止済みのため、現在は ISO 3685 を直接参照するのが一般的',
       'CIRP論文、日本機械学会論文集に工具寿命予測のモデル研究多数',
     ],
   },
@@ -5671,9 +5671,9 @@ const CHAPTERS = [
         `,
       },
       {
-        heading: '表面粗さの基本指標 (ISO 4287)',
+        heading: '表面粗さの基本指標 (ISO 21920-2 / 旧 ISO 4287)',
         html: `
-          <p>表面は完全な平面にはなりません。刃先が残す痕跡 (<strong>工具マーク</strong>) や微小な凹凸があります。これを数値化したものが<strong>表面粗さ</strong>で、国際規格 ISO 4287 (JIS B 0601) で定義されています。</p>
+          <p>表面は完全な平面にはなりません。刃先が残す痕跡 (<strong>工具マーク</strong>) や微小な凹凸があります。これを数値化したものが<strong>表面粗さ</strong>で、国際規格 <strong>ISO 21920-2:2021</strong>（旧 ISO 4287:1997、JIS B 0601）で定義されています。現場では従来名「ISO 4287」で参照されることも多い指標群です。</p>
           <table style="width:100%;border-collapse:collapse;font-size:12px;margin:12px 0;">
             <thead>
               <tr style="background:var(--bg-3);">
@@ -5760,7 +5760,7 @@ const CHAPTERS = [
     terms: [
       { name: '公差', en: 'Tolerance', def: '寸法や形状に許される誤差の範囲。図面で指定される。' },
       { name: 'IT 等級', en: 'IT Grade (ISO 286)', def: 'ISO 286 で定められた寸法公差等級。IT01 (最高精度) 〜 IT18。一般機械 IT7-IT10、航空宇宙 IT4-IT6。' },
-      { name: '表面粗さ', anchor: 'Ra', en: 'Surface Roughness (Ra / Rz)', def: '表面の微小な凹凸の大きさ。ISO 4287 に基づき Ra（算術平均粗さ）や Rz（最大高さ）で数値化。旋削の理論式: Ra ≈ f² / (32·r_ε)。' },
+      { name: '表面粗さ', anchor: 'Ra', en: 'Surface Roughness (Ra / Rz)', def: '表面の微小な凹凸の大きさ。ISO 21920-2:2021（旧 ISO 4287:1997）に基づき Ra（算術平均粗さ）や Rz（最大高さ）で数値化。旋削の理論式: Ra ≈ f² / (32·r_ε)。' },
       { name: '算術平均粗さ (Ra)', en: 'Arithmetic Mean Roughness', def: '表面の凹凸を平均化した指標。もっとも一般的に使われる。単位は μm。' },
       { name: '最大高さ (Rz)', en: 'Maximum Height', def: '基準長さ内の最大山高+最大谷深。疲労起点評価で重要、Ra より厳しめに反応。' },
       { name: '理論粗さ式', en: 'Theoretical Roughness', def: '旋削: Ra ≈ f²/(32·r_ε)。送り f を半分にすると理論粗さは 1/4。' },
@@ -5768,7 +5768,7 @@ const CHAPTERS = [
       { name: 'コーナ R', en: 'Corner Radius', def: '工具刃先の角丸半径。大きいほど表面粗さは良くなるが切削力 (特に径方向) が増えて振動誘発可能性。' },
     ],
     further: [
-      '<strong>JIS B 0601 / ISO 4287</strong>（表面性状の測定）— 規格の基礎',
+      '<strong>JIS B 0601:2013 / ISO 21920-2:2021</strong>（表面性状の測定、旧 ISO 4287:1997 を置換）— 規格の基礎',
       '<strong>JIS B 0610 / ISO 12085</strong>（モチーフパラメータ）',
       '<strong>JIS B 0671 / ISO 13565</strong>（プラトー構造解析、摺動面評価）',
       '<strong>ISO 286</strong>（IT 等級）',
@@ -6002,11 +6002,11 @@ const CHAPTERS = [
       },
     ],
     terms: [
-      { name: '試料調製', en: 'Specimen Preparation / Metallographic Sample Preparation', def: '観察・計測のために材料を整える工程の総称。切断 → 埋込 → 研磨 → エッチングが標準シーケンス。公開規格として ASTM E3 (Standard Guide for Preparation of Metallographic Specimens) と ASTM E407 (Microetching) がある。' },
-      { name: 'メタログラフィー', en: 'Metallography', def: '金属組織を観察する技術体系。顕微鏡観察に適した試料を作るための加工 (試料調製) と、観察・解析を含む。標準教科書として Vander Voort 著 "Metallography: Principles and Practice"、ASM Handbook Volume 9。' },
-      { name: '加工変質層', en: 'Surface Damaged Layer / Beilby Layer', def: '機械加工で生じる、組織が乱れた表層。試料調製では研磨の段階を細かく刻むことで除去する。機能部品では疲労寿命に影響するため Part B 第 9 章の表面粗さ・残留応力と並ぶ評価対象。' },
-      { name: 'エッチング', en: 'Etching', def: '化学溶液で組織を浮かび上がらせる工程。材料系ごとに ASTM E407 で多数のエッチャント (例: Nital, Kalling) が公開されている。' },
-      { name: 'クリープ試験', en: 'Creep Test', def: '高温で一定荷重を長時間かけ、ひずみと破断時間を計測する試験。JIS Z 2271 / ISO 204。航空エンジンのタービン部品など、高温で長期使用される材料の寿命評価に必須。' },
+      { name: '試料調製', anchor: 'specimen-prep', en: 'Specimen Preparation / Metallographic Sample Preparation', def: '観察・計測のために材料を整える工程の総称。切断 → 埋込 → 研磨 → エッチングが標準シーケンス。公開規格として ASTM E3 (Standard Guide for Preparation of Metallographic Specimens) と ASTM E407 (Microetching) がある。' },
+      { name: 'メタログラフィー', anchor: 'metallography', en: 'Metallography', def: '金属組織を観察する技術体系。顕微鏡観察に適した試料を作るための加工 (試料調製) と、観察・解析を含む。標準教科書として Vander Voort 著 "Metallography: Principles and Practice"、ASM Handbook Volume 9。' },
+      { name: '加工変質層', anchor: 'damaged-layer', en: 'Surface Damaged Layer / Beilby Layer', def: '機械加工で生じる、組織が乱れた表層。試料調製では研磨の段階を細かく刻むことで除去する。機能部品では疲労寿命に影響するため Part B 第 9 章の表面粗さ・残留応力と並ぶ評価対象。' },
+      { name: 'エッチング', anchor: 'etching', en: 'Etching', def: '化学溶液で組織を浮かび上がらせる工程。材料系ごとに ASTM E407 で多数のエッチャント (例: Nital, Kalling) が公開されている。' },
+      { name: 'クリープ試験', anchor: 'creep-test', en: 'Creep Test', def: '高温で一定荷重を長時間かけ、ひずみと破断時間を計測する試験。JIS Z 2271 / ISO 204。航空エンジンのタービン部品など、高温で長期使用される材料の寿命評価に必須。' },
     ],
     further: [
       'ASTM E3 — Standard Guide for Preparation of Metallographic Specimens (ASTM International, <a href="https://www.astm.org/e0003-11r17.html" target="_blank" rel="noopener">astm.org/e0003</a>)',
@@ -6098,7 +6098,7 @@ const CHAPTERS = [
           <p>現代の切削研究は、大雑把に次の 5 テーマに集約できます。各テーマがどの章の物理と接続するかも併記します。</p>
 
           <h4 style="margin-top:16px;">1. びびり振動制御（Chatter Suppression）</h4>
-          <p>自励振動は加工精度と工具寿命の宿敵。1958 年の Tlusty の再生型びびり理論を起点に、<strong>Stability Lobe Diagram（SLD）</strong>で安定領域を予測し、主軸回転数や切込みを選ぶ手法が発達しました。</p>
+          <p>自励振動は加工精度と工具寿命の宿敵。1957 年の Tlusty 単独発表と 1958 年の Tobias の独立発表、1963 年の Tlusty & Polacek（ASME, "The Stability of Machine Tools Against Self-Excited Vibrations in Machining"）による決定版モデルを起点に、<strong>Stability Lobe Diagram（SLD）</strong>で安定領域を予測し、主軸回転数や切込みを選ぶ手法が発達しました。</p>
           <ul>
             <li>接続章: 第10章（航空機部品 — びびり振動）、第A6章（Johnson-Cook）</li>
             <li>最近の研究: AI によるリアルタイム SLD 更新、可変ピッチ工具、Spindle Speed Variation</li>
@@ -6215,16 +6215,16 @@ const CHAPTERS = [
             <li><strong>Trent, E.M. & Wright, P.K.（2000）"Metal Cutting" (4th ed.)</strong> — 古典的な切削力学教科書</li>
             <li><strong>Childs, T. et al.（2000）"Metal Machining: Theory and Applications"</strong> — 理論と産業応用の橋渡し</li>
             <li><strong>Shaw, M.C.（2005）"Metal Cutting Principles" (2nd ed.)</strong> — 米国で標準</li>
-            <li><strong>帯川・松村・鈴木他『切削加工学』</strong>（和書）— 日本語で体系的に学ぶなら</li>
+            <li><strong>帯川利之『はじめての生産加工学 1 基本加工技術編』</strong>（講談社）ほか、帯川利之・松村隆らの切削加工 / 機械加工和書教科書 — 日本語で体系的に学ぶなら（書名・版は出版社サイトで確認推奨）</li>
             <li><strong>日本鉄鋼協会『鉄鋼便覧』</strong> — 被削材側の情報源</li>
           </ul>
 
           <h4 style="margin-top:16px;">規格類（JIS / ISO / ASTM / AMS）</h4>
           <ul>
             <li><strong>ISO 3685</strong>: Tool-life testing with single-point turning tools — VB 閾値の根拠</li>
-            <li><strong>ISO 4287</strong>: 表面性状 (Ra, Rz 他)</li>
+            <li><strong>ISO 4287:1997</strong>: 表面性状 (Ra, Rz 他)。<strong>2021 年に ISO 21920-2:2021 へ置換</strong>（旧名で参照されることも多い）</li>
             <li><strong>ISO 8688</strong>: Tool life testing in milling</li>
-            <li><strong>JIS B 0170</strong>: 工作機械—切削及び研削用語</li>
+            <li><strong>JIS B 0170:2020</strong>: 切削工具用語（基本）。工作機械側の用語は <strong>JIS B 0105:2012</strong>（名称）と <strong>JIS B 0106:2016</strong>（部品・工作方法）が現行</li>
             <li><strong>AMS 4928</strong>: Ti-6Al-4V 棒材仕様（航空）</li>
             <li><strong>AMS 5662</strong>: Inconel 718 棒材仕様（航空）</li>
             <li><strong>AS9100</strong>: 航空宇宙品質マネジメント</li>
@@ -6353,7 +6353,7 @@ const CHAPTERS = [
 
           <h4 style="margin-top:14px;">課題 4：トレーサビリティ要請（ISO 9001 / 21 CFR Part 11）</h4>
           <p><strong>現状</strong>：航空・医療・原子力で要求される「誰が・いつ・何を・どの装置で測ったか」が手書き台帳ベース。<br>
-          <strong>MaiML の解</strong>：<code>&lt;eventLog&gt;</code> に <strong>XES（IEEE 1849-2016）</strong> 準拠でイベント記録。<code>schedule</code> / <code>start</code> / <code>complete</code> など 12 種の lifecycle 状態遷移を機械可読に残す。<strong>ISO 9001 のプロセスアプローチ要件と直接整合</strong>。<br>
+          <strong>MaiML の解</strong>：<code>&lt;eventLog&gt;</code> に <strong>XES（IEEE 1849-2016、後継 IEEE 1849-2023）</strong> 準拠でイベント記録。<code>schedule</code> / <code>start</code> / <code>complete</code> など 12 種の lifecycle 状態遷移を機械可読に残す。<strong>ISO 9001 のプロセスアプローチ要件と直接整合</strong>。<br>
           <strong>残る限界</strong>：装置 → MaiML への自動ロギング機構の実装が必要。</p>
 
           <h4 style="margin-top:14px;">課題 5：改ざん検知と監査要件</h4>
@@ -6394,7 +6394,7 @@ const CHAPTERS = [
       { name: 'JIS K 0200', en: 'JIS K 0200:2024', def: '日本産業規格。MaiML データフォーマットを規定。和文 128 ページ・税込 6,930 円・JSA Webdesk で販売、暫定英訳版は JAIMA 公式から無償。' },
       { name: 'JAIMA', en: 'Japan Analytical Instruments Manufacturers Association', def: '一般社団法人 日本分析機器工業会。MaiML の仕様策定とガイドライン発行を担当。会長: 足立正之（堀場製作所）。' },
       { name: '独立可用性', en: 'Independent Availability', def: 'MaiML ファイル単独で計測の全情報が取り出せる性質。藤本俊幸ら（産総研）が 2023 年に提唱。データを「パスポートを持つ旅人」に喩える。' },
-      { name: 'FAIR 原則', en: 'FAIR Principles', def: 'Findable / Accessible / Interoperable / Reusable の科学データ管理原則 (Wilkinson et al., Sci Data 3, 160018, 2016)。MaiML はこれをデータベース前提でなくファイル単体で達成する。' },
+      { name: 'FAIR 原則', en: 'FAIR Principles', def: 'Findable / Accessible / Interoperable / Reusable の科学データ管理原則 (Wilkinson et al., Sci Data 3, 160018, 2016, DOI: 10.1038/sdata.2016.18)。MaiML はこれをデータベース前提でなくファイル単体で達成する。' },
       { name: '城壁内環境', en: '(within-wall environment)', def: '装置メーカー独自バイナリや LIMS の内側でしか意味が成立しないデータ環境。藤本ら 2023 が独立可用性の対概念として導入。' },
     ],
     further: [
@@ -6426,7 +6426,7 @@ const CHAPTERS = [
             <tr><th style="text-align:left;padding:6px;border-bottom:1px solid var(--border);">柱</th><th style="text-align:left;padding:6px;border-bottom:1px solid var(--border);">技術</th><th style="text-align:left;padding:6px;border-bottom:1px solid var(--border);">対応課題</th></tr>
             <tr><td style="padding:6px;"><strong>1. 名前空間とオントロジー</strong></td><td style="padding:6px;">XML Namespace + RDF/OWL（附属書 A・B）</td><td style="padding:6px;">課題 1, 7</td></tr>
             <tr><td style="padding:6px;"><strong>2. PNML 工程モデル化</strong></td><td style="padding:6px;">ISO/IEC 15909-2</td><td style="padding:6px;">課題 3, 8</td></tr>
-            <tr><td style="padding:6px;"><strong>3. XES イベントログ</strong></td><td style="padding:6px;">IEEE 1849-2016</td><td style="padding:6px;">課題 4, 8</td></tr>
+            <tr><td style="padding:6px;"><strong>3. XES イベントログ</strong></td><td style="padding:6px;">IEEE 1849-2016（後継 1849-2023）</td><td style="padding:6px;">課題 4, 8</td></tr>
             <tr><td style="padding:6px;"><strong>4. UUID 必須化</strong></td><td style="padding:6px;">RFC 4122 (後継 RFC 9562)</td><td style="padding:6px;">課題 5, 8</td></tr>
             <tr><td style="padding:6px;"><strong>5. XML Signature + ハッシュチェーン</strong></td><td style="padding:6px;">W3C XMLDSig 1.1 + SHA-256</td><td style="padding:6px;">課題 5</td></tr>
             <tr><td style="padding:6px;"><strong>6. XML Encryption（要素単位）</strong></td><td style="padding:6px;">W3C XMLEnc 1.1</td><td style="padding:6px;">課題 6</td></tr>
@@ -6578,14 +6578,14 @@ const CHAPTERS = [
     ],
     terms: [
       { name: 'PNML', en: 'Petri Net Markup Language', def: 'ペトリネットを XML で表現する国際規格 (ISO/IEC 15909-2)。MaiML の <protocol> 要素で計測工程フローの記述に使われる。トランジション = 操作、プレース = 試料・条件・結果。' },
-      { name: 'XES', en: 'Extensible Event Stream', def: 'プロセスマイニング向けのイベントログ XML 標準 (IEEE 1849-2016)。MaiML の <eventLog> 要素のベース。schedule / start / complete 等 12 種の lifecycle 状態遷移を定義。' },
+      { name: 'XES', en: 'Extensible Event Stream', def: 'プロセスマイニング向けのイベントログ XML 標準 (IEEE 1849-2016、2023 年に IEEE 1849-2023 として改訂)。MaiML の <eventLog> 要素のベース。schedule / start / complete 等 12 種の lifecycle 状態遷移を定義。' },
       { name: 'UUID', en: 'Universally Unique Identifier', def: 'RFC 4122（後継 RFC 9562）準拠の 128 ビット一意識別子。MaiML では各 material / condition / result に必須付与。サイバー空間での同一性保証の要。' },
       { name: 'XML Signature', en: 'W3C XMLDSig 1.1', def: 'XML 文書の電子署名仕様。MaiML では文書全体の改ざん検知に enveloped signature 形式で適用。SHA-256 + RSA-SHA256 が推奨。' },
       { name: 'XML Encryption', en: 'W3C XMLEnc 1.1', def: 'XML 要素の暗号化仕様。MaiML では特定グローバル要素単位で AES-256-GCM 等を適用、機密領域と公開領域を 1 文書内に共存させる。' },
       { name: '名前空間', en: 'XML Namespace', def: 'XML で同名タグの所属を区別する仕組み。MaiML はベンダー用語をこの仕組みで分離管理し、用語の進化に長期追従する設計。' },
       { name: '汎用データコンテナ', en: 'Generic Data Container', def: 'MaiML の <property> / <content> / <uncertainty> 要素群。タグ名で意味を固定せず、key 属性で意味を担保する設計。新規計測法への拡張がスキーマ改訂なしで可能。' },
-      { name: 'テンプレート要素 / templateRef', en: 'Template Elements / templateRef', def: '公式ガイドライン §9.7 で定義される再利用機構。複数の protocol / data から同一のキー集合を参照することで、文書サイズと一貫性を両立する。具体仕様は公式 XSD と §9.7 を参照。' },
-      { name: 'AnIML', en: 'Analytical Information Markup Language', def: 'ASTM E13.15 で策定中の類似目的フォーマット。MaiML はベンダー用語の固定方針が異なる。Allotrope Foundation 主導で 2014 年に 1.0.0 リリース。' },
+      { name: 'テンプレート要素 / templateRef', anchor: 'template-ref', en: 'Template Elements / templateRef', def: '公式ガイドライン §9.7 で定義される再利用機構。複数の protocol / data から同一のキー集合を参照することで、文書サイズと一貫性を両立する。具体仕様は公式 XSD と §9.7 を参照。' },
+      { name: 'AnIML', en: 'Analytical Information Markup Language', def: 'ASTM E13.15 副委員会（Analytical Data、2003 年設立）が主導する類似目的の XML 標準。Core schema は現在も draft 段階（v0.90、2024 年時点、GitHub AnIML/schemas の README 確認）で、正式な ASTM 規格としての公開には至っていない（GitHub 配布の draft が事実上の参照実装）。MaiML はベンダー用語の固定方針が異なる。Allotrope Foundation は別組織で Allotrope Data Format（ADF）を策定。' },
       { name: 'Allotrope ADF', en: 'Allotrope Data Format', def: 'Allotrope Foundation 策定。HDF5 + RDF ベース。製薬業界デファクト。MaiML から外部参照で補完関係。' },
       { name: 'HDF5 / NeXus', en: 'HDF5 / NeXus', def: 'NIAC / HDF Group が標準化するバイナリ科学データフォーマット。MaiML から <insertion> 要素で参照可。大容量並列 I/O の強み。' },
     ],
@@ -6593,7 +6593,7 @@ const CHAPTERS = [
       '公式スキーマ: <code>maiml.xsd</code> ほか 14 個の XSD（<code>xs:include</code> で連結、ZIP 約 16KB、JAIMA 公式から無償）',
       '重藤知夫・安永卓生・永富隆清・藤本俊幸・一村信吾「計測分析プラットフォーム実現のための共通データフォーマットの標準化」<strong>顕微鏡 59(1), 20-27 (2024)</strong>（DOI: 10.11410/kenbikyo.59.1_20）— MaiML 設計の決定版解説',
       'PNML 公式: <a href="http://www.pnml.org/" target="_blank" rel="noopener">http://www.pnml.org/</a>（ISO/IEC 15909-2 仕様）',
-      'XES 公式: <a href="https://xes-standard.org/" target="_blank" rel="noopener">https://xes-standard.org/</a>（IEEE 1849-2016）',
+      'XES 公式: <a href="https://xes-standard.org/" target="_blank" rel="noopener">https://xes-standard.org/</a>（IEEE 1849-2016 / 後継 IEEE 1849-2023）',
       'W3C XML Signature 1.1: <a href="https://www.w3.org/TR/xmldsig-core1/" target="_blank" rel="noopener">w3.org/TR/xmldsig-core1/</a>',
       'W3C XML Encryption 1.1: <a href="https://www.w3.org/TR/xmlenc-core1/" target="_blank" rel="noopener">w3.org/TR/xmlenc-core1/</a>',
       '前章: <a href="#/chapter/c2">第 C2 章「MaiML — 背景と 8 つの本質課題」</a> / 次章: <a href="#/chapter/c4">第 C4 章「MaiML — 動向・実用・未来」</a>',
@@ -6615,12 +6615,12 @@ const CHAPTERS = [
           <h4 style="margin-top:0;">JIS K 0200 制定までの経緯</h4>
           <ul>
             <li><strong>2014〜2017</strong>：日本学術振興会研究開発専門委員会で構想開始（当初は XMAIL という名称）</li>
-            <li><strong>2019〜2020</strong>：NEDO 技術先導プログラム（約 4.95 億円規模、PL: 一村信吾）で実装</li>
+            <li><strong>2019〜2020</strong>：NEDO 技術先導研究プログラム（PL: 一村信吾、産総研／早稲田大学）で実装。データフォーマット共通化・統合データ解析プラットフォーム構築を目的（具体予算規模は NEDO 成果報告書データベースで要確認）</li>
             <li><strong>2020〜2022</strong>：経済産業省「戦略的国際標準化加速事業」で策定支援</li>
             <li><strong>2023 年 1 月</strong>：姉妹規格 <strong>JIS K 0199</strong>（同一視野位置合わせ）公示</li>
             <li><strong>2024 年 5 月 20 日</strong>：<strong>JIS K 0200 本体公示</strong>。世界初の計測分析データ共通フォーマットのデジュール標準</li>
             <li><strong>2025 年 5 月 25 日</strong>：<strong>VAMAS TWA2 Project A45</strong> 立ち上げ。安永卓生（九工大）プロジェクトリーダー、Manchester 大の Alex Henderson 共同連絡担当</li>
-            <li><strong>2026 年 2 月 6 日</strong>：AIST Solutions と JAIMA が普及推進パートナーシップを正式締結</li>
+            <li><strong>2026 年 2 月 1 日</strong>：AIST Solutions と JAIMA が普及推進パートナーシップを正式締結（プレスリリース掲載 2026 年 2 月 6 日）</li>
             <li><strong>2026 年予定</strong>：ISO/TC201/SC3 経由で <strong>NWIP（New Work Item Proposal）正式提出</strong></li>
             <li><strong>2028〜2029 年見込み</strong>：ISO 規格として発行</li>
           </ul>
@@ -6631,8 +6631,8 @@ const CHAPTERS = [
             <tr><td style="padding:6px;"><strong>JAIMA</strong>（一般社団法人 日本分析機器工業会）</td><td style="padding:6px;">仕様策定・ガイドライン発行・普及推進。会長: 足立正之（堀場製作所）</td></tr>
             <tr><td style="padding:6px;"><strong>AIST Solutions</strong></td><td style="padding:6px;">産総研 100% 子会社。マテリアル DX プラットフォーム事業として産業展開</td></tr>
             <tr><td style="padding:6px;"><strong>NIMS</strong></td><td style="padding:6px;">ARIM（マテリアル先端リサーチインフラ事業）でデータ構造化・共有事業を展開</td></tr>
-            <tr><td style="padding:6px;"><strong>JSCA</strong>（表面化学分析技術国際標準化委員会）</td><td style="padding:6px;">ISO/TC201・TC202 国内審議団体。代表理事: 藤田大介（NIMS 名誉研究員）</td></tr>
-            <tr><td style="padding:6px;"><strong>大学</strong></td><td style="padding:6px;">九州工業大学 安永卓生研究室、東京大学 一杉研究室（dLab）</td></tr>
+            <tr><td style="padding:6px;"><strong>JSCA</strong>（表面化学分析技術国際標準化委員会）</td><td style="padding:6px;">ISO/TC201・TC202 国内審議団体。代表理事: 藤田大介（NIMS 先端材料解析研究拠点 拠点長、日本表面科学会フェロー、VAMAS 日本代表）</td></tr>
+            <tr><td style="padding:6px;"><strong>大学</strong></td><td style="padding:6px;">九州工業大学 安永卓生研究室、東京科学大学 / 東京大学 一杉太郎研究室（dLab）</td></tr>
           </table>
 
           <h4 style="margin-top:14px;">参画装置メーカー</h4>
@@ -6640,9 +6640,9 @@ const CHAPTERS = [
 
           <h4 style="margin-top:14px;">産業適用の先行事例</h4>
           <ul>
-            <li><strong>東京大学 一杉研究室 dLab</strong>：自動・自律実験のデジタルラボ。リチウムイオン電池正極薄膜の自律合成・評価で MaiML を採用（Digital Discovery, RSC, 2025, DOI: 10.1039/D4DD00326H）</li>
-            <li><strong>住友ゴム工業</strong>：「ADVANCED 4D NANO DESIGN」で SPring-8 / J-PARC 計測データを統合解析。トヨタ自動車 WAVEBASE 連携でゴム材料解析時間を 1/100 に短縮</li>
-            <li><strong>旭化成</strong>：MI-Hub 環境で 630 名以上を育成</li>
+            <li><strong>東京科学大学 / 東京大学 一杉太郎研究室 dLab</strong>：自動・自律実験のデジタルラボ。一杉教授は東京科学大学 物質理工学院（旧 東京工業大学）と東京大学 化学専攻に所属。リチウムイオン電池正極薄膜の自律合成・評価で MaiML を採用（Digital Discovery 4, 1734-1742, 2025, DOI: 10.1039/D4DD00326H — 著者所属は Institute of Science Tokyo / The University of Tokyo）</li>
+            <li><strong>住友ゴム工業</strong>：「ADVANCED 4D NANO DESIGN」で SPring-8 / J-PARC / スーパーコンピュータ「京」を連携活用したタイヤ用新材料開発技術を確立（2015 年プレスリリース）。トヨタ自動車 WAVEBASE 連携でゴム材料解析時間を 1/100 以下に短縮（2022-04 住友ゴム工業 newsrelease）</li>
+            <li><strong>旭化成</strong>：MI-Hub 教育システムで 2019〜2021 年度の 3 年間で MI 人材 630 名を育成（初級 500 / 中級 100 / 上級 30。日経 xTECH「旭化成が『MI人材』を 600 人育成へ、材料開発を AI で加速」2021 報）</li>
             <li><strong>NIMS ARIM</strong>：マテリアル先端リサーチインフラ事業（2021 年度〜）でセンターハブ機能</li>
           </ul>
         `,
@@ -6684,7 +6684,7 @@ const CHAPTERS = [
 
           <h4 style="margin-top:18px;">周辺の公開データ基盤 — RDE との関係</h4>
           <p>MaiML を取り囲む公開エコシステムとして、NIMS が運用する <strong>RDE（Research Data Express）</strong> があります。RDE は物質・材料研究データのオンライン登録基盤で、公式ページによれば登録データに対して「データの分類、メタデータの付与、用語の翻訳、フォーマット変換、数値データの可視化、統計処理、特徴量抽出」を自動で行い、機械学習に適した形でクラウドに蓄積する仕組みを提供しています。データテンプレートはあらかじめ用意されたものと、RDEToolKit 等を用いて研究グループが自作するものの 2 系統が公開されています。</p>
-          <p style="font-size:13px;">MaiML が「データの構造そのもの（手順・実体・結果・履歴を 1 ファイルにまとめる）」を担うのに対し、RDE は「データを集めて公開する流通基盤」を担う、という役割分担と捉えられます。両者は <strong>競合ではなく補完関係</strong>にあり、ARIM 事業 を含む NIMS の公開メタデータ規約を、MaiML の <code>key</code> 名前空間と揃える試みは今後の整合点になります。学習者の視点では、「公的に整備されたデータ登録基盤の現実例」として RDE を参照しておくと、MaiML の <code>key</code> 設計や流通設計の感覚がつかみやすくなります。</p>
+          <p style="font-size:13px;">MaiML が「データの構造そのもの（手順・実体・結果・履歴を 1 ファイルにまとめる）」を担うのに対し、RDE は「データを集めて公開する流通基盤」を担う、という役割分担と捉えられます。両者は <strong>競合ではなく補完関係</strong>にあり、ARIM 事業を含む NIMS の公開メタデータ規約を、MaiML の <code>key</code> 名前空間と揃える試みは今後の整合点になります。学習者の視点では、「公的に整備されたデータ登録基盤の現実例」として RDE を参照しておくと、MaiML の <code>key</code> 設計や流通設計の感覚がつかみやすくなります。</p>
           <p style="font-size:13px;color:var(--text-2);">出典: NIMS RDE 公式ページ — <a href="https://dice.nims.go.jp/services/RDE/" target="_blank" rel="noopener">dice.nims.go.jp/services/RDE/</a>（NIMS DICE プラットフォーム配下、データの自動構造化処理とテンプレート 2 系統の記述は同公式ページに掲載）</p>
         `,
       },
@@ -6703,7 +6703,7 @@ const CHAPTERS = [
           <h4 style="margin-top:14px;">軸 2：制度的課題</h4>
           <ul>
             <li><strong>装置メーカーの移行インセンティブ</strong>：独自フォーマットがロックイン要因なので、移行に積極的でない。<br>→ 解決方向：JIS / ISO 化と、製薬・航空・原子力など規格認証が重い業界での「MaiML 必須化」の制度的圧力。</li>
-            <li><strong>国際標準（ASTM AnIML）との棲み分け</strong>：AnIML は Allotrope Foundation 主導で 2014 年に 1.0.0 がリリース済の一方、ASTM での標準化は長期化している。MaiML は JIS 制定（2024）→ ISO 化を先行する戦略。<br>→ 解決方向：VAMAS TWA2 Project A45 で AnIML 側との比較研究を蓄積、AnIML ↔ MaiML 双方向変換器を OSS で提供して相互運用性を確保。</li>
+            <li><strong>国際標準（ASTM AnIML）との棲み分け</strong>：AnIML は ASTM E13.15 副委員会が 2003 年から策定を進める XML 標準だが、Core schema は現在も draft 段階（v0.90、2024 年時点）で正式 ASTM 規格としての公開には至っていない。MaiML は JIS 制定（2024）→ ISO 化を先行する戦略。<br>→ 解決方向：VAMAS TWA2 Project A45 で AnIML 側との比較研究を蓄積、AnIML ↔ MaiML 双方向変換器を OSS で提供して相互運用性を確保。</li>
             <li><strong>規格認証への組み込み</strong>：ISO 9001 / ISO/IEC 17025 / FDA 21 CFR Part 11 / EU GMP Annex 11 / PMDA 電磁的記録要件への適合宣言。<br>→ 解決方向：JIS 規格 + XML Signature + ハッシュチェーンの組合せで「監査トレーサビリティを満たす最小フォーマット」として認定取得。</li>
           </ul>
 
@@ -6755,9 +6755,9 @@ const CHAPTERS = [
     ],
     terms: [
       { name: 'VAMAS A45', en: 'VAMAS TWA2 Project A45', def: '2025 年 5 月立ち上げの国際 Round Robin。安永卓生（九工大）プロジェクトリーダー。AFM+SEM、AES+XPS、GC-MS 等で MaiML の独立可用性を国際実証。' },
-      { name: 'AIST Solutions', en: 'AIST Solutions Co., Ltd.', def: '産総研 100% 子会社。2026-02-06 JAIMA と普及推進パートナーシップ締結。マテリアル DX プラットフォーム事業として MaiML を産業展開。' },
+      { name: 'AIST Solutions', en: 'AIST Solutions Co., Ltd.', def: '産総研 100% 子会社（2023 年 4 月設立）。2026-02-01 JAIMA と普及推進パートナーシップ締結（プレスリリース 2026-02-06）。マテリアル DX プラットフォーム事業として MaiML を産業展開。' },
       { name: 'NIMS ARIM', en: 'NIMS Advanced Research Infrastructure for Materials and Nanotechnology', def: 'マテリアル先端リサーチインフラ事業（2021 年度〜）。NIMS がセンターハブとして全国 26 機関のデータ構造化・共有を推進。' },
-      { name: 'NIMS RDE', en: 'Research Data Express', def: '物質・材料研究データのオンライン登録基盤。NIMS DICE プラットフォーム配下で運用。分析機器の生データ・メタデータの自動構造化、データテンプレートと変換ツールの公開を担う。MaiML との関係は補完（RDE = 流通基盤 / MaiML = データ構造）。' },
+      { name: 'NIMS RDE', anchor: 'nims-rde', en: 'Research Data Express', def: '物質・材料研究データのオンライン登録基盤。NIMS DICE プラットフォーム配下で運用。分析機器の生データ・メタデータの自動構造化、データテンプレートと変換ツールの公開を担う。MaiML との関係は補完（RDE = 流通基盤 / MaiML = データ構造）。' },
       { name: 'JIS K 0199', en: 'JIS K 0199', def: '姉妹規格。同一視野位置合わせの規格として 2023 年 1 月公示。MaiML と組み合わせて「同一試料を複数機関で測定」を機械判定する仕組みの基礎。' },
       { name: 'NWIP', en: 'New Work Item Proposal', def: 'ISO 規格化の最初のステップ。MaiML は ISO/TC201/SC3 経由で 2026 年提出予定。NP → WD → CD → DIS → FDIS → IS の標準スケジュールで 36〜48 か月。' },
       { name: 'MCP', en: 'Model Context Protocol', def: '2024 年 11 月 Anthropic 公開、2025 年仕様標準化が進む AI エージェント向けプロトコル。MaiML を AI が直接読み書きする maiml-mcp Server 構想の基盤。' },
@@ -6766,8 +6766,8 @@ const CHAPTERS = [
     further: [
       '安永卓生 (九州工業大学)「計測分析を未来につなぐためのデータの在り方と標準化」(計測標準フォーラム第 21 回講演会, 2023-10-24) — 設計思想の背景',
       'VAMAS TWA2 Project A45（2025 年 5 月立ち上げ）— 国際 Round Robin Test、ISO 化への布石',
-      'AIST Solutions × JAIMA パートナーシップ協定（2026-02-06）— 産業適用の制度面',
-      '東京大学 一杉研究室 dLab — リチウムイオン電池正極薄膜の自律合成・評価で MaiML を採用（Digital Discovery, RSC, 2025, DOI: 10.1039/D4DD00326H）',
+      'AIST Solutions × JAIMA パートナーシップ協定（2026-02-01 締結 / プレスリリース 2026-02-06）: <a href="https://www.jaima.or.jp/jp/news_detail/press_20260206/" target="_blank" rel="noopener">JAIMA 発表</a> / <a href="https://prtimes.jp/main/html/rd/p/000000074.000146304.html" target="_blank" rel="noopener">AIST Solutions プレスリリース</a> — 産業適用の制度面',
+      '東京科学大学 / 東京大学 一杉太郎研究室 dLab — Nishio, Aiba, ..., Hitosugi 他「A digital laboratory with a modular measurement system and standardized data format」<strong>Digital Discovery 4, 1734-1742 (2025)</strong>（DOI: 10.1039/D4DD00326H）— MaiML 採用の代表事例',
       'NIMS ARIM（マテリアル先端リサーチインフラ事業）公式: <a href="https://nanonet.mext.go.jp/arim/" target="_blank" rel="noopener">nanonet.mext.go.jp/arim/</a>',
       'NIMS RDE（Research Data Express）公式: <a href="https://dice.nims.go.jp/services/RDE/" target="_blank" rel="noopener">dice.nims.go.jp/services/RDE/</a> — 公開メタデータ語彙の参照先',
       '本リポ詳細版: <a href="https://github.com/BoxPistols/machining-fundamentals/blob/main/docs/maiml-overview.md" target="_blank" rel="noopener">docs/maiml-overview.md</a>',
@@ -6889,7 +6889,7 @@ const QUIZ_BANK = [
     question:'工具寿命の主要指標である「逃げ面摩耗 VB」の ISO 3685 標準限界(仕上げ加工)はおおよそいくつか?',
     choices:['VB = 0.05 mm','VB = 0.3 mm','VB = 1.0 mm','VB = 3.0 mm'],
     answer:1,
-    explanation:'ISO 3685 で仕上げ 0.3 mm、荒加工 0.6 mm が標準。VB がこれを超えると寸法精度・表面粗さが急速に悪化し、最悪チッピングや工具破損につながる。' },
+    explanation:'ISO 3685:1993 では平均 VBavg ≒ 0.3 mm / 最大 VBmax ≒ 0.6 mm を寿命基準値として規定し、実務では仕上げ加工で 0.3 mm 寄り、荒加工で 0.6 mm 寄りに運用。VB がこれを超えると寸法精度・表面粗さが急速に悪化し、最悪チッピングや工具破損につながる。' },
   { id:'qb9-1', chapterRef:9, type:'fill', difficulty:'hard', anchor:'Ra',
     question:'旋削の理論表面粗さ式 Ra ≈ f² / (32·r_ε) を踏まえて: r_ε = 0.8 mm のコーナ R 工具で、送り f を半分(0.2 → 0.1)にすると、理論 Ra は何倍になるか?',
     blank:'Ra は ___ 倍になる (分数または小数で)',
@@ -14672,9 +14672,9 @@ const FALLBACK_BANK = [
   { keys: ['VB'], chapter: '8',
     answer: 'VB (逃げ面摩耗幅 mm) の限界は加工種別で変わります: 仕上げ加工 VB < 0.3 mm、荒加工 VB < 0.6 mm、ドリル/タップは異なる尺度。VB は時間と共に初期摩耗 → 安定摩耗 → 急激摩耗と進行し、急激摩耗手前が「寿命」。実機では音響・振動・電流値から推定します。' },
   { keys: ['Ra'], chapter: '9',
-    answer: '理論 Ra は旋削で Ra ≒ f² / (32 × r_ε) (r_ε はノーズ半径 mm、f は送り mm/rev)。f を半分にすると Ra は 1/4 に改善しますが、生産性は半減します。Ra と Rz の使い分け: Ra は平均粗さで意匠/シール面に、Rz は 10 点平均で摺動・疲労面に使うのが実務標準 (ISO 4287)。' },
+    answer: '理論 Ra は旋削で Ra ≒ f² / (32 × r_ε) (r_ε はノーズ半径 mm、f は送り mm/rev)。f を半分にすると Ra は 1/4 に改善しますが、生産性は半減します。Ra と Rz の使い分け: Ra は平均粗さで意匠/シール面に、Rz は最大高さ (peak-to-valley) で摺動・疲労面に使うのが実務標準 (ISO 21920-2:2021 / 旧 ISO 4287:1997)。「10 点平均粗さ」は旧 JIS B 0601:1994 の定義で、現行は Rzjis として区別されます。' },
   { keys: ['Rz'], chapter: '9',
-    answer: 'Rz は ISO 4287 の「最大高さ」で、基準長さ内の最高山と最深谷の差。Ra (算術平均) より外れ値に敏感なので、摺動/疲労/シール面などピーク応力が問題になる用途で使います。Ra と Rz は相関しますが比例定数は一定でない (粗さ波形の形状依存)。' },
+    answer: 'Rz は ISO 21920-2:2021（旧 ISO 4287:1997）の「最大高さ」で、基準長さ内の最高山と最深谷の差。Ra (算術平均) より外れ値に敏感なので、摺動/疲労/シール面などピーク応力が問題になる用途で使います。Ra と Rz は相関しますが比例定数は一定でない (粗さ波形の形状依存)。旧 JIS B 0601:1994 では Rz が「10 点平均粗さ」を指していたので、古い図面では Rzjis として読み替えが必要です。' },
   { keys: ['BCC', 'FCC'], chapter: 'a3',
     answer: 'BCC (体心立方) と FCC (面心立方) は結晶構造の違い。FCC はすべり系 12、充填率 0.74 で延性が高く (Al, Cu, SUS304)、BCC はすべり系 48 だが温度依存で DBTT (延性脆性遷移) を持つ (炭素鋼)。HCP はすべり系 3 のみで極めて異方性が強い (Ti, Mg)。この差が切削性の連続切屑か不連続切屑かを左右します。' },
   { keys: ['HCP', 'Ti'], chapter: 'a3',
